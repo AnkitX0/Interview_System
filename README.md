@@ -239,10 +239,13 @@ VITE_API_URL=http://127.0.0.1:8000
 
 ---
 
-## 10. Privacy Guarantees & Honest Terminology
+## 10. Privacy Guarantees & Sensor Disclosure
 
-- **No Raw Media Recording**: Webcam video and microphone audio are analyzed locally on-device inside your browser using MediaPipe FaceMesh and Web Speech API. Raw video and raw audio files are **never recorded, transmitted, or saved to any server**.
-- **Data Retention**: *Your data is kept until you delete it.* You can delete any session, resume, or your entire account at any time.
+- **Video Processing**: Video frames are analysed locally and never leave the browser. Head alignment and visual stability proxies are computed on-device via MediaPipe FaceMesh. Raw video is never recorded or uploaded to our server.
+- **Speech Recognition**: Speech recognition is performed by the browser's own speech service (Web Speech API), which may process audio on the vendor's servers under its own privacy policy.
+- **Server Data Processing**: Our server receives only transcript text, timing intervals, and derived numbers. Raw video and raw audio files are never stored or uploaded to our server.
+- **Text-Only Fallback**: Text-only mode avoids both video and speech processing entirely.
+- **Data Retention**: *Your data is kept until you delete it.* You can delete any session, resume, or your entire account at any time via the UI or `/auth/account` deletion endpoints.
 - **Honest Metrics**: Physical indicators are reported as observable proxies:
   - Head alignment is a *visual centering proxy*, not a measure of confidence, eye contact, or nervousness.
   - Voice pacing and pause intervals are *approximations based on speech-recognition event timing*.

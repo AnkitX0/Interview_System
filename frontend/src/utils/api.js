@@ -11,6 +11,9 @@ export async function apiFetch(url, options = {}) {
   if (!(options.body instanceof FormData) && !headers["Content-Type"]) {
     headers["Content-Type"] = "application/json";
   }
+  if (!headers["X-Requested-With"]) {
+    headers["X-Requested-With"] = "XMLHttpRequest";
+  }
 
   const config = {
     ...options,

@@ -16,6 +16,21 @@ router = APIRouter(tags=["Analytics & Reports"])
 # =========================
 # GET SESSION REPORT
 # =========================
+@router.get("/report/latest")
+def get_latest_session_report(
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    session = db.query(models.InterviewSession).filter(
+        models.InterviewSession.user_id == user.id
+    ).order_by(models.InterviewSession.id.desc()).first()
+
+    if not session:
+        raise HTTPException(status_code=404, detail="No interview sessions found")
+
+    return get_session_report(session.id, user=user, db=db)
+
+
 @router.get("/report/{session_id}")
 def get_session_report(
     session_id: int,

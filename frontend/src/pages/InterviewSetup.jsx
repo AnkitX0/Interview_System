@@ -28,7 +28,9 @@ function InterviewSetup() {
     apiFetch("/consent")
       .then((res) => (res.ok ? res.json() : []))
       .then((records) => {
-        const camMicRecord = records.find((r) => r.consent_type === "camera_mic_processing");
+        const camMicRecord = records.find(
+          (r) => r.consent_type === "camera_mic_processing" && (r.policy_version === "2.0" || r.policy_version === "v2.0")
+        );
         if (camMicRecord) {
           setConsentStatus(camMicRecord.granted ? "granted" : "declined");
         } else {
@@ -123,7 +125,7 @@ function InterviewSetup() {
         body: JSON.stringify({
           consent_type: "camera_mic_processing",
           granted: true,
-          policy_version: "v1.0",
+          policy_version: "2.0",
         }),
       });
     } catch (e) {
@@ -145,7 +147,7 @@ function InterviewSetup() {
         body: JSON.stringify({
           consent_type: "camera_mic_processing",
           granted: false,
-          policy_version: "v1.0",
+          policy_version: "2.0",
         }),
       });
     } catch (e) {
@@ -455,11 +457,11 @@ function InterviewSetup() {
 
             <div style={{ backgroundColor: "#f8fafc", borderRadius: "8px", padding: "14px", border: "1px solid #e2e8f0", fontSize: "12px", color: "#334155", lineHeight: "1.6", marginBottom: "20px" }}>
               <ul style={{ margin: 0, paddingLeft: "18px" }}>
-                <li><strong>Local-only video analysis:</strong> Head alignment and blink proxies are computed directly inside your browser via MediaPipe FaceMesh. <em>Raw video is never recorded, transmitted, or stored.</em></li>
-                <li><strong>Local-only speech cadence:</strong> Speech intervals and transcripts run via browser speech recognition. <em>Raw audio files are never recorded or uploaded.</em></li>
-                <li><strong>Transcripts & rubrics:</strong> Only text transcripts, numerical rubric scores, and action items are saved.</li>
+                <li><strong>Local-only video analysis:</strong> Video frames are analysed locally and never leave the browser. Head alignment and visual stability proxies are computed on-device via MediaPipe.</li>
+                <li><strong>Speech recognition notice:</strong> Speech recognition is performed by the browser's own speech service, which may process audio on the vendor's servers under its own policy.</li>
+                <li><strong>Server data processing:</strong> Our server receives only transcript text, timing, and derived numbers. Raw video and raw audio files are never stored or uploaded to our server.</li>
+                <li><strong>Text-only fallback:</strong> Text-only mode avoids both video and speech processing.</li>
                 <li><strong>Retention policy:</strong> <em>Your data is kept until you delete it.</em> You may delete individual sessions or your entire account at any time.</li>
-                <li><strong>Text-only fallback:</strong> If you decline, you can practice in text-only mode with zero sensor access.</li>
               </ul>
             </div>
 

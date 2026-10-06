@@ -405,10 +405,12 @@ def followup(
 @router.post("/{session_id}/complete")
 def complete_interview(
     session_id: int,
-    data: CompleteInterviewRequest,
+    data: Optional[CompleteInterviewRequest] = None,
     user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if data is None:
+        data = CompleteInterviewRequest()
     session = db.query(models.InterviewSession).filter(
         models.InterviewSession.id == session_id,
         models.InterviewSession.user_id == user.id

@@ -242,8 +242,7 @@ function Interview() {
         setIsMicOn(true);
 
         const faceMesh = new FaceMesh({
-          locateFile: (file) =>
-            `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
+          locateFile: (file) => `/mediapipe/face_mesh/${file}`,
         });
 
         faceMeshRef.current = faceMesh;

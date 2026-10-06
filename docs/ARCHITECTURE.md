@@ -322,3 +322,17 @@ npm run build
 ```
 *(Build compiles with zero errors).*
 
+---
+
+## 9. Privacy Architecture & Sensor Disclosure
+
+The platform enforces strict privacy principles and clear disclosures regarding client-side and cloud-assisted processing:
+
+1. **Local-Only Video Analysis**: Video frames are analysed locally inside the candidate's browser using MediaPipe FaceMesh. Raw video frames never leave the browser and are never uploaded or stored on any server. FaceMesh assets are bundled locally under `frontend/public/mediapipe/face_mesh` for 100% air-gapped / offline operation without CDN requests.
+2. **Speech Recognition Disclosure**: Speech recognition is performed by the browser's native Web Speech API, which may process microphone audio on the browser vendor's cloud servers (e.g. Google's speech recognition backend in Chrome) under the vendor's privacy policy. Our application server never receives or stores raw audio recordings.
+3. **Server Data Reception**: The backend server receives only final transcript text, timestamp intervals, and derived numerical metrics (e.g., WPM, filler word count, pause duration).
+4. **Text-Only Fallback**: Candidates who decline sensor consent can practice fully in Text-Only mode, bypassing both camera and microphone sensors entirely.
+5. **Consent Re-Prompting**: The privacy policy version is tracked (`PRIVACY_POLICY_VERSION = "2.0"`). Any version change prompts users to re-review and re-acknowledge privacy terms prior to starting a session.
+6. **Data Retention & Right to be Forgotten**: All user data is retained strictly until deleted by the user. Endpoints `GET /auth/export` and `DELETE /auth/account` provide full GDPR/CCPA data export and complete cascading deletion.
+
+

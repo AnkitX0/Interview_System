@@ -34,6 +34,7 @@ from backend.config import (
     AUTH_COOKIE_NAME,
     ACCESS_TOKEN_EXPIRE_MINUTES,
     ENVIRONMENT,
+    PRIVACY_POLICY_VERSION,
 )
 
 logger = logging.getLogger("interview_system.auth")
@@ -270,7 +271,7 @@ def record_consent(
         user_id=user.id,
         consent_type=data.consent_type,
         granted=data.granted,
-        policy_version=data.policy_version or "v1.0",
+        policy_version=data.policy_version or PRIVACY_POLICY_VERSION,
     )
     db.add(record)
     db.commit()

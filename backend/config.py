@@ -115,6 +115,6 @@ TTR_MOVING_WINDOW = 50  # Moving-average TTR window
 # ---------------------------
 # Privacy & Consent Configuration
 # ---------------------------
-PRIVACY_POLICY_VERSION = "1.0"
+PRIVACY_POLICY_VERSION = "2.0"
 DATA_RETENTION_STATEMENT = "Your data is kept until you delete it. You can export or delete your data at any time."
 

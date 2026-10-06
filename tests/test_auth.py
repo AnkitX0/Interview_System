@@ -204,3 +204,57 @@ def test_rate_limiting():
         assert check_rate_limit(key, max_attempts=3, window_seconds=10) is True
     # 4th attempt should be blocked
     assert check_rate_limit(key, max_attempts=3, window_seconds=10) is False
+
+
+def test_endpoint_rate_limiting_returns_429(client: TestClient):
+    from backend.services.auth_service import _rate_limits
+    _rate_limits.clear()
+    try:
+        # Register/login endpoint rate limit is 10 per minute per IP
+        for _ in range(10):
+            res = client.post("/auth/login", json={"email": "ratelimit@example.com", "password": "wrongpassword123"})
+            assert res.status_code == 401
+        # 11th request should be HTTP 429
+        res_blocked = client.post("/auth/login", json={"email": "ratelimit@example.com", "password": "wrongpassword123"})
+        assert res_blocked.status_code == 429
+        assert "Too many attempts" in res_blocked.json()["error"]["message"]
+    finally:
+        _rate_limits.clear()
+
+
+def test_csrf_origin_blocking_cookie_request(client: TestClient):
+    # Register user (sets auth_token cookie)
+    client.post("/auth/register", json={
+        "email": "csrf_test@example.com",
+        "password": "validsecurepassword10",
+        "full_name": "CSRF Tester",
+    })
+    # Remove Authorization header so request relies solely on cookie auth
+    client.headers.pop("Authorization", None)
+    # Make a state-changing POST with a disallowed Origin header and cookie auth
+    res = client.post(
+        "/consent",
+        json={"consent_type": "camera_mic_processing", "granted": True, "policy_version": "2.0"},
+        headers={"Origin": "https://malicious-attacker.com"}
+    )
+    assert res.status_code == 403
+    assert res.json()["error"]["code"] == "CSRF_FORBIDDEN"
+
+
+def test_log_hygiene_no_sensitive_data_in_logs(client: TestClient, caplog):
+    caplog.clear()
+    import logging
+    with caplog.at_level(logging.DEBUG):
+        secret_password = "SuperSecretPassword123!"
+        client.post("/auth/register", json={
+            "email": "hygiene@example.com",
+            "password": secret_password,
+            "full_name": "Log Hygiene User",
+        })
+        client.post("/auth/register", json={
+            "email": "invalid-email-format",
+            "password": secret_password,
+        })
+    captured_text = caplog.text
+    assert secret_password not in captured_text
+    assert "auth_token=" not in captured_text

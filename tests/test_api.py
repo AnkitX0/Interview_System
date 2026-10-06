@@ -372,4 +372,45 @@ def test_delete_session_cascading_and_isolation(client, client_b):
     assert get_res.status_code == 404
 
 
+def test_route_ordering_not_swallowed_by_session_id(client):
+    """
+    Ensure static routes (/interview/history, /interview/latest, /interview/all, /report/latest)
+    are not swallowed by parameterized /{session_id} routes (which would result in 422 integer casting errors).
+    """
+    # 1. /interview/history returns 200
+    res_hist = client.get("/interview/history")
+    assert res_hist.status_code == 200
+
+    # 2. /interview/all returns 200
+    res_all = client.get("/interview/all")
+    assert res_all.status_code == 200
+
+    # 3. /interview/latest returns 404 or 200, NEVER 422
+    res_latest = client.get("/interview/latest")
+    assert res_latest.status_code in (200, 404)
+
+    # 4. /report/latest returns 404 or 200, NEVER 422
+    res_report_latest = client.get("/report/latest")
+    assert res_report_latest.status_code in (200, 404)
+
+    # Now create and complete a session to verify 200 responses
+    start_res = client.post("/interview/start", json={"mode": "technical", "difficulty": "easy"})
+    assert start_res.status_code == 200
+    session_id = start_res.json()["session_id"]
+
+    # Complete session so SessionScore is computed
+    comp_res = client.post(f"/interview/{session_id}/complete")
+    assert comp_res.status_code == 200
+
+    # Both /interview/latest and /report/latest now return the completed session with 200
+    res_latest_active = client.get("/interview/latest")
+    assert res_latest_active.status_code == 200
+    assert res_latest_active.json()["session_id"] == session_id
+
+    res_rep = client.get("/report/latest")
+    assert res_rep.status_code == 200
+    assert res_rep.json()["session_id"] == session_id
+
+
+
 

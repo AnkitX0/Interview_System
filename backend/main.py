@@ -23,10 +23,22 @@ app = FastAPI(
     version="1.0.0"
 )
 
+def _sanitize_validation_errors(errors):
+    sanitized = []
+    for err in errors:
+        err_copy = dict(err)
+        loc_str = str(err_copy.get("loc", ())).lower()
+        if any(s in loc_str for s in ("password", "token", "transcript", "raw_text", "resume")):
+            err_copy.pop("input", None)
+        sanitized.append(err_copy)
+    return sanitized
+
+
 # Centralized consistent error handlers
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    logger.warning("Validation error on %s %s: %s", request.method, request.url.path, exc.errors())
+    sanitized_errors = _sanitize_validation_errors(exc.errors())
+    logger.warning("Validation error on %s %s: %s", request.method, request.url.path, sanitized_errors)
     return JSONResponse(
         status_code=422,
         content={
@@ -79,19 +91,44 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
     )
 
 
+ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000"
-    ],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def csrf_protect_middleware(request: Request, call_next):
+    """
+    CSRF Defense: Validates Origin header for state-changing requests when
+    authenticated via cookie without an Authorization Bearer header.
+    """
+    if request.method in ("POST", "PUT", "DELETE", "PATCH"):
+        has_cookie = "auth_token" in request.cookies
+        has_bearer = bool(request.headers.get("authorization", "").startswith("Bearer "))
+        if has_cookie and not has_bearer:
+            origin = request.headers.get("origin")
+            if origin:
+                host = request.headers.get("host")
+                allowed_hosts = {f"http://{host}", f"https://{host}"} if host else set()
+                if origin not in ALLOWED_ORIGINS and origin not in allowed_hosts:
+                    logger.warning("CSRF check blocked request from origin: %s", origin)
+                    return JSONResponse(
+                        status_code=403,
+                        content={"error": {"code": "CSRF_FORBIDDEN", "message": "Cross-site request blocked.", "details": []}}
+                    )
+    return await call_next(request)
 
 import os
 from backend.routes import auth, resume, interview, analytics
