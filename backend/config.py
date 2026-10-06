@@ -290,3 +290,6 @@ WEAKNESS_CONFIG = {
     "frequent_head_shifts_threshold": 8,
 }
 
+MIN_SESSIONS_FOR_RECURRING: int = 2
+
+
