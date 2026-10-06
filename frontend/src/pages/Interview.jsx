@@ -50,6 +50,8 @@ function Interview() {
   const [speechNotice, setSpeechNotice] = useState("");
   const [inputWarning, setInputWarning] = useState("");
   const speechRecognizerRef = useRef(null);
+  const speechSegmentsRef = useRef([]);
+  const currentSpeechStartRef = useRef(null);
 
   // Feedback & Follow-up state
   const [evaluating, setEvaluating] = useState(false);
@@ -87,6 +89,8 @@ function Interview() {
   useEffect(() => {
     setTimeLeft(90);
     questionStartTimeRef.current = Date.now();
+    speechSegmentsRef.current = [];
+    currentSpeechStartRef.current = null;
   }, [currentIndex, isFollowUp]);
 
   // Initialize Speech Recognition (Web Speech API)
@@ -99,16 +103,48 @@ function Interview() {
       recognizer.interimResults = true;
       recognizer.lang = "en-US";
 
+      recognizer.onspeechstart = () => {
+        const segStart = (Date.now() - questionStartTimeRef.current) / 1000;
+        currentSpeechStartRef.current = Math.max(0, segStart);
+      };
+
+      recognizer.onspeechend = () => {
+        const segEnd = (Date.now() - questionStartTimeRef.current) / 1000;
+        if (currentSpeechStartRef.current !== null) {
+          speechSegmentsRef.current.push({
+            start: Number(currentSpeechStartRef.current.toFixed(2)),
+            end: Number(Math.max(currentSpeechStartRef.current + 0.1, segEnd).toFixed(2)),
+          });
+          currentSpeechStartRef.current = null;
+        }
+      };
+
       recognizer.onresult = (event) => {
+        const nowSec = (Date.now() - questionStartTimeRef.current) / 1000;
+        if (currentSpeechStartRef.current === null) {
+          currentSpeechStartRef.current = Math.max(0, nowSec - 0.5);
+        }
         let transcriptText = "";
+        let isFinalChunk = false;
         for (let i = event.resultIndex; i < event.results.length; i++) {
           transcriptText += event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            isFinalChunk = true;
+          }
         }
         setAnswer((prev) => {
           const base = prev ? prev.trim() + " " : "";
           return base + transcriptText.trim();
         });
         setInputWarning("");
+
+        if (isFinalChunk) {
+          speechSegmentsRef.current.push({
+            start: Number(currentSpeechStartRef.current.toFixed(2)),
+            end: Number(Math.max(currentSpeechStartRef.current + 0.2, nowSec).toFixed(2)),
+          });
+          currentSpeechStartRef.current = null;
+        }
       };
 
       recognizer.onerror = (e) => {
@@ -123,6 +159,14 @@ function Interview() {
       };
 
       recognizer.onend = () => {
+        if (currentSpeechStartRef.current !== null) {
+          const segEnd = (Date.now() - questionStartTimeRef.current) / 1000;
+          speechSegmentsRef.current.push({
+            start: Number(currentSpeechStartRef.current.toFixed(2)),
+            end: Number(Math.max(currentSpeechStartRef.current + 0.1, segEnd).toFixed(2)),
+          });
+          currentSpeechStartRef.current = null;
+        }
         setSpeechRecognitionActive(false);
       };
 
@@ -315,8 +359,18 @@ function Interview() {
       } catch {}
     }
 
+    if (currentSpeechStartRef.current !== null) {
+      const segEnd = (Date.now() - questionStartTimeRef.current) / 1000;
+      speechSegmentsRef.current.push({
+        start: Number(currentSpeechStartRef.current.toFixed(2)),
+        end: Number(Math.max(currentSpeechStartRef.current + 0.1, segEnd).toFixed(2)),
+      });
+      currentSpeechStartRef.current = null;
+    }
+
     setEvaluating(true);
     const responseDuration = (Date.now() - questionStartTimeRef.current) / 1000;
+    const isTyped = inputMode === "text";
 
     try {
       const payload = {
@@ -328,6 +382,8 @@ function Interview() {
         duration_seconds: responseDuration,
         wpm: liveWpm,
         filler_count: fillerCount,
+        speech_segments: isTyped ? null : (speechSegmentsRef.current.length > 0 ? speechSegmentsRef.current : null),
+        speech_source: isTyped ? "typed" : "speech",
       };
 
       const res = await apiFetch(`/interview/${sessionId}/answer`, {
@@ -386,6 +442,9 @@ function Interview() {
 
   // Proceed to Next Question or Follow-up
   const handleProceed = () => {
+    speechSegmentsRef.current = [];
+    currentSpeechStartRef.current = null;
+
     // Check if we should ask follow-up for short answer once
     if (!isFollowUp && wordCount < 30) {
       setIsFollowUp(true);

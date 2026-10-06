@@ -459,6 +459,73 @@ function Dashboard() {
                   </div>
                 )}
 
+                {/* VOICE & CADENCE METRICS */}
+                {ans.voice_metrics && (
+                  <div style={{ marginTop: "14px", padding: "12px", backgroundColor: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                      <span
+                        style={{ fontSize: "11px", fontWeight: "700", color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", cursor: "help" }}
+                        title="approximate, based on speech-recognition timing"
+                      >
+                        Voice & Delivery Cadence ⓘ
+                      </span>
+                      <span style={{ fontSize: "11px", color: "#64748b" }}>
+                        approximate, based on speech-recognition timing
+                      </span>
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px" }}>
+                      {/* WPM */}
+                      <div style={{ backgroundColor: "#ffffff", padding: "8px 10px", borderRadius: "6px", border: "1px solid #e2e8f0" }}>
+                        <div style={{ fontSize: "11px", color: "#64748b" }}>Speaking Rate</div>
+                        <div style={{ fontSize: "14px", fontWeight: "700", color: "#1e293b", marginTop: "2px" }}>
+                          {ans.voice_metrics.words_per_minute?.value != null ? `${ans.voice_metrics.words_per_minute.value} WPM` : "Not measured"}
+                        </div>
+                        <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
+                          {ans.voice_metrics.words_per_minute?.interpretation}
+                        </div>
+                      </div>
+
+                      {/* Pauses */}
+                      <div style={{ backgroundColor: "#ffffff", padding: "8px 10px", borderRadius: "6px", border: "1px solid #e2e8f0" }}>
+                        <div style={{ fontSize: "11px", color: "#64748b" }}>Cadence & Pauses</div>
+                        <div style={{ fontSize: "14px", fontWeight: "700", color: "#1e293b", marginTop: "2px" }}>
+                          {ans.voice_metrics.pause_metrics?.pause_count != null
+                            ? `${ans.voice_metrics.pause_metrics.pause_count} pauses (avg ${ans.voice_metrics.pause_metrics.avg_pause_duration}s)`
+                            : "Not measured"}
+                        </div>
+                        <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
+                          {ans.voice_metrics.pause_metrics?.interpretation}
+                        </div>
+                      </div>
+
+                      {/* Filler Words */}
+                      <div style={{ backgroundColor: "#ffffff", padding: "8px 10px", borderRadius: "6px", border: "1px solid #e2e8f0" }}>
+                        <div style={{ fontSize: "11px", color: "#64748b" }}>Filler Words</div>
+                        <div style={{ fontSize: "14px", fontWeight: "700", color: "#1e293b", marginTop: "2px" }}>
+                          {ans.voice_metrics.filler_words?.value != null ? ans.voice_metrics.filler_words.value : 0} detected
+                        </div>
+                        <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
+                          {ans.voice_metrics.filler_words?.interpretation}
+                        </div>
+                      </div>
+
+                      {/* Vocabulary Diversity */}
+                      <div style={{ backgroundColor: "#ffffff", padding: "8px 10px", borderRadius: "6px", border: "1px solid #e2e8f0" }}>
+                        <div style={{ fontSize: "11px", color: "#64748b" }}>Vocabulary Diversity (MATTR)</div>
+                        <div style={{ fontSize: "14px", fontWeight: "700", color: "#1e293b", marginTop: "2px" }}>
+                          {ans.voice_metrics.vocabulary_diversity?.value != null
+                            ? `${ans.voice_metrics.vocabulary_diversity.value}%`
+                            : "Not measured"}
+                        </div>
+                        <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
+                          {ans.voice_metrics.vocabulary_diversity?.interpretation}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* FIX THIS ANSWER CTA BUTTON */}
                 <div style={{ marginTop: "18px", display: "flex", justifyContent: "flex-end" }}>
                   <button

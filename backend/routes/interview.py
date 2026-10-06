@@ -18,6 +18,7 @@ from backend.services.evaluation_engine import evaluate_answer
 from backend.services.followup_generator import generate_followup
 from backend.services.scoring_engine import calculate_session_score
 from backend.services.question_selector import select_questions
+from backend.services.voice_service import compute_voice_metrics
 
 router = APIRouter(prefix="/interview", tags=["Interview"])
 
@@ -306,6 +307,29 @@ def submit_answer(
     )
 
     db.add(eval_record)
+
+    # Compute and persist voice & speech cadence metrics
+    voice_metrics = compute_voice_metrics(
+        transcript=raw_transcript,
+        duration_seconds=dur_seconds,
+        speech_segments=data.speech_segments,
+        speech_source=data.speech_source or "speech",
+    )
+
+    vm_raw = voice_metrics["raw"]
+    vm_record = models.VoiceMetrics(
+        answer_id=answer.id,
+        words_per_minute=vm_raw["words_per_minute"],
+        filler_word_count=vm_raw["filler_word_count"],
+        avg_pause_duration=vm_raw["avg_pause_duration"],
+        longest_pause=vm_raw["longest_pause"],
+        pause_count=vm_raw["pause_count"],
+        silence_ratio=vm_raw["silence_ratio"],
+        vocabulary_diversity_score=vm_raw["vocabulary_diversity_score"],
+        speech_source=vm_raw["speech_source"],
+    )
+    db.add(vm_record)
+
     session.current_question_index += 1
     session.followup_count = 0
     db.commit()
@@ -322,6 +346,7 @@ def submit_answer(
         "consistency": evaluation.get("consistency"),
         "engine_used": evaluation.get("engine_used", "rubric"),
         "prompt_version": evaluation.get("prompt_version", "v1.0"),
+        "voice_metrics": voice_metrics,
         "structure_score": evaluation["structure_score"],
         "technical_score": evaluation["technical_score"],
         "reasoning_score": evaluation["reasoning_score"],

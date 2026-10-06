@@ -72,6 +72,40 @@ def get_session_report(
             filler_count=ans.filler_count or 0
         )
 
+        # Query voice metrics if available
+        vm = db.query(models.VoiceMetrics).filter(
+            models.VoiceMetrics.answer_id == ans.id
+        ).first()
+
+        vm_data = None
+        if vm:
+            vm_data = {
+                "speech_source": vm.speech_source,
+                "words_per_minute": {
+                    "value": vm.words_per_minute,
+                    "interpretation": f"{vm.words_per_minute} WPM pacing." if vm.words_per_minute is not None else "Not measured (typed answer or audio timing unavailable).",
+                    "recommended_action": "Target 120-160 WPM for standard conversational pacing.",
+                },
+                "filler_words": {
+                    "value": vm.filler_word_count,
+                    "interpretation": f"{vm.filler_word_count} verbal filler words recorded." if vm.filler_word_count is not None else "Not measured.",
+                    "recommended_action": "Deliberately pause rather than using verbal fillers.",
+                },
+                "pause_metrics": {
+                    "pause_count": vm.pause_count,
+                    "avg_pause_duration": vm.avg_pause_duration,
+                    "longest_pause": vm.longest_pause,
+                    "silence_ratio": vm.silence_ratio,
+                    "interpretation": f"{vm.pause_count} pauses (average {vm.avg_pause_duration}s, longest {vm.longest_pause}s, silence ratio {round((vm.silence_ratio or 0) * 100, 1)}%). Approximate, based on speech-recognition timing." if vm.pause_count is not None else "Not measured (typed answer or speech timing unavailable).",
+                    "recommended_action": "Maintain conversational cadence with planned structural pauses.",
+                },
+                "vocabulary_diversity": {
+                    "value": vm.vocabulary_diversity_score,
+                    "interpretation": f"Unique words ratio of {vm.vocabulary_diversity_score}%." if vm.vocabulary_diversity_score is not None else "Not measured: answer too brief for diversity evaluation.",
+                    "recommended_action": "Incorporate diverse domain terminology.",
+                },
+            }
+
         answer_evals.append({
             "answer_id": ans.id,
             "question_id": ans.question_id,
@@ -80,6 +114,7 @@ def get_session_report(
             "response_time": ans.response_time or 0.0,
             "wpm": ans.wpm or 0.0,
             "filler_count": ans.filler_count or 0,
+            "voice_metrics": vm_data,
             "overall_score": ev.overall_score if ev else 70.0,
             "structure_score": ev.structure_score if ev else 70.0,
             "technical_score": ev.technical_score if ev else 70.0,

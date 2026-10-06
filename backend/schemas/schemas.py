@@ -63,6 +63,8 @@ class AnswerInput(BaseModel):
     duration_seconds: Optional[float] = 0.0
     wpm: Optional[float] = 0.0
     filler_count: Optional[int] = 0
+    speech_segments: Optional[List[Dict[str, float]]] = None
+    speech_source: Optional[str] = "speech"
 
 
 # ---------------------------
