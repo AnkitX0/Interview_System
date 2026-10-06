@@ -9,8 +9,10 @@ from backend.schemas.schemas import ImproveAnswerRequest
 from backend.services.auth_service import get_current_user
 from backend.services.answer_improvement_service import improve_interview_answer
 from backend.services.scoring_engine import evaluate_rubric_for_answer
+from backend.config import VERIFICATION_RISK_CONFIG
 
 router = APIRouter(tags=["Analytics & Reports"])
+
 
 
 # =========================
@@ -156,8 +158,16 @@ def get_session_report(
             "missing_concepts": missing_concepts,
             "suggestions": suggestions,
             "engine_used": (ev.engine_used if ev and hasattr(ev, 'engine_used') and ev.engine_used else "rubric"),
-            "prompt_version": (ev.prompt_version if ev and hasattr(ev, 'prompt_version') and ev.prompt_version else "v1.0")
+            "prompt_version": (ev.prompt_version if ev and hasattr(ev, 'prompt_version') and ev.prompt_version else "v1.0"),
+            "verification_risk": {
+                "score": ev.verification_risk_score if ev else None,
+                "level": ev.verification_risk_level if ev and ev.verification_risk_level else "not_computed",
+                "evidence": ev.verification_risk_evidence if ev and ev.verification_risk_evidence else [],
+                "explanation": ev.verification_risk_explanation if ev else None,
+                "disclaimer": VERIFICATION_RISK_CONFIG["disclaimer"],
+            }
         })
+
 
     # Session scoring values
     readiness = score_record.readiness_score if score_record else 72.0

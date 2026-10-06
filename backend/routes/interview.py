@@ -20,8 +20,10 @@ from backend.services.scoring_engine import calculate_session_score
 from backend.services.question_selector import select_questions
 from backend.services.voice_service import compute_voice_metrics
 from backend.services.adaptive_engine import decide_next_question
+from backend.services.verification_risk import compute_verification_risk
 
 router = APIRouter(prefix="/interview", tags=["Interview"])
+
 
 
 # =========================
@@ -299,6 +301,20 @@ def submit_answer(
         filler_count=max(0, data.filler_count or 0)
     )
 
+    # Fetch prior transcripts for repetition comparison
+    prev_transcripts = [
+        a.transcript for a in db.query(models.InterviewAnswer).filter(
+            models.InterviewAnswer.session_id == session.id,
+            models.InterviewAnswer.id != answer.id
+        ).all() if a.transcript
+    ]
+
+    v_risk = compute_verification_risk(
+        transcript=raw_transcript,
+        previous_answers=prev_transcripts,
+        question_text=question_text or ""
+    )
+
     eval_record = models.AnswerEvaluation(
         answer_id=answer.id,
         structure_score=evaluation["structure_score"],
@@ -314,7 +330,11 @@ def submit_answer(
         missing_concepts=json.dumps(evaluation["missing_concepts"]),
         suggestions=json.dumps(evaluation["suggestions"]),
         engine_used=evaluation.get("engine_used", "rubric"),
-        prompt_version=evaluation.get("prompt_version", "v1.0")
+        prompt_version=evaluation.get("prompt_version", "v1.0"),
+        verification_risk_score=v_risk.get("score"),
+        verification_risk_level=v_risk.get("level"),
+        verification_risk_evidence=v_risk.get("evidence", []),
+        verification_risk_explanation=v_risk.get("explanation"),
     )
 
     db.add(eval_record)
@@ -358,6 +378,7 @@ def submit_answer(
         "engine_used": evaluation.get("engine_used", "rubric"),
         "prompt_version": evaluation.get("prompt_version", "v1.0"),
         "voice_metrics": voice_metrics,
+        "verification_risk": v_risk,
         "structure_score": evaluation["structure_score"],
         "technical_score": evaluation["technical_score"],
         "reasoning_score": evaluation["reasoning_score"],

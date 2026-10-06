@@ -181,3 +181,53 @@ ROLE_PROFILES = {
     },
 }
 
+
+# ---------------------------
+# Verification Risk Configuration (Phase 3 Intelligence)
+# ---------------------------
+VERIFICATION_RISK_CONFIG = {
+    "min_word_count": 20,  # Fewer than 20 words -> not_computed (guard against penalizing short answers)
+    "weights": {
+        "generic_phrases": 0.25,
+        "buzzwords_vs_specifics": 0.30,
+        "lack_of_specifics": 0.20,
+        "repetition": 0.40,
+        "ownership_vagueness": 0.25,
+    },
+    "thresholds": {
+        "low_max": 30.0,        # 0.0 - 30.0 -> low
+        "moderate_max": 55.0,   # 30.1 - 55.0 -> moderate
+        # > 55.0 -> elevated
+    },
+
+    "disclaimer": "Verification Risk is a heuristic based on wording patterns. It is not proof of anything and can be wrong, for example for concise speakers or non-native English.",
+    "generic_phrases": [
+        "best practices", "industry standard", "seamlessly integrated", "next level",
+        "end to end solution", "state of the art", "cutting edge", "worked on various tasks",
+        "handled different things", "did a lot of stuff", "helped out with everything",
+        "various components", "multiple features", "many responsibilities", "general work",
+        "synergistic", "paradigm shift", "streamlined the entire process", "modern stack",
+        "all required technologies", "standard architecture", "typical setup", "did the needful",
+        "highly scalable architecture", "worked on various aspects"
+    ],
+    "buzzwords": [
+        "robust", "scalable", "synergy", "paradigm", "disruptive", "cutting-edge",
+        "state-of-the-art", "game-changing", "revolutionary", "seamless", "holistic",
+        "ecosystem", "hyper-scalable", "mission-critical", "enterprise-grade", "leverage",
+        "streamline", "dynamic", "agile", "next-generation", "world-class"
+    ],
+    "concrete_verbs": [
+        "implemented", "configured", "deployed", "profiled", "optimized", "migrated",
+        "benchmarked", "refactored", "debugged", "indexed", "instrumented", "provisioned",
+        "architected", "partitioned", "monitored", "scaled", "containerized", "automated",
+        "reduced", "increased"
+    ],
+    "vague_ownership_phrases": [
+        "we basically just", "we kind of did", "someone on the team", "the team mostly",
+        "i was involved somewhat", "i assisted with some parts", "it was done for us",
+        "they gave us the code", "not sure what happened behind the scenes", "i was just there",
+        "the team did most of it"
+    ],
+}
+
+
