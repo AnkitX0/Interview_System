@@ -142,7 +142,7 @@ def parse_resume_text(text: str) -> Dict[str, Any]:
             snippet = text[start:end].replace("\n", " ").strip()
             weak_statements.append(f"Vague expression '{m.group(0)}' in: \"...{snippet}...\"")
 
-    has_metrics = bool(re.search(r"\b\d+([%xXkKmM]|\s*(percent|users|requests|ms|seconds|million|times))\b", lower_text))
+    has_metrics = bool(re.search(r"\b\d+%(?!\w)|\b\d+([xXkKmM]|\s*(percent|users|requests|ms|seconds|million|times))\b", lower_text))
     if not has_metrics:
         weak_statements.append("Lacks quantifiable metrics (e.g., percentages, scale, speedup, or user growth).")
 

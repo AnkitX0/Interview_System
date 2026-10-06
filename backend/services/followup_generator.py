@@ -12,7 +12,7 @@ def generate_followup(question: str, answer: str) -> str:
     if len(words) < 25:
         return "Can you elaborate further and walk me through the specific technical implementation details?"
 
-    has_metrics = bool(re.search(r"\b\d+([%xXkKmM]|\s*(percent|users|requests|ms|seconds|million|times))\b", lower_text))
+    has_metrics = bool(re.search(r"\b\d+%(?!\w)|\b\d+([xXkKmM]|\s*(percent|users|requests|ms|seconds|million|times))\b", lower_text))
     if not has_metrics:
         return "That sounds interesting. Could you quantify the scale or measurable impact of that outcome?"
 
