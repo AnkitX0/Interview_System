@@ -74,21 +74,21 @@ class FollowUpRequest(BaseModel):
 
 
 # ---------------------------
-# Submit Behavioral Metrics
+# Submit Behavioral / Delivery Metrics
 # ---------------------------
 class BehavioralInput(BaseModel):
     session_id: int
-    eye_contact_percent: float = 75.0
-    blink_rate: float = 18.0
-    pause_rate: float = 2.0
+    eye_contact_percent: Optional[float] = None
+    blink_rate: Optional[float] = None
+    pause_rate: Optional[float] = 2.0
 
 
 # ---------------------------
 # Complete Interview Request
 # ---------------------------
 class CompleteInterviewRequest(BaseModel):
-    eye_contact_percent: Optional[float] = 75.0
-    blink_rate: Optional[float] = 18.0
+    eye_contact_percent: Optional[float] = None
+    blink_rate: Optional[float] = None
     pause_rate: Optional[float] = 2.0
     duration_seconds: Optional[float] = 0.0
 

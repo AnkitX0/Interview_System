@@ -316,18 +316,24 @@ def evaluate_rubric_for_answer(
 
 def calculate_session_score(
     answer_scores: List[float],
-    behavioral_score: float = 75.0,
+    delivery_score: Optional[float] = None,
     technical_scores: Optional[List[float]] = None,
     communication_scores: Optional[List[float]] = None,
-    consistency_scores: Optional[List[float]] = None
+    consistency_scores: Optional[List[float]] = None,
+    behavioral_score: Optional[float] = None
 ) -> Dict[str, Any]:
     """
-    Weighted Session Score Formula:
-    Final Readiness =
-      0.30 * Communication
-    + 0.30 * Technical
-    + 0.20 * Behavioral
-    + 0.20 * Resume Consistency
+    Weighted Session Score Formula.
+
+    When Delivery & Visual Stability is measured:
+      Final Readiness = 0.30 Communication + 0.30 Technical + 0.20 Delivery + 0.20 Resume Consistency
+
+    When Delivery is unmeasured (camera off or denied):
+      Delivery is excluded completely, and remaining weights are re-normalized proportionally:
+      Communication: 0.30 / 0.80 = 0.375
+      Technical:     0.30 / 0.80 = 0.375
+      Resume:        0.20 / 0.80 = 0.250
+      Final Readiness = 0.375 Communication + 0.375 Technical + 0.250 Resume Consistency
     """
     avg_answer = sum(answer_scores) / len(answer_scores) if answer_scores else 70.0
 
@@ -343,34 +349,63 @@ def calculate_session_score(
         else round(avg_answer, 1)
     )
 
-    beh_score = round(max(30.0, min(100.0, behavioral_score)), 1)
-
     cons_score = (
         round(sum(consistency_scores) / len(consistency_scores), 1)
         if consistency_scores and len(consistency_scores) > 0
         else 75.0
     )
 
-    # Weighted formula using centralized weights
-    w_comm = DEFAULT_SESSION_WEIGHTS["communication"]
-    w_tech = DEFAULT_SESSION_WEIGHTS["technical"]
-    w_deliv = DEFAULT_SESSION_WEIGHTS["delivery"]
-    w_cons = DEFAULT_SESSION_WEIGHTS["resume_consistency"]
+    # Determine delivery score (support both delivery_score and legacy behavioral_score)
+    actual_delivery = delivery_score if delivery_score is not None else behavioral_score
 
-    final_readiness = round(
-        w_comm * comm_score +
-        w_tech * tech_score +
-        w_deliv * beh_score +
-        w_cons * cons_score,
-        1
-    )
-
-    subscores = {
-        "Communication": comm_score,
-        "Technical": tech_score,
-        "Behavioral": beh_score,
-        "Resume Consistency": cons_score
-    }
+    if actual_delivery is not None:
+        deliv_score = round(max(0.0, min(100.0, actual_delivery)), 1)
+        delivery_measured = True
+        weights_used = {
+            "communication": DEFAULT_SESSION_WEIGHTS["communication"],
+            "technical": DEFAULT_SESSION_WEIGHTS["technical"],
+            "delivery": DEFAULT_SESSION_WEIGHTS["delivery"],
+            "resume_consistency": DEFAULT_SESSION_WEIGHTS["resume_consistency"],
+        }
+        final_readiness = round(
+            weights_used["communication"] * comm_score +
+            weights_used["technical"] * tech_score +
+            weights_used["delivery"] * deliv_score +
+            weights_used["resume_consistency"] * cons_score,
+            1
+        )
+        subscores = {
+            "Communication": comm_score,
+            "Technical": tech_score,
+            "Delivery & Visual Stability": deliv_score,
+            "Resume Consistency": cons_score
+        }
+    else:
+        deliv_score = None
+        delivery_measured = False
+        # Proportional re-normalization: total remaining weight is 0.80
+        total_remaining = (
+            DEFAULT_SESSION_WEIGHTS["communication"] +
+            DEFAULT_SESSION_WEIGHTS["technical"] +
+            DEFAULT_SESSION_WEIGHTS["resume_consistency"]
+        )
+        weights_used = {
+            "communication": round(DEFAULT_SESSION_WEIGHTS["communication"] / total_remaining, 3),  # 0.375
+            "technical": round(DEFAULT_SESSION_WEIGHTS["technical"] / total_remaining, 3),          # 0.375
+            "delivery": 0.0,
+            "resume_consistency": round(DEFAULT_SESSION_WEIGHTS["resume_consistency"] / total_remaining, 3), # 0.25
+        }
+        final_readiness = round(
+            weights_used["communication"] * comm_score +
+            weights_used["technical"] * tech_score +
+            weights_used["resume_consistency"] * cons_score,
+            1
+        )
+        subscores = {
+            "Communication": comm_score,
+            "Technical": tech_score,
+            "Resume Consistency": cons_score
+        }
 
     strongest = max(subscores.items(), key=lambda x: x[1])[0]
     weakest = min(subscores.items(), key=lambda x: x[1])[0]
@@ -378,15 +413,21 @@ def calculate_session_score(
     insights = [
         f"Strongest area is {strongest} with an average score of {subscores[strongest]}%.",
         f"Primary growth opportunity lies in {weakest} (currently at {subscores[weakest]}%).",
-        "Adopt the STAR method consistently and quantify project results with percentages and engineering metrics."
     ]
+    if delivery_measured:
+        insights.append("Adopt the STAR method consistently and quantify project results with percentages and engineering metrics.")
+    else:
+        insights.append("Note: Delivery & Visual Stability was not measured (camera was off/denied). Readiness was re-normalized across Communication (37.5%), Technical (37.5%), and Resume Consistency (25.0%).")
 
     return {
         "final_readiness_score": final_readiness,
         "communication_score": comm_score,
         "technical_score": tech_score,
-        "behavioral_score": beh_score,
+        "delivery_score": deliv_score,
+        "delivery_measured": delivery_measured,
+        "behavioral_score": deliv_score,  # backward compatibility alias
         "resume_consistency_score": cons_score,
+        "weights_used": weights_used,
         "strongest_category": strongest,
         "weakest_category": weakest,
         "insights": insights

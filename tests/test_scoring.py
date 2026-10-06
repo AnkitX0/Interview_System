@@ -169,3 +169,63 @@ def test_empty_answer_evidence_contract():
         assert "explanation" in dim
         assert "recommended_action" in dim
 
+
+def test_camera_off_renormalized_readiness():
+    """
+    When camera is off/denied (delivery is unmeasured/None),
+    the readiness formula re-normalizes remaining weights proportionally:
+    Comm: 0.30/0.80 = 0.375, Tech: 0.30/0.80 = 0.375, Resume: 0.20/0.80 = 0.25.
+    """
+    res = calculate_session_score(
+        answer_scores=[80.0],
+        delivery_score=None,
+        technical_scores=[80.0],
+        communication_scores=[70.0],
+        consistency_scores=[60.0]
+    )
+
+    # 0.375 * 70.0 + 0.375 * 80.0 + 0.25 * 60.0 = 26.25 + 30.0 + 15.0 = 71.25 -> 71.3
+    expected = round(0.375 * 70.0 + 0.375 * 80.0 + 0.25 * 60.0, 1)
+    assert res["final_readiness_score"] == expected
+    assert res["delivery_measured"] is False
+    assert res["delivery_score"] is None
+    assert res["weights_used"] == {
+        "communication": 0.375,
+        "technical": 0.375,
+        "delivery": 0.0,
+        "resume_consistency": 0.25
+    }
+    assert any("not measured" in ins.lower() for ins in res["insights"])
+
+
+def test_camera_off_boundary_values():
+    """Camera off with all 0s and all 100s."""
+    zero_res = calculate_session_score(
+        answer_scores=[0.0],
+        delivery_score=None,
+        technical_scores=[0.0],
+        communication_scores=[0.0],
+        consistency_scores=[0.0]
+    )
+    assert zero_res["final_readiness_score"] == 0.0
+    assert zero_res["delivery_measured"] is False
+
+    max_res = calculate_session_score(
+        answer_scores=[100.0],
+        delivery_score=None,
+        technical_scores=[100.0],
+        communication_scores=[100.0],
+        consistency_scores=[100.0]
+    )
+    assert max_res["final_readiness_score"] == 100.0
+
+
+def test_unmeasured_delivery_signals_returns_none():
+    """calculate_delivery_score returns None when visual sensors are unmeasured."""
+    from backend.crud import calculate_delivery_score
+    assert calculate_delivery_score(None, None, 2.0) is None
+    assert calculate_delivery_score(75.0, None, 2.0) is None
+    assert calculate_delivery_score(None, 18.0, 2.0) is None
+    assert calculate_delivery_score(75.0, 18.0, 2.0) == 100.0
+
+

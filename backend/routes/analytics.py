@@ -87,14 +87,28 @@ def get_session_report(session_id: int, db: Session = Depends(get_db)):
             "suggestions": suggestions
         })
 
-    # Default fallback scores if not completed yet
+    # Session scoring values
     readiness = score_record.readiness_score if score_record else 72.0
     comm = score_record.communication_score if score_record else 75.0
     tech = score_record.technical_score if score_record else 70.0
-    beh = score_record.behavioral_score if score_record else 75.0
+    deliv = score_record.behavioral_score if score_record else None
+    delivery_measured = deliv is not None
     cons = score_record.resume_consistency_score if score_record else 75.0
     strongest = score_record.strongest_category if score_record else "Communication"
     weakest = score_record.weakest_category if score_record else "Technical"
+
+    weights_used = {}
+    if score_record and score_record.weights_used:
+        try:
+            weights_used = json.loads(score_record.weights_used)
+        except Exception:
+            pass
+    if not weights_used:
+        weights_used = (
+            {"communication": 0.30, "technical": 0.30, "delivery": 0.20, "resume_consistency": 0.20}
+            if delivery_measured
+            else {"communication": 0.375, "technical": 0.375, "delivery": 0.0, "resume_consistency": 0.25}
+        )
 
     insights = []
     if score_record and score_record.insights:
@@ -107,17 +121,34 @@ def get_session_report(session_id: int, db: Session = Depends(get_db)):
         insights = [
             f"Strongest performance observed in {strongest} ({comm}%).",
             f"Opportunity to sharpen {weakest} depth and structural examples.",
-            "Integrate quantifiable outcomes (numbers, scale, percentages) into every behavioral and system response."
         ]
+        if delivery_measured:
+            insights.append("Integrate quantifiable outcomes (numbers, scale, percentages) into every behavioral and system response.")
+        else:
+            insights.append("Not measured: camera was off. Readiness score was computed from 3 dimensions (Communication 37.5%, Technical 37.5%, Resume Consistency 25%).")
 
     status_label = "Job-Ready Candidate" if readiness >= 80 else ("Near Interview-Ready" if readiness >= 65 else "Requires Targeted Practice")
 
     radar_data = [
         {"subject": "Communication", "score": comm, "fullMark": 100},
         {"subject": "Technical Depth", "score": tech, "fullMark": 100},
-        {"subject": "Behavioral Signals", "score": beh, "fullMark": 100},
         {"subject": "Resume Consistency", "score": cons, "fullMark": 100}
     ]
+    if delivery_measured and deliv is not None:
+        radar_data.append({"subject": "Delivery & Stability", "score": deliv, "fullMark": 100})
+
+    eye_val = behavioral.eye_contact_percent if behavioral else None
+    blink_val = behavioral.blink_rate if behavioral else None
+    pause_val = behavioral.pause_rate if behavioral else None
+
+    delivery_metrics_dict = {
+        "delivery_measured": delivery_measured,
+        "visual_centering_percent": eye_val,
+        "eye_contact_percent": eye_val,
+        "blink_rate": blink_val,
+        "pause_rate": pause_val,
+        "note": "Measured" if delivery_measured else "Not measured: camera was off"
+    }
 
     return {
         "session_id": session.id,
@@ -127,22 +158,24 @@ def get_session_report(session_id: int, db: Session = Depends(get_db)):
         "created_at": session.created_at.isoformat() if session.created_at else None,
         "readiness_score": readiness,
         "status_label": status_label,
+        "delivery_measured": delivery_measured,
+        "weights_used": weights_used,
         "subscores": {
             "communication": comm,
             "technical": tech,
-            "behavioral": beh,
-            "resume_consistency": cons
+            "delivery": deliv,
+            "delivery_measured": delivery_measured,
+            "behavioral": deliv,
+            "resume_consistency": cons,
+            "weights_used": weights_used
         },
         "insights": {
             "strongest_category": strongest,
             "weakest_category": weakest,
             "top_improvements": insights
         },
-        "behavioral_metrics": {
-            "eye_contact_percent": behavioral.eye_contact_percent if behavioral else 75.0,
-            "blink_rate": behavioral.blink_rate if behavioral else 18.0,
-            "pause_rate": behavioral.pause_rate if behavioral else 2.0
-        },
+        "delivery_metrics": delivery_metrics_dict,
+        "behavioral_metrics": delivery_metrics_dict,
         "radar_data": radar_data,
         "answers": answer_evals
     }

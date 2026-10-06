@@ -5,7 +5,7 @@ from typing import List, Optional
 
 import backend.models as models
 from backend.database import get_db
-from backend.crud import calculate_behavioral_score
+from backend.crud import calculate_behavioral_score, calculate_delivery_score
 from backend.schemas.schemas import (
     AnswerInput,
     FollowUpRequest,
@@ -252,9 +252,9 @@ def complete_interview(
     if not session:
         raise HTTPException(status_code=404, detail="Interview session not found")
 
-    # Record or update behavioral metrics
-    eye_percent = data.eye_contact_percent if data.eye_contact_percent is not None else 75.0
-    blink_rate = data.blink_rate if data.blink_rate is not None else 18.0
+    # Record behavioral / delivery metrics (nullable if camera off/unmeasured)
+    eye_percent = data.eye_contact_percent
+    blink_rate = data.blink_rate
     pause_rate = data.pause_rate if data.pause_rate is not None else 2.0
 
     behavioral_record = models.BehavioralMetrics(
@@ -265,8 +265,8 @@ def complete_interview(
     )
     db.add(behavioral_record)
 
-    # Calculate behavioral score
-    calculated_beh_score = calculate_behavioral_score(eye_percent, blink_rate, pause_rate)
+    # Calculate delivery score (returns None if visual sensors are null/unmeasured)
+    calculated_deliv_score = calculate_delivery_score(eye_percent, blink_rate, pause_rate)
 
     # Fetch answer evaluations
     evaluations = db.query(models.AnswerEvaluation).join(
@@ -282,20 +282,21 @@ def complete_interview(
 
     session_score_data = calculate_session_score(
         answer_scores=overall_scores,
-        behavioral_score=calculated_beh_score,
+        delivery_score=calculated_deliv_score,
         technical_scores=tech_scores,
         communication_scores=comm_scores,
         consistency_scores=cons_scores
     )
 
-    # Persist session score
+    # Persist session score with weights_used
     score_record = models.SessionScore(
         session_id=session.id,
-        behavioral_score=session_score_data["behavioral_score"],
+        behavioral_score=session_score_data["delivery_score"],
         communication_score=session_score_data["communication_score"],
         technical_score=session_score_data["technical_score"],
         resume_consistency_score=session_score_data["resume_consistency_score"],
         readiness_score=session_score_data["final_readiness_score"],
+        weights_used=json.dumps(session_score_data["weights_used"]),
         strongest_category=session_score_data["strongest_category"],
         weakest_category=session_score_data["weakest_category"],
         insights=json.dumps(session_score_data["insights"])
@@ -310,9 +311,13 @@ def complete_interview(
         "session_id": session.id,
         "status": "completed",
         "readiness_score": session_score_data["final_readiness_score"],
+        "delivery_measured": session_score_data["delivery_measured"],
+        "weights_used": session_score_data["weights_used"],
         "subscores": {
             "communication": session_score_data["communication_score"],
             "technical": session_score_data["technical_score"],
+            "delivery": session_score_data["delivery_score"],
+            "delivery_measured": session_score_data["delivery_measured"],
             "behavioral": session_score_data["behavioral_score"],
             "resume_consistency": session_score_data["resume_consistency_score"]
         },

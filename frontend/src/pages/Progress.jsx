@@ -113,7 +113,7 @@ function Progress() {
                 <Line type="monotone" dataKey="readiness_score" name="Readiness Score" stroke="#0f172a" strokeWidth={3} dot={{ r: 5 }} />
                 <Line type="monotone" dataKey="technical_score" name="Technical Depth" stroke="#10b981" strokeWidth={2} />
                 <Line type="monotone" dataKey="communication_score" name="Communication" stroke="#3b82f6" strokeWidth={2} />
-                <Line type="monotone" dataKey="behavioral_score" name="Behavioral Signals" stroke="#8b5cf6" strokeWidth={2} />
+                <Line type="monotone" dataKey="behavioral_score" name="Delivery & Stability" stroke="#8b5cf6" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
           </div>

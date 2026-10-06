@@ -160,11 +160,19 @@ function Dashboard() {
     );
   }
 
+  const weights = report.weights_used || (
+    report.delivery_measured === false
+      ? { communication: 0.375, technical: 0.375, delivery: 0, resume_consistency: 0.25 }
+      : { communication: 0.30, technical: 0.30, delivery: 0.20, resume_consistency: 0.20 }
+  );
+
+  const isDeliveryMeasured = report.delivery_measured !== false && report.subscores?.delivery !== null;
+
   const subscoreBarData = [
-    { name: "Communication (30%)", score: report.subscores.communication, fill: "#3b82f6" },
-    { name: "Technical (30%)", score: report.subscores.technical, fill: "#10b981" },
-    { name: "Behavioral (20%)", score: report.subscores.behavioral, fill: "#8b5cf6" },
-    { name: "Resume Align (20%)", score: report.subscores.resume_consistency, fill: "#f59e0b" },
+    { name: `Communication (${Math.round((weights.communication || 0.3) * 100)}%)`, score: report.subscores?.communication || 0, fill: "#3b82f6" },
+    { name: `Technical (${Math.round((weights.technical || 0.3) * 100)}%)`, score: report.subscores?.technical || 0, fill: "#10b981" },
+    ...(isDeliveryMeasured ? [{ name: `Delivery (${Math.round((weights.delivery || 0.2) * 100)}%)`, score: report.subscores?.delivery || 0, fill: "#8b5cf6" }] : []),
+    { name: `Resume Align (${Math.round((weights.resume_consistency || 0.2) * 100)}%)`, score: report.subscores?.resume_consistency || 0, fill: "#f59e0b" },
   ];
 
   const getScoreColor = (score) => {
@@ -223,49 +231,102 @@ function Dashboard() {
             {report.status_label || "Candidate Evaluation"}
           </div>
           <p style={{ fontSize: "13px", color: "#64748b", marginTop: "14px", lineHeight: "1.5" }}>
-            Weighted formula: 30% Communication + 30% Technical Depth + 20% Behavioral Presence + 20% Resume Consistency.
+            {isDeliveryMeasured ? (
+              "Weighted formula: 30% Communication + 30% Technical Depth + 20% Delivery & Visual Stability + 20% Resume Consistency."
+            ) : (
+              <span>
+                <strong>Weighted formula (re-normalized):</strong> 37.5% Communication + 37.5% Technical Depth + 25% Resume Consistency.
+                <br />
+                <em style={{ color: "#b45309" }}>Note: Delivery & Visual Stability was unmeasured because camera was off; remaining dimensions were re-normalized proportionally.</em>
+              </span>
+            )}
           </p>
         </div>
 
         {/* SUBSCORES GRID */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
-          <SubscoreCard title="Communication" score={report.subscores.communication} weight="30%" desc="Structure, clarity, flow" color="#3b82f6" />
-          <SubscoreCard title="Technical Depth" score={report.subscores.technical} weight="30%" desc="Domain concepts & depth" color="#10b981" />
-          <SubscoreCard title="Behavioral Presence" score={report.subscores.behavioral} weight="20%" desc="Eye contact, blinks, stability" color="#8b5cf6" />
-          <SubscoreCard title="Resume Consistency" score={report.subscores.resume_consistency} weight="20%" desc="Skill alignment with resume" color="#f59e0b" />
+          <SubscoreCard
+            title="Communication"
+            score={report.subscores?.communication}
+            weight={`${Math.round((weights.communication || 0.3) * 100)}%`}
+            desc="Structure, clarity, flow"
+            color="#3b82f6"
+          />
+          <SubscoreCard
+            title="Technical Depth"
+            score={report.subscores?.technical}
+            weight={`${Math.round((weights.technical || 0.3) * 100)}%`}
+            desc="Domain concepts & depth"
+            color="#10b981"
+          />
+          <SubscoreCard
+            title="Delivery & Visual Stability"
+            score={isDeliveryMeasured ? report.subscores?.delivery : "Not measured: camera was off"}
+            weight={isDeliveryMeasured ? `${Math.round((weights.delivery || 0.2) * 100)}%` : "0% (unmeasured)"}
+            desc={isDeliveryMeasured ? "Centering, blinks, stability" : "Camera off; excluded from score"}
+            color="#8b5cf6"
+          />
+          <SubscoreCard
+            title="Resume Consistency"
+            score={report.subscores?.resume_consistency}
+            weight={`${Math.round((weights.resume_consistency || 0.2) * 100)}%`}
+            desc="Skill alignment with resume"
+            color="#f59e0b"
+          />
         </div>
       </div>
 
-      {/* CHARTS & BEHAVIORAL ROW */}
+      {/* CHARTS & DELIVERY ROW */}
       <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: "20px", marginTop: "20px" }}>
         {/* BAR CHART BREAKDOWN */}
         <div style={cardStyle}>
           <h3 style={sectionTitle}>Scoring Dimensions Breakdown</h3>
-          <p style={{ fontSize: "12px", color: "#64748b", marginBottom: "14px" }}>Normalized performance across core interview competencies</p>
+          <p style={{ fontSize: "12px", color: "#64748b", marginBottom: "14px" }}>
+            {isDeliveryMeasured ? "Performance across measured competency dimensions" : "Dimensions evaluated (Delivery omitted due to inactive camera)"}
+          </p>
           <ResponsiveContainer width="100%" height={230}>
             <BarChart data={subscoreBarData} layout="vertical" margin={{ left: 20, right: 20, top: 10, bottom: 10 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis type="number" domain={[0, 100]} />
-              <YAxis dataKey="name" type="category" width={130} style={{ fontSize: "12px" }} />
+              <YAxis dataKey="name" type="category" width={140} style={{ fontSize: "11px" }} />
               <Tooltip formatter={(value) => [`${value}%`, "Score"]} />
               <Bar dataKey="score" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        {/* BEHAVIORAL SENSORS SUMMARY */}
+        {/* DELIVERY SENSORS SUMMARY */}
         <div style={cardStyle}>
-          <h3 style={sectionTitle}>Behavioral Metrics</h3>
-          <p style={{ fontSize: "12px", color: "#64748b", marginBottom: "16px" }}>Computer vision & speech cues tracked during interview</p>
+          <h3 style={sectionTitle}>Delivery & Visual Stability</h3>
+          <p style={{ fontSize: "12px", color: "#64748b", marginBottom: "16px" }}>Observable physical and cadence indicators</p>
+
+          {!isDeliveryMeasured && (
+            <div style={{ marginBottom: "12px", padding: "10px", backgroundColor: "#fffbeb", borderRadius: "6px", border: "1px solid #fde68a", fontSize: "12px", color: "#92400e" }}>
+              ⚠️ <strong>Not measured: camera was off.</strong> Readiness score was computed from 3 dimensions.
+            </div>
+          )}
 
           <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            <BehavioralRow label="Visual Center / Eye Contact" value={`${report.behavioral_metrics?.eye_contact_percent || 75}%`} target="Target: 60% - 85%" />
-            <BehavioralRow label="Blink Frequency" value={`${report.behavioral_metrics?.blink_rate || 18} / min`} target="Target: 15 - 20 / min" />
-            <BehavioralRow label="Speech Pauses / Cadence" value={`${report.behavioral_metrics?.pause_rate || 2.0}s avg`} target="Optimal: ≤ 2.5s" />
+            <BehavioralRow
+              label="Head alignment (visual centering proxy)"
+              tooltip="Share of the session your head was positioned near the centre of the frame. It does not measure gaze, confidence, or nervousness."
+              value={report.behavioral_metrics?.eye_contact_percent !== null && report.behavioral_metrics?.eye_contact_percent !== undefined ? `${report.behavioral_metrics.eye_contact_percent}%` : "Not measured"}
+              target="Target: 60% - 85%"
+            />
+            <BehavioralRow
+              label="Blink Frequency"
+              value={report.behavioral_metrics?.blink_rate !== null && report.behavioral_metrics?.blink_rate !== undefined ? `${report.behavioral_metrics.blink_rate} / min` : "Not measured"}
+              target="Target: 15 - 20 / min"
+            />
+            <BehavioralRow
+              label="Speech Pauses / Cadence"
+              value={report.behavioral_metrics?.pause_rate !== null && report.behavioral_metrics?.pause_rate !== undefined ? `${report.behavioral_metrics.pause_rate}s avg` : "2.0s avg"}
+              target="Optimal: ≤ 2.5s"
+            />
           </div>
 
           <div style={{ marginTop: "18px", padding: "10px", backgroundColor: "#f8fafc", borderRadius: "6px", fontSize: "12px", color: "#475569" }}>
-            ℹ️ Behavioral signals provide diagnostic practice indicators rather than automated personality conclusions.
+            ℹ️ Physical signals provide diagnostic centering and pacing indicators rather than psychological conclusions or confidence measurements.
           </div>
         </div>
       </div>
@@ -418,28 +479,31 @@ function Dashboard() {
 }
 
 function SubscoreCard({ title, score, weight, desc, color }) {
+  const isUnmeasured = score === null || score === undefined || typeof score === "string";
   return (
     <div style={cardStyle}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h4 style={{ fontSize: "14px", color: "#0f172a" }}>{title}</h4>
         <span style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>{weight}</span>
       </div>
-      <div style={{ fontSize: "28px", fontWeight: "800", color, marginTop: "6px" }}>
-        {Math.round(score)}%
+      <div style={{ fontSize: isUnmeasured ? "15px" : "28px", fontWeight: "800", color: isUnmeasured ? "#64748b" : color, marginTop: "6px" }}>
+        {isUnmeasured ? (score || "Not measured") : `${Math.round(score)}%`}
       </div>
       <p style={{ fontSize: "12px", color: "#94a3b8", marginTop: "4px" }}>{desc}</p>
     </div>
   );
 }
 
-function BehavioralRow({ label, value, target }) {
+function BehavioralRow({ label, value, target, tooltip }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }} title={tooltip}>
       <div>
-        <span style={{ fontSize: "13px", color: "#334155", fontWeight: "500" }}>{label}</span>
+        <span style={{ fontSize: "13px", color: "#334155", fontWeight: "500", cursor: tooltip ? "help" : "default" }}>
+          {label} {tooltip && <span style={{ fontSize: "11px", color: "#94a3b8" }}>ⓘ</span>}
+        </span>
         <div style={{ fontSize: "11px", color: "#94a3b8" }}>{target}</div>
       </div>
-      <div style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a" }}>{value}</div>
+      <div style={{ fontSize: "14px", fontWeight: "700", color: value === "Not measured" ? "#94a3b8" : "#0f172a" }}>{value}</div>
     </div>
   );
 }

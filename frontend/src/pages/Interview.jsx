@@ -40,7 +40,7 @@ function Interview() {
   const [isRecording, setIsRecording] = useState(false);
   const [eyeContact, setEyeContact] = useState(false);
   const [blinkCount, setBlinkCount] = useState(0);
-  const [eyeContactPercent, setEyeContactPercent] = useState(75.0);
+  const [eyeContactPercent, setEyeContactPercent] = useState(null);
 
   // Speech-to-text recognition
   const [speechRecognitionActive, setSpeechRecognitionActive] = useState(false);
@@ -391,11 +391,18 @@ function Interview() {
     try {
       const durationSeconds = (Date.now() - interviewStartRef.current) / 1000;
       const durationMinutes = durationSeconds / 60 || 1;
-      const blinkRate = Number((blinkCount / durationMinutes).toFixed(1));
+
+      // Only send visual metrics if camera was active and recorded frames; never send default/imputed values
+      const finalEyeContact = (isCameraOn && totalFramesRef.current > 0 && eyeContactPercent !== null)
+        ? eyeContactPercent
+        : null;
+      const finalBlinkRate = (isCameraOn && totalFramesRef.current > 0)
+        ? Number((blinkCount / durationMinutes).toFixed(1))
+        : null;
 
       const payload = {
-        eye_contact_percent: eyeContactPercent,
-        blink_rate: blinkRate || 18.0,
+        eye_contact_percent: finalEyeContact,
+        blink_rate: finalBlinkRate,
         pause_rate: 2.0,
         duration_seconds: durationSeconds,
       };
@@ -465,18 +472,20 @@ function Interview() {
                 <>
                   <video ref={videoRef} autoPlay playsInline muted style={videoElement} />
                   <canvas ref={canvasRef} style={canvasElement} />
-                  <div style={eyeContact ? greenDot : redDot} title={eyeContact ? "Good Eye Contact" : "Refocus Center"} />
+                  <div style={eyeContact ? greenDot : redDot} title={eyeContact ? "Centered in frame" : "Re-align with center"} />
                   <div style={overlayMetrics}>
-                    <div>Eye Contact: <strong>{eyeContactPercent}%</strong></div>
+                    <div title="Share of the session your head was positioned near the centre of the frame. It does not measure gaze, confidence, or nervousness.">
+                      Head alignment (proxy): <strong>{eyeContactPercent !== null ? `${eyeContactPercent}%` : "Calibrating..."}</strong>
+                    </div>
                     <div>Blinks: <strong>{blinkCount}</strong></div>
                   </div>
                 </>
               ) : (
                 <div style={webcamFallback}>
                   <div style={{ fontSize: "40px", marginBottom: "8px" }}>🎥</div>
-                  <p style={{ fontWeight: "600", fontSize: "14px" }}>Webcam Inactive</p>
+                  <p style={{ fontWeight: "600", fontSize: "14px" }}>Camera Inactive</p>
                   <p style={{ fontSize: "12px", color: "#94a3b8", marginTop: "4px" }}>
-                    Standard Text & Speech Assessment Mode
+                    Delivery & Visual Stability marked "Not measured"
                   </p>
                 </div>
               )}
