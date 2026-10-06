@@ -9,6 +9,7 @@ import Register from "./pages/Register";
 import ResumeUpload from "./pages/ResumeUpload";
 import Interview from "./pages/Interview";
 import Dashboard from "./pages/Dashboard";
+import Report from "./pages/Report";
 import FixAnswer from "./pages/FixAnswer";
 import Progress from "./pages/Progress";
 import History from "./pages/History";
@@ -62,7 +63,15 @@ function App() {
               path="/report"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <Report />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/report/:sessionId"
+              element={
+                <ProtectedRoute>
+                  <Report />
                 </ProtectedRoute>
               }
             />
