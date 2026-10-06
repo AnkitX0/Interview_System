@@ -98,3 +98,4 @@ def test_velocity_ignores_non_comparable_sessions(db_session):
     res = calculate_improvement_velocity(user_id=3, db=db_session)
     assert res["status"] == "insufficient_data"
     assert res["sessions_count"] == 1
+

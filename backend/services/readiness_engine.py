@@ -239,3 +239,4 @@ def compute_longitudinal_readiness(
         "projection": projection,
         "disclaimer": "Readiness scores reflect observable rubric performance in practice sessions and do not guarantee actual interview hiring decisions."
     }
+

@@ -186,3 +186,4 @@ def get_recurring_weaknesses(
     """Returns only weaknesses verified as recurring across multiple sessions."""
     all_w = aggregate_user_weaknesses(user_id=user_id, db=db, min_sessions=min_sessions)
     return [w for w in all_w if w["recurring"]]
+

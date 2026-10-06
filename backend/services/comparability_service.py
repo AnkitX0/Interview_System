@@ -92,3 +92,4 @@ def filter_comparable_sessions(
     # Sort chronologically
     comparable.sort(key=lambda s: (s.created_at or 0, s.id))
     return comparable
+

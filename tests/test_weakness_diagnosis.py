@@ -147,3 +147,4 @@ def test_banned_psychological_words_absence_in_diagnosis(db_session):
         full_text = f"{w['symptom']} {w['pattern']} {w['root_weakness']} {w['explanation']}".lower()
         for banned in ["nervous", "lie", "bluff", "fake", "stress spike", "emotion", "posture check"]:
             assert banned not in full_text
+

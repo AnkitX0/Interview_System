@@ -191,3 +191,4 @@ def test_spoken_and_visual_metrics_generate_traceable_events(db_session):
         desc = (e["title"] + " " + e["description"]).lower()
         for banned in ["nervous", "lie", "bluff", "fake", "stress spike", "emotion", "posture check"]:
             assert banned not in desc
+

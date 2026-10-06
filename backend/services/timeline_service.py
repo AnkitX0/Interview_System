@@ -330,3 +330,4 @@ def generate_session_timeline(session_id: int, db: Session) -> List[Dict[str, An
     # Sort deterministically by timestamp_offset, then event_id
     timeline_events.sort(key=lambda e: (e["timestamp_offset"], e["event_id"]))
     return timeline_events
+

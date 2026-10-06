@@ -47,3 +47,4 @@ def downgrade() -> None:
 
     if 'practice_recommendations' in existing_tables:
         op.drop_table('practice_recommendations')
+

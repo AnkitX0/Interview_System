@@ -114,3 +114,4 @@ def test_unsustained_improvement_reporting(db_session):
     assert filler_w is not None
     assert filler_w["trend"] == "not_sustained"
     assert "not sustained" in filler_w["trend_explanation"].lower()
+

@@ -108,3 +108,4 @@ def get_readiness_forecast(
         "projection": res.get("projection"),
         "disclaimer": res.get("disclaimer")
     }
+

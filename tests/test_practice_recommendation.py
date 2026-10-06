@@ -134,3 +134,4 @@ def test_fallback_practice_when_no_weakness_detected(db_session):
     assert len(recs) == 1
     assert recs[0]["practice_type"] == "TRADEOFF_REASONING"
     assert "mastery" in recs[0]["rationale"].lower() or "advanced" in recs[0]["rationale"].lower()
+

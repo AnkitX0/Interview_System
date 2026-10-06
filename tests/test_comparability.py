@@ -115,3 +115,4 @@ def test_filter_comparable_sessions_utility(db_session):
     assert 21 in filtered_ids
     assert 22 not in filtered_ids
     assert 23 not in filtered_ids
+
