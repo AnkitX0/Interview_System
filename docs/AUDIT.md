@@ -116,12 +116,12 @@ Interview_System/
 ### Issue 3: Hardcoded Paths and Configuration
 - **Finding**: **CONFIRMED IN DOCS & FRONTEND**.
 - **Evidence**:
-  - `README.md` (lines 124, 140) and `claud.md` (lines 250, 258) hardcode `/home/ankit/Documents/Interview_System`.
-  - Frontend pages (`Interview.jsx`, `Dashboard.jsx`, `ResumeUpload.jsx`, `InterviewSetup.jsx`, `FixAnswer.jsx`, `Progress.jsx`) hardcode `http://127.0.0.1:8000/`.
+  - `README.md` and `docs/ARCHITECTURE.md` previously contained hardcoded absolute user environment paths.
+  - Frontend pages (`Interview.jsx`, `Dashboard.jsx`, `ResumeUpload.jsx`, `InterviewSetup.jsx`, `FixAnswer.jsx`, `Progress.jsx`) hardcoded `http://127.0.0.1:8000/`.
   - Backend code (`backend/database.py`) uses `os.path.dirname(__file__)`, which is path-agnostic.
-- **Resolution Plan**:
-  - Replace absolute documentation paths with relative repo-root commands (`cd frontend`, `uvicorn backend.main:app`).
-  - Introduce `frontend/src/config.js` or `import.meta.env.VITE_API_URL` with a sensible fallback (`http://127.0.0.1:8000`).
+- **Resolution Plan (FIXED in Commit 2e24a68)**:
+  - Replaced absolute documentation paths with relative repo-root commands (`cd frontend`, `uvicorn backend.main:app`).
+  - Introduced `frontend/src/config.js` with `import.meta.env.VITE_API_URL` and `http://127.0.0.1:8000` fallback, replacing all hardcoded URLs across all frontend pages. Add `frontend/.env.example`.
 
 ---
 
@@ -206,49 +206,72 @@ Interview_System/
 | **Adaptive Follow-up Generator** | **PARTIALLY IMPLEMENTED** | `backend/services/followup_generator.py` (has 4 static rules, not dynamic ladder) |
 | **Safe Pressure Mode** | **BROKEN / LABEL ONLY** | `frontend/src/pages/Interview.jsx` has no behavioral difference for pressure mode |
 | **Rubric Scoring (5 Dimensions)** | **IMPLEMENTED** | `backend/services/scoring_engine.py` (Structure, Tech, Reasoning, STAR, Consistency) |
-| **Explainable Evidence per Dimension** | **PARTIALLY IMPLEMENTED** | Returns strengths/weaknesses strings, not structured `{score, evidence, explanation, action}` |
+| **Explainable Evidence per Dimension** | **FIXED** (`ac99099`) | Strictly typed `{score, evidence, explanation, recommended_action}` returned for each dimension |
 | **Deterministic Offline Path** | **IMPLEMENTED** | 100% functional without external network access |
-| **Production LLM Path (Gemini/OpenAI)** | **BROKEN / STUBBED** | `backend/services/evaluation_engine.py:20` reads env vars but never calls LLM |
-| **Session Readiness Formula** | **IMPLEMENTED** | 0.30 Comm + 0.30 Tech + 0.20 Behavioral + 0.20 Resume Consistency |
-| **Ambiguous Behavioral Definition** | **BROKEN** | Conflates webcam centering with STAR verbal scores |
-| **Web Speech API Speech-to-Text** | **IMPLEMENTED** | `frontend/src/pages/Interview.jsx:62-106` |
-| **Per-Answer Voice Metrics Table** | **MISSING** | WPM and fillers are stored flat on `InterviewAnswer`; no pause/silence/TTR metrics |
-| **MediaPipe FaceMesh Diagnostics** | **PARTIALLY IMPLEMENTED** | Nose X-centering proxy; EAR blink counter; imputes fake data when camera is off |
-| **Executive Performance Report** | **IMPLEMENTED** | `frontend/src/pages/Dashboard.jsx`, `backend/routes/analytics.py` |
+| **Production LLM Path (Gemini/OpenAI)** | **FIXED** (`86727ad`) | Guarded Gemini/OpenAI caller with timeout, retries, grounding check, SHA-256 cache, and deterministic fallback |
+| **Session Readiness Formula** | **FIXED** (`81c52b6`) | Dynamically re-normalizes weights proportionally when visual sensors are unmeasured (0.375, 0.375, 0.25, 0.0); records weights_used |
+| **Ambiguous Behavioral Definition** | **FIXED** (`81c52b6`) | Renamed to "Delivery & Visual Stability" (proxy for centering/pacing). STAR moved strictly under Communication/Structure |
+| **Web Speech API Speech-to-Text** | **FIXED** (`2e24a68`) | Inline non-blocking status/error banners replacing alerts; clear `🎙️ Speak Answer` / `⌨️ Type Answer` toggle |
+| **Per-Answer Voice Metrics Table** | **MISSING** | WPM and fillers are stored flat on `InterviewAnswer`; no pause/silence/TTR metrics (Phase 2) |
+| **MediaPipe FaceMesh Diagnostics** | **FIXED** (`81c52b6`) | Nullable sensor columns (`eye_contact_percent`, `blink_rate`); camera-off sends `null`, never fake/imputed data |
+| **Executive Performance Report** | **FIXED** (`ac99099`, `81c52b6`) | Displays observable evidence per dimension; shows "Not measured: camera was off" with re-normalized weights note |
 | **Segmented Interview Timeline** | **MISSING** | Report has aggregate and per-answer reviews, but no time-sliced performance timeline |
 | **Fix My Answer (STAR Coach)** | **IMPLEMENTED** | `backend/services/answer_improvement_service.py`, `frontend/src/pages/FixAnswer.jsx` |
-| **Persist `answer_improvements`** | **MISSING** | Fix My Answer results are ephemeral and not saved in database |
-| **Technical Concept→Tradeoff Pattern** | **MISSING** | Fix My Answer only uses STAR; lacks technical architectural pattern |
+| **Persist `answer_improvements`** | **MISSING** | Fix My Answer results are ephemeral and not saved in database (Phase 4) |
+| **Technical Concept→Tradeoff Pattern** | **MISSING** | Fix My Answer only uses STAR; lacks technical architectural pattern (Phase 4) |
 | **Progress History Dashboard** | **IMPLEMENTED** | `frontend/src/pages/Progress.jsx` (Recharts trend + audit log table) |
 | **Improvement Velocity & Prediction** | **MISSING** | No velocity points/session; no probabilistic readiness prediction for 4+ sessions |
-| **Authentication & Multi-User Scoping**| **MISSING** | No user table, passwords, or JWT auth; all sessions are unauthenticated and public |
-| **Consent & Data Deletion** | **MISSING** | No explicit camera/mic consent modal; no "Delete My Session / Account" buttons |
-| **Centralized Config & Constants** | **MISSING** | Scoring weights, filler words, and thresholds are hardcoded magic numbers |
-| **Versioned Migrations (Alembic)** | **MISSING** | Relies on ad-hoc SQLite `ALTER TABLE` script in `database.py` |
-| **Automated Test Suite** | **MISSING** | Zero test files exist |
+| **Authentication & Multi-User Scoping**| **MISSING** | No user table, passwords, or JWT auth; all sessions are unauthenticated and public (Phase 2) |
+| **Consent & Data Deletion** | **MISSING** | No explicit camera/mic consent modal; no "Delete My Session / Account" buttons (Phase 2) |
+| **Centralized Config & Constants** | **FIXED** (`03c861f`) | `backend/config.py` declaring weights, delivery thresholds, word count bands, filler words, and LLM configuration |
+| **Versioned Migrations (Alembic)** | **FIXED** (`03c861f`, `05f987c`) | Alembic migration recreating 7-table schema with nullable sensors & `weights_used`; auto-applies on startup |
+| **Automated Test Suite** | **FIXED** (`2393d4c`, `86727ad`) | 30 tests in `tests/` covering API, rubric determinism, ranking, null sensors, and guarded LLM evaluation |
+| **Validation, Error Shape & Guards** | **FIXED** (`fb78d68`) | Strict Pydantic validation, uniform `{error: {code, message, details}}` shape, division-by-zero guards, structured logging |
+| **Path-Agnostic Config & URLs** | **FIXED** (`2e24a68`) | `frontend/src/config.js` with `import.meta.env.VITE_API_URL`, `frontend/.env.example`, all hardcoded URLs eliminated |
 
 ---
 
-## 5. Proposed Phase-by-Phase Implementation Plan
+## 5. Phase-by-Phase Implementation Status
 
-### Phase 1: Reliability, Testing & Data Correctness (Immediate Next Step)
-1. **Pytest Test Suite**:
-   - Install `pytest` in `venv`.
-   - Create `tests/test_scoring.py`: unit tests for rubric formulas, golden answer fixtures (weak/average/strong scoring in strictly ascending bands), and determinism verification.
-   - Create `tests/test_resume.py`: tests for resume parser with PDF and plain text, checking skill extraction and clarity audit.
-   - Create `tests/test_api.py`: FastAPI endpoint tests for every route using `TestClient`.
-2. **Scoring Transparency & Evidence Contracts**:
-   - Refactor `scoring_engine.py` to return `{score, evidence: [...], explanation, recommended_action}` for every dimension.
-   - Ensure evidence cites observable facts (*"0 metrics detected"*, *"14 filler words"*, *"tradeoff keywords: 0"*).
-   - Update `Dashboard.jsx` to render this evidence cleanly.
-3. **Behavioral Dimension Disambiguation**:
-   - Rename session dimension to **Delivery & Visual Stability** (CV + pause pacing).
-   - Keep **STAR Quality** strictly under Communication/Structure, with its own dedicated breakdown badge.
-   - **Fix Fake Data Bug**: When camera is disabled, pass `null` for visual metrics and adjust the session formula so unmeasured sensors do not fabricate data.
-4. **Centralized Configuration Module**:
-   - Create `backend/config.py` declaring `SCORING_WEIGHTS`, `FILLER_WORDS`, `TARGET_THRESHOLDS`, and note in docstrings that weights are initial assumptions.
-5. **Real LLM Integration & Pydantic Validation**:
-   - Implement actual Gemini/OpenAI caller in `evaluation_engine.py` with structured Pydantic response parsing, 5-second timeout, and clean fallback to deterministic rubric.
+### Phase 1: Reliability, Testing & Data Correctness (STATUS: COMPLETED ✅)
+1. **Housekeeping & Branching** (`cfadf4d`):
+   - Created git branch `phase-1-reliability`.
+   - Renamed `claud.md` $\rightarrow$ `docs/ARCHITECTURE.md`.
+   - Created `docs/AUDIT.md`.
+2. **Pytest Test Suite Baseline** (`2393d4c`):
+   - Created `requirements-dev.txt`, `pytest.ini`, and unit test suite (`tests/conftest.py`, `test_scoring.py`, `test_resume.py`, `test_questions_and_followup.py`, `test_api.py`).
+   - Verified rubric determinism, golden answer ranking order, and resume parser robustness.
+3. **Versioned Database Migrations & Centralized Config** (`03c861f`, `05f987c`):
+   - Replaced ad-hoc `ALTER TABLE` in `database.py` with Alembic migration `0001_initial_schema.py`.
+   - Added `backend/config.py` defining initial weights, delivery thresholds, word count bands, filler words, and LLM configuration.
+   - Cleaned up untracked pycache binaries and configured `.gitignore`.
+4. **Structured Evidence Contract** (`ac99099`):
+   - Implemented `DimensionEvaluation` and `AnswerEvaluationResponse` in `backend/schemas/schemas.py`.
+   - Refactored `backend/services/scoring_engine.py` to return observable signals per dimension (`score`, `evidence`, `explanation`, `recommended_action`) with backward-compatible legacy fields.
+   - Updated `Interview.jsx` and `Dashboard.jsx` to render observable evidence.
+5. **Delivery Renaming, Null Handling & Re-normalized Readiness** (`81c52b6`):
+   - Renamed session term to **"Delivery & Visual Stability"** (mapped internally to `behavioral_score`).
+   - Relabeled UI to **"Head alignment (visual centering proxy)"** with centering tooltip.
+   - Sensor columns made nullable; camera-off sends `null` (never imputed data).
+   - Dynamically re-normalizes weights when unmeasured: Comm: 0.375, Tech: 0.375, Resume: 0.25, Delivery: 0.0.
+   - Stored `weights_used` JSON in `session_scores`.
+   - Updated `Dashboard.jsx` to render "Not measured: camera was off" and explain re-normalized weights.
+6. **Validation, Uniform Error Shape, Structured Logging & Division Guards** (`fb78d68`):
+   - Centralized exception handlers in `backend/main.py` producing uniform error shape: `{"error": {"code": "...", "message": "...", "details": [...]}}`.
+   - Added `logging.getLogger("interview_system")` with structured log output.
+   - Added zero-division guards for WPM, elapsed durations, and rate computations.
+7. **Guarded LLM Evaluation Path** (`86727ad`):
+   - Updated `backend/services/evaluation_engine.py` using `httpx` (Gemini $\rightarrow$ OpenAI $\rightarrow$ deterministic fallback).
+   - Enforced 5.0s timeout, max 1 retry, temperature 0.0, transcript grounding check, and SHA-256 caching.
+   - Added `tests/test_evaluation_llm.py` (30/30 tests passing).
+8. **Frontend Config, API URL Abstraction & Non-blocking Speech Banner** (`2e24a68`):
+   - Added `frontend/src/config.js` (`VITE_API_URL` with `http://127.0.0.1:8000` fallback) and `frontend/.env.example`.
+   - Replaced all hardcoded URLs across all frontend pages (`InterviewSetup`, `ResumeUpload`, `Progress`, `FixAnswer`, `Interview`, `Dashboard`).
+   - Replaced `alert()` in `FixAnswer` and `Interview` with inline dismissable status/warning banners and a segmented `🎙️ Speak Answer` / `⌨️ Type Answer` toggle.
+9. **Documentation Path Cleanup & Phase 1 Audit Finalization**:
+   - Removed absolute paths from `README.md` and `docs/ARCHITECTURE.md`.
+   - Added Running Tests section to `README.md`.
+   - Updated `docs/AUDIT.md` reflecting completed Phase 1 status and commit hashes.
 
 ### Phase 2: MVP Gaps — Auth, User Scoping, Voice Metrics & Privacy
 1. **Authentication & Multi-Tenancy**:
@@ -292,11 +315,13 @@ Interview_System/
 
 ---
 
-## 6. Action Items & Approval Request
+## 6. Phase 1 Sign-Off & Phase 2 Gate
 
-1. **Master Product Specification Document**:
-   - The user prompt referenced the *Master Product Specification* as the target document. While key requirements, rules, and phases were quoted in the prompt, please provide the full text or file if additional unquoted sections exist.
-2. **Approval Request**:
-   - Please review this audit document ([`docs/AUDIT.md`](file:///home/ankit/Documents/Interview_System/docs/AUDIT.md)) and the proposed implementation plan.
-   - Once you approve, I will immediately begin **Phase 1: Reliability, Testing & Data Correctness** (writing pytest tests, disambiguating behavioral metrics, fixing the camera-off fake data bug, implementing transparent evidence scoring, and wiring the real LLM path).
+1. **Phase 1 Deliverables Summary**:
+   - All Phase 1 reliability, testing, and data correctness requirements are implemented and verified.
+   - 30 tests in `tests/` pass in < 0.3s covering rubric determinism, golden answer ranking, resume parsing, API endpoints, and guarded LLM evaluation.
+   - Vite 7 production build succeeds with zero errors.
+   - All 9 sub-step commits have been recorded to the `phase-1-reliability` git branch.
+2. **Phase 2 Readiness**:
+   - Per project rules, Phase 2 (Authentication, Multi-tenancy, Per-Answer Voice Metrics, Consent & Data Deletion) will only begin upon explicit user review and approval of Phase 1.
 

@@ -139,10 +139,28 @@ The **AI Interview Intelligence System** is an enterprise-grade, web-based platf
   - **Structure Score**: Measures length appropriateness (60–250 words), logical progression, paragraph transitions (*furthermore, because, specifically, finally*).
   - **Technical Depth Score**: Measures domain-specific technical terminology, architectural mechanisms (*caching, indexing, concurrency, latency, microservices*).
   - **Reasoning Score**: Evaluates architectural tradeoffs and explanations of *"why"* choices were made.
-  - **STAR Score**: Detects Situation, Task, Action, and Result markers with action-oriented personal ownership verbs.
+  - **STAR Score**: Named sub-score under Communication/Structure detecting Situation, Task, Action, and Result markers with action-oriented personal ownership verbs.
   - **Resume Consistency Score**: Cross-references technologies cited in the candidate's response against their parsed resume profile.
-- **Weighted Aggregation**:
-  $$\text{Final Readiness} = 0.30 \times \text{Communication} + 0.30 \times \text{Technical} + 0.20 \times \text{Behavioral} + 0.20 \times \text{Resume Consistency}$$
+- **Evidence Contract**:
+  Every answer dimension returns a strictly typed structure:
+  ```json
+  {
+    "score": 0.0-100.0,
+    "evidence": ["0 quantified results found", "14 filler words in 212 words"],
+    "explanation": "Narrative explanation...",
+    "recommended_action": "Targeted next steps..."
+  }
+  ```
+- **Dimension Naming & Mapping**:
+  - The 20% session term is named **"Delivery & Visual Stability"** (mapped internally to the `behavioral_score` database column). Psychological terms like "Behavioral Confidence" are strictly avoided.
+  - Visual signals in UI/reports are labeled **"Head alignment (visual centering proxy)"** (mapped internally to `eye_contact_percent`), with tooltip: *"Share of the session your head was positioned near the centre of the frame. It does not measure gaze, confidence, or nervousness."*
+- **Readiness Formula & Sensor Nullability**:
+  - When Delivery sensors are measured (camera active):
+    $$\text{Readiness} = 0.30 \times \text{Communication} + 0.30 \times \text{Technical} + 0.20 \times \text{Delivery} + 0.20 \times \text{Resume Consistency}$$
+  - When Delivery sensors are unmeasured (camera off or denied, `eye_contact_percent` and `blink_rate` are `null`):
+    Weights are proportionally re-normalized:
+    $$\text{weights} = (\text{Communication: } 0.375, \text{Technical: } 0.375, \text{Resume Consistency: } 0.25, \text{Delivery: } 0.0)$$
+    The exact weights applied are persisted in `session_scores.weights_used` so every score is reproducible.
 
 #### 3. `question_selector.py`
 - Queries `models.QuestionBank` (pre-seeded with 80+ questions).
@@ -167,12 +185,15 @@ The **AI Interview Intelligence System** is an enterprise-grade, web-based platf
 - Generates a vocabulary upgrade table comparing weak phrases (*"helped make it faster"*) with senior terminology (*"optimized query latency by 65%"*).
 
 #### 6. `evaluation_engine.py`
-- Clean abstraction layer for rubric evaluation. Checks for environment keys (`GEMINI_API_KEY` or `OPENAI_API_KEY`); if absent or in offline mode, delegates to the rubric engine in `scoring_engine.py`.
+- Clean abstraction layer for rubric evaluation with guarded provider cascade (Gemini $\rightarrow$ OpenAI $\rightarrow$ deterministic fallback).
+- Enforces strict 5-second timeout, max 1 retry, temperature 0.0, grounding verification against the transcript, and SHA-256 caching.
+- If API keys are omitted or external calls fail/timeout, cleanly falls back to the deterministic rubric in `scoring_engine.py`.
 
 ---
 
 ### 5.2 Database Schema (`backend/models/models.py`)
 
+Managed via Alembic migrations (`alembic/versions/`):
 1. **`resumes`**:
    - `id` (PK), `filename`, `candidate_name`, `raw_text`, `skills` (JSON), `experience`, `education`, `resume_score`, `strengths` (JSON), `weak_areas` (JSON), `suggested_improvements` (JSON), `summary`, `created_at`.
 2. **`interview_sessions`**:
@@ -182,11 +203,11 @@ The **AI Interview Intelligence System** is an enterprise-grade, web-based platf
 4. **`interview_answers`**:
    - `id` (PK), `session_id` (FK), `question_id`, `question_text`, `transcript`, `response_time`, `duration_seconds`, `wpm`, `filler_count`, `created_at`.
 5. **`answer_evaluations`**:
-   - `id` (PK), `answer_id` (FK), `structure_score`, `clarity_score`, `depth_score`, `technical_score`, `reasoning_score`, `star_score`, `consistency_score`, `overall_score`, `strengths` (JSON), `weaknesses` (JSON), `missing_concepts` (JSON), `suggestions` (JSON).
+   - `id` (PK), `answer_id` (FK), `structure_score`, `clarity_score`, `depth_score`, `technical_score`, `reasoning_score`, `star_score`, `consistency_score`, `overall_score`, `strengths` (JSON), `weaknesses` (JSON), `missing_concepts` (JSON), `suggestions` (JSON), `dimensions` (JSON).
 6. **`behavioral_metrics`**:
-   - `id` (PK), `session_id` (FK), `eye_contact_percent`, `blink_rate`, `pause_rate`.
+   - `id` (PK), `session_id` (FK), `eye_contact_percent` (nullable Float), `blink_rate` (nullable Float), `pause_rate` (Float).
 7. **`session_scores`**:
-   - `id` (PK), `session_id` (FK), `behavioral_score`, `communication_score`, `technical_score`, `resume_consistency_score`, `readiness_score`, `strongest_category`, `weakest_category`, `insights` (JSON), `created_at`.
+   - `id` (PK), `session_id` (FK), `behavioral_score` (nullable Float), `communication_score`, `technical_score`, `resume_consistency_score`, `readiness_score`, `strongest_category`, `weakest_category`, `insights` (JSON), `weights_used` (JSON), `created_at`.
 
 ---
 
@@ -247,15 +268,15 @@ The **AI Interview Intelligence System** is an enterprise-grade, web-based platf
 
 ### 2. Backend Startup
 ```bash
-cd /home/ankit/Documents/Interview_System
+cd Interview_System
 source venv/bin/activate
 uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
 ```
-*Backend will start on `http://127.0.0.1:8000`.*
+*Backend will start on `http://127.0.0.1:8000`, run Alembic migrations automatically, and load questions.*
 
 ### 3. Frontend Startup
 ```bash
-cd /home/ankit/Documents/Interview_System/frontend
+cd frontend
 npm run dev
 ```
 *Frontend will start on `http://localhost:5173`.*
@@ -264,19 +285,17 @@ npm run dev
 
 ## 8. Verification & Test Suite
 
-The system includes automated end-to-end integration tests that verify all endpoints and flows against live SQLite storage:
+The system includes a 30-test automated test suite across unit, rubric scoring, LLM provider caching/fallback, and FastAPI route layers:
 ```bash
-cd /home/ankit/Documents/Interview_System
-./venv/bin/python -c "
-import urllib.request, json
-req = urllib.request.urlopen('http://127.0.0.1:8000/')
-print('Backend online:', json.loads(req.read().decode()))
-"
+pytest tests/
+# or directly with venv:
+./venv/bin/pytest tests/
 ```
+All 30 tests pass completely offline without external credentials in < 0.3 seconds.
 
 To run a production frontend build check:
 ```bash
-cd /home/ankit/Documents/Interview_System/frontend
+cd frontend
 npm run build
 ```
 *(Build compiles with zero errors).*

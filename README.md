@@ -121,7 +121,7 @@ FastAPI Backend (Port 8000)
 
 1. Open a terminal in the project root:
    ```bash
-   cd /home/ankit/Documents/Interview_System
+   cd Interview_System
    ```
 2. Activate your virtual environment:
    ```bash
@@ -131,13 +131,13 @@ FastAPI Backend (Port 8000)
    ```bash
    uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
    ```
-   *The backend will automatically initialize `interview.db`, run safe column migrations, and load the 80-question bank.*
+   *The backend will automatically initialize `interview.db`, apply Alembic migrations to head, and load the pre-seeded question bank.*
 
 ### Frontend Startup
 
 1. Open a second terminal:
    ```bash
-   cd /home/ankit/Documents/Interview_System/frontend
+   cd frontend
    ```
 2. Start the Vite development server:
    ```bash
@@ -150,7 +150,26 @@ FastAPI Backend (Port 8000)
 
 ---
 
-## 7. Environment Variables
+## 7. Running Tests
+
+Run the backend test suite:
+```bash
+pytest tests/
+```
+Or directly using the virtual environment:
+```bash
+./venv/bin/pytest tests/
+```
+All 30 unit, scoring rubric, API, and guarded LLM evaluation tests run completely offline with zero API keys in < 0.3s.
+
+Run the frontend production build check:
+```bash
+cd frontend && npm run build
+```
+
+---
+
+## 8. Environment Variables
 
 All core functionality operates **100% deterministically and offline without requiring external API keys**.
 
@@ -163,7 +182,7 @@ OPENAI_API_KEY=""
 
 ---
 
-## 8. API Overview
+## 9. API Overview
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -179,7 +198,7 @@ OPENAI_API_KEY=""
 
 ---
 
-## 9. Demo Workflow
+## 10. Demo Workflow
 
 1. **Landing Page (`/`)**: Overview of the platform with direct calls to action.
 2. **Resume Analysis (`/resume`)**: Upload a resume PDF or paste text. Review extracted competencies, audit score, strengths, and weak areas. Click **"Proceed to Interview Setup with this Profile"**.
