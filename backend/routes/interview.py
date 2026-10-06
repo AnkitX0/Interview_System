@@ -1,13 +1,22 @@
-from fastapi import APIRouter, Depends
+import json
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-import random
+from typing import List, Optional
 
 import backend.models as models
 from backend.database import get_db
-from backend.schemas.schemas import AnswerInput, FollowUpRequest, StartInterviewRequest
+from backend.crud import calculate_behavioral_score
+from backend.schemas.schemas import (
+    AnswerInput,
+    FollowUpRequest,
+    StartInterviewRequest,
+    BehavioralInput,
+    CompleteInterviewRequest
+)
 from backend.services.evaluation_engine import evaluate_answer
 from backend.services.followup_generator import generate_followup
 from backend.services.scoring_engine import calculate_session_score
+from backend.services.question_selector import select_questions
 
 router = APIRouter(prefix="/interview", tags=["Interview"])
 
@@ -17,14 +26,25 @@ router = APIRouter(prefix="/interview", tags=["Interview"])
 # =========================
 @router.post("/start")
 def start_interview(data: StartInterviewRequest, db: Session = Depends(get_db)):
+    mode = data.mode or "practice"
+    difficulty = data.difficulty or "medium"
+    number_of_questions = data.number_of_questions or 3
+    target_role = data.target_role or "Software Engineer"
 
-    mode = data.mode
-    difficulty = data.difficulty
-    number_of_questions = data.number_of_questions
+    resume_skills = []
+    if data.resume_id:
+        resume = db.query(models.Resume).filter(models.Resume.id == data.resume_id).first()
+        if resume and resume.skills:
+            try:
+                resume_skills = json.loads(resume.skills)
+            except Exception:
+                resume_skills = [s.strip() for s in resume.skills.split(",") if s.strip()]
 
     session = models.InterviewSession(
         mode=mode,
         difficulty=difficulty,
+        target_role=target_role,
+        resume_id=data.resume_id,
         total_questions=number_of_questions,
         current_question_index=0,
         followup_count=0,
@@ -35,30 +55,48 @@ def start_interview(data: StartInterviewRequest, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(session)
 
-    query = db.query(models.QuestionBank)
-
-    if difficulty:
-        query = query.filter(models.QuestionBank.difficulty == difficulty)
-
-    questions = query.limit(number_of_questions * 3).all()
-
-    if not questions:
-        return {"error": "No questions available for selected difficulty"}
-
-    if len(questions) <= number_of_questions:
-        selected_questions = questions
-    else:
-        selected_questions = random.sample(questions, number_of_questions)
+    # Select resume-aware dynamic questions
+    selected_questions = select_questions(
+        db=db,
+        mode=mode,
+        difficulty=difficulty,
+        count=number_of_questions,
+        resume_skills=resume_skills,
+        target_role=target_role
+    )
 
     return {
         "session_id": session.id,
         "mode": mode,
         "difficulty": difficulty,
-        "total_questions": number_of_questions,
-        "questions": [
-            {"id": q.id, "question": q.question_text}
-            for q in selected_questions
-        ]
+        "target_role": target_role,
+        "total_questions": len(selected_questions),
+        "questions": selected_questions
+    }
+
+
+# =========================
+# GET SESSION STATUS / DETAILS
+# =========================
+@router.get("/{session_id}")
+def get_session_details(session_id: int, db: Session = Depends(get_db)):
+    session = db.query(models.InterviewSession).filter(models.InterviewSession.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+
+    answers = db.query(models.InterviewAnswer).filter(models.InterviewAnswer.session_id == session_id).all()
+    score = db.query(models.SessionScore).filter(models.SessionScore.session_id == session_id).first()
+
+    return {
+        "session_id": session.id,
+        "mode": session.mode,
+        "difficulty": session.difficulty,
+        "target_role": session.target_role,
+        "total_questions": session.total_questions,
+        "current_question_index": session.current_question_index,
+        "status": session.status,
+        "answers_count": len(answers),
+        "readiness_score": score.readiness_score if score else None
     }
 
 
@@ -66,46 +104,94 @@ def start_interview(data: StartInterviewRequest, db: Session = Depends(get_db)):
 # SUBMIT ANSWER
 # =========================
 @router.post("/answer")
-def submit_answer(data: AnswerInput, db: Session = Depends(get_db)):
+@router.post("/{session_id}/answer")
+def submit_answer(data: AnswerInput, session_id: Optional[int] = None, db: Session = Depends(get_db)):
+    target_session_id = session_id or data.session_id
+
+    session = db.query(models.InterviewSession).filter(
+        models.InterviewSession.id == target_session_id
+    ).first()
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+
+    # Retrieve candidate resume skills if available
+    resume_skills = []
+    if session.resume_id:
+        resume = db.query(models.Resume).filter(models.Resume.id == session.resume_id).first()
+        if resume and resume.skills:
+            try:
+                resume_skills = json.loads(resume.skills)
+            except Exception:
+                pass
+
+    question_text = data.question_text
+    if not question_text and data.question_id:
+        q_record = db.query(models.QuestionBank).filter(models.QuestionBank.id == data.question_id).first()
+        if q_record:
+            question_text = q_record.question_text
 
     answer = models.InterviewAnswer(
-        session_id=data.session_id,
+        session_id=target_session_id,
         question_id=data.question_id,
+        question_text=question_text or "Interview Question",
         transcript=data.transcript,
-        response_time=data.response_time
+        response_time=data.response_time or 0.0,
+        duration_seconds=data.duration_seconds or data.response_time or 0.0,
+        wpm=data.wpm or 0.0,
+        filler_count=data.filler_count or 0
     )
 
     db.add(answer)
     db.commit()
     db.refresh(answer)
 
-    # evaluate answer
-    evaluation = evaluate_answer(data.transcript)
+    # Evaluate answer using structured rubric
+    category = session.mode if session.mode in ["Technical", "HR", "Behavioral", "Pressure"] else "Technical"
+    evaluation = evaluate_answer(
+        transcript=data.transcript,
+        question_text=question_text or "",
+        category=category,
+        resume_skills=resume_skills,
+        response_time=data.response_time or 0.0,
+        wpm=data.wpm or 0.0,
+        filler_count=data.filler_count or 0
+    )
 
     eval_record = models.AnswerEvaluation(
         answer_id=answer.id,
         structure_score=evaluation["structure_score"],
         clarity_score=evaluation["clarity_score"],
         depth_score=evaluation["depth_score"],
-        overall_score=evaluation["overall_score"]
+        technical_score=evaluation["technical_score"],
+        reasoning_score=evaluation["reasoning_score"],
+        star_score=evaluation["star_score"],
+        consistency_score=evaluation["consistency_score"],
+        overall_score=evaluation["overall_score"],
+        strengths=json.dumps(evaluation["strengths"]),
+        weaknesses=json.dumps(evaluation["weaknesses"]),
+        missing_concepts=json.dumps(evaluation["missing_concepts"]),
+        suggestions=json.dumps(evaluation["suggestions"])
     )
 
     db.add(eval_record)
-
-    # update session progress
-    session = db.query(models.InterviewSession).filter(
-        models.InterviewSession.id == data.session_id
-    ).first()
-
-    if session:
-        session.current_question_index += 1
-        session.followup_count = 0
-
+    session.current_question_index += 1
+    session.followup_count = 0
     db.commit()
 
     return {
-        "message": "Answer stored and evaluated",
-        "score": evaluation["overall_score"]
+        "message": "Answer stored and evaluated successfully",
+        "answer_id": answer.id,
+        "score": evaluation["overall_score"],
+        "structure_score": evaluation["structure_score"],
+        "technical_score": evaluation["technical_score"],
+        "reasoning_score": evaluation["reasoning_score"],
+        "star_score": evaluation["star_score"],
+        "consistency_score": evaluation["consistency_score"],
+        "strengths": evaluation["strengths"],
+        "weaknesses": evaluation["weaknesses"],
+        "missing_concepts": evaluation["missing_concepts"],
+        "suggestions": evaluation["suggestions"]
     }
 
 
@@ -114,7 +200,6 @@ def submit_answer(data: AnswerInput, db: Session = Depends(get_db)):
 # =========================
 @router.post("/followup")
 def followup(data: FollowUpRequest, db: Session = Depends(get_db)):
-
     MAX_FOLLOWUPS = 2
 
     session = db.query(models.InterviewSession).filter(
@@ -122,11 +207,10 @@ def followup(data: FollowUpRequest, db: Session = Depends(get_db)):
     ).first()
 
     if not session:
-        return {"error": "Session not found"}
+        raise HTTPException(status_code=404, detail="Session not found")
 
-    # stop follow-up loop
     if session.followup_count >= MAX_FOLLOWUPS:
-        return {"message": "followup_limit_reached"}
+        return {"message": "followup_limit_reached", "followup_question": None}
 
     followup_question = generate_followup(data.question, data.answer)
 
@@ -137,9 +221,7 @@ def followup(data: FollowUpRequest, db: Session = Depends(get_db)):
     )
 
     db.add(record)
-
     session.followup_count += 1
-
     db.commit()
 
     return {
@@ -149,10 +231,174 @@ def followup(data: FollowUpRequest, db: Session = Depends(get_db)):
 
 
 # =========================
-# GET RESULT
+# COMPLETE INTERVIEW & COMPUTE SESSION SCORE
+# =========================
+@router.post("/{session_id}/complete")
+def complete_interview(
+    session_id: int,
+    data: CompleteInterviewRequest,
+    db: Session = Depends(get_db)
+):
+    session = db.query(models.InterviewSession).filter(
+        models.InterviewSession.id == session_id
+    ).first()
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+
+    # Record or update behavioral metrics
+    eye_percent = data.eye_contact_percent if data.eye_contact_percent is not None else 75.0
+    blink_rate = data.blink_rate if data.blink_rate is not None else 18.0
+    pause_rate = data.pause_rate if data.pause_rate is not None else 2.0
+
+    behavioral_record = models.BehavioralMetrics(
+        session_id=session.id,
+        eye_contact_percent=eye_percent,
+        blink_rate=blink_rate,
+        pause_rate=pause_rate
+    )
+    db.add(behavioral_record)
+
+    # Calculate behavioral score
+    calculated_beh_score = calculate_behavioral_score(eye_percent, blink_rate, pause_rate)
+
+    # Fetch answer evaluations
+    evaluations = db.query(models.AnswerEvaluation).join(
+        models.InterviewAnswer
+    ).filter(
+        models.InterviewAnswer.session_id == session.id
+    ).all()
+
+    overall_scores = [e.overall_score for e in evaluations] if evaluations else [75.0]
+    tech_scores = [e.technical_score for e in evaluations if e.technical_score is not None]
+    comm_scores = [e.structure_score for e in evaluations if e.structure_score is not None]
+    cons_scores = [e.consistency_score for e in evaluations if e.consistency_score is not None]
+
+    session_score_data = calculate_session_score(
+        answer_scores=overall_scores,
+        behavioral_score=calculated_beh_score,
+        technical_scores=tech_scores,
+        communication_scores=comm_scores,
+        consistency_scores=cons_scores
+    )
+
+    # Persist session score
+    score_record = models.SessionScore(
+        session_id=session.id,
+        behavioral_score=session_score_data["behavioral_score"],
+        communication_score=session_score_data["communication_score"],
+        technical_score=session_score_data["technical_score"],
+        resume_consistency_score=session_score_data["resume_consistency_score"],
+        readiness_score=session_score_data["final_readiness_score"],
+        strongest_category=session_score_data["strongest_category"],
+        weakest_category=session_score_data["weakest_category"],
+        insights=json.dumps(session_score_data["insights"])
+    )
+
+    session.status = "completed"
+    db.add(score_record)
+    db.commit()
+    db.refresh(score_record)
+
+    return {
+        "session_id": session.id,
+        "status": "completed",
+        "readiness_score": session_score_data["final_readiness_score"],
+        "subscores": {
+            "communication": session_score_data["communication_score"],
+            "technical": session_score_data["technical_score"],
+            "behavioral": session_score_data["behavioral_score"],
+            "resume_consistency": session_score_data["resume_consistency_score"]
+        },
+        "strongest_category": session_score_data["strongest_category"],
+        "weakest_category": session_score_data["weakest_category"],
+        "insights": session_score_data["insights"]
+    }
+
+
+# =========================
+# SUBMIT BEHAVIORAL (BACKWARD COMPATIBLE)
+# =========================
+@router.post("/submit")
+def submit_interview_legacy(data: BehavioralInput, db: Session = Depends(get_db)):
+    session = db.query(models.InterviewSession).filter(
+        models.InterviewSession.id == data.session_id
+    ).first()
+
+    if not session:
+        # Auto-create session if missing to avoid breaking frontend
+        session = models.InterviewSession(
+            mode="practice",
+            difficulty="easy",
+            total_questions=3,
+            status="completed"
+        )
+        db.add(session)
+        db.commit()
+        db.refresh(session)
+
+    behavioral = models.BehavioralMetrics(
+        session_id=session.id,
+        eye_contact_percent=data.eye_contact_percent,
+        blink_rate=data.blink_rate,
+        pause_rate=data.pause_rate
+    )
+    db.add(behavioral)
+
+    beh_score = calculate_behavioral_score(
+        data.eye_contact_percent,
+        data.blink_rate,
+        data.pause_rate
+    )
+
+    evaluations = db.query(models.AnswerEvaluation).join(
+        models.InterviewAnswer
+    ).filter(
+        models.InterviewAnswer.session_id == session.id
+    ).all()
+
+    overall_scores = [e.overall_score for e in evaluations] if evaluations else [75.0]
+    tech_scores = [e.technical_score for e in evaluations if e.technical_score is not None]
+    comm_scores = [e.structure_score for e in evaluations if e.structure_score is not None]
+
+    score_data = calculate_session_score(
+        answer_scores=overall_scores,
+        behavioral_score=beh_score,
+        technical_scores=tech_scores,
+        communication_scores=comm_scores
+    )
+
+    score = models.SessionScore(
+        session_id=session.id,
+        behavioral_score=score_data["behavioral_score"],
+        communication_score=score_data["communication_score"],
+        technical_score=score_data["technical_score"],
+        resume_consistency_score=score_data["resume_consistency_score"],
+        readiness_score=score_data["final_readiness_score"],
+        strongest_category=score_data["strongest_category"],
+        weakest_category=score_data["weakest_category"],
+        insights=json.dumps(score_data["insights"])
+    )
+
+    session.status = "completed"
+    db.add(score)
+    db.commit()
+
+    return {
+        "session_id": session.id,
+        "behavioral_score": beh_score,
+        "readiness_score": score_data["final_readiness_score"]
+    }
+
+
+# =========================
+# GET RESULT (BACKWARD COMPATIBLE)
 # =========================
 @router.get("/result/{session_id}")
 def get_result(session_id: int, db: Session = Depends(get_db)):
+    score = db.query(models.SessionScore).filter(
+        models.SessionScore.session_id == session_id
+    ).first()
 
     evaluations = db.query(models.AnswerEvaluation).join(
         models.InterviewAnswer
@@ -162,24 +408,49 @@ def get_result(session_id: int, db: Session = Depends(get_db)):
 
     answer_scores = [e.overall_score for e in evaluations]
 
-    behavioral = db.query(models.BehavioralMetrics).filter(
-        models.BehavioralMetrics.session_id == session_id
-    ).first()
-
-    behavioral_score = 0
-
-    if behavioral:
-        behavioral_score = (
-            behavioral.eye_contact_percent * 0.4 +
-            (1 - behavioral.blink_rate) * 0.3 +
-            (1 - behavioral.pause_rate) * 0.3
-        )
-
-    final_score = calculate_session_score(answer_scores, behavioral_score)
+    if score:
+        return {
+            "session_id": session_id,
+            "answer_scores": answer_scores,
+            "behavioral_score": score.behavioral_score,
+            "final_score": score.readiness_score
+        }
 
     return {
         "session_id": session_id,
         "answer_scores": answer_scores,
-        "behavioral_score": behavioral_score,
-        "final_score": final_score
+        "behavioral_score": 75.0,
+        "final_score": 75.0
     }
+
+
+# =========================
+# LATEST & ALL SESSIONS
+# =========================
+@router.get("/latest")
+def get_latest_session(db: Session = Depends(get_db)):
+    latest = db.query(models.SessionScore).order_by(
+        models.SessionScore.id.desc()
+    ).first()
+
+    if not latest:
+        return {"message": "No sessions yet"}
+
+    return {
+        "session_id": latest.session_id,
+        "behavioral_score": latest.behavioral_score,
+        "readiness_score": latest.readiness_score or latest.behavioral_score
+    }
+
+
+@router.get("/all")
+def get_all_sessions(db: Session = Depends(get_db)):
+    sessions = db.query(models.SessionScore).all()
+    result = []
+    for index, s in enumerate(sessions):
+        result.append({
+            "attempt": str(index + 1),
+            "behavioral_score": s.behavioral_score,
+            "readiness_score": s.readiness_score or s.behavioral_score
+        })
+    return result

@@ -1,107 +1,43 @@
-from fastapi import FastAPI, Depends
-from sqlalchemy.orm import Session
-
-from backend.database import get_db
-from backend.database import SessionLocal, engine, Base
-
-import backend.models as models
-
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# from backend.models.question import QuestionBank
-from backend.schemas.schemas import BehavioralInput
-from backend.crud import calculate_behavioral_score
-from backend.routes import interview
+from backend.database import init_db
+import backend.models as models
+from backend.routes import resume, interview, analytics
 
-models.QuestionBank
+# Initialize database schema and migrations
+init_db()
 
-Base.metadata.create_all(bind=engine)
+app = FastAPI(
+    title="AI Interview Intelligence System API",
+    description="Multimodal Interview Preparation and Performance Analytics Engine",
+    version="1.0.0"
+)
 
-app = FastAPI()
-
+# CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
+# Register route modules
+app.include_router(resume.router)
 app.include_router(interview.router)
+app.include_router(analytics.router)
 
 
-
-@app.get("/interview/latest")
-def get_latest_session(db: Session = Depends(get_db)):
-
-    latest = db.query(models.SessionScore).order_by(
-        models.SessionScore.id.desc()
-    ).first()
-
-    if not latest:
-        return {"message": "No sessions yet"}
-
-    return {
-        "session_id": latest.session_id,
-        "behavioral_score": latest.behavioral_score
-    }
-
-
-@app.get("/interview/all")
-def get_all_sessions(db: Session = Depends(get_db)):
-
-    sessions = db.query(models.SessionScore).all()
-
-    result = []
-
-    for index, s in enumerate(sessions):
-        result.append({
-            "attempt": str(index + 1),
-            "behavioral_score": s.behavioral_score
-        })
-
-    return result
-
-
-@app.post("/interview/submit")
-def submit_interview(data: BehavioralInput, db: Session = Depends(get_db)):
-
-    session = db.query(models.InterviewSession).filter(
-    models.InterviewSession.id == data.session_id
-).first()
-
-    if not session:
-        return {"error": "Session not found"}
-
-    behavioral = models.BehavioralMetrics(
-        session_id=session.id,
-        eye_contact_percent=data.eye_contact_percent,
-        blink_rate=data.blink_rate,
-        pause_rate=data.pause_rate
-    )
-
-    db.add(behavioral)
-
-    score_value = calculate_behavioral_score(
-        data.eye_contact_percent,
-        data.blink_rate,
-        data.pause_rate
-    )
-
-    score = models.SessionScore(
-        session_id=session.id,
-        behavioral_score=score_value
-    )
-
-    db.add(score)
-    db.commit()
-
-    return {
-        "session_id": session.id,
-        "behavioral_score": score_value
-    }
 @app.get("/")
 def root():
-    return {"message": "AI Interview Intelligence Backend Running"}
-
+    return {
+        "status": "online",
+        "service": "AI Interview Intelligence System",
+        "version": "1.0.0"
+    }

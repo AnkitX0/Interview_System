@@ -1,15 +1,47 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 function Navbar() {
+  const location = useLocation();
+
+  const links = [
+    { to: "/", label: "Home" },
+    { to: "/resume", label: "Resume Analysis" },
+    { to: "/setup", label: "Mock Interview" },
+    { to: "/dashboard", label: "Report" },
+    { to: "/fix-answer", label: "Fix My Answer" },
+    { to: "/progress", label: "Progress" },
+  ];
+
   return (
     <nav style={navStyle}>
-      <h2 style={{ margin: 0 }}>Vortex</h2>
-      <div>
-        <Link to="/" style={linkStyle}>Home</Link>
-        <Link to="/resume" style={linkStyle}>Resume</Link>
-        <Link to="/interview" style={linkStyle}>Interview</Link>
-        <Link to="/dashboard" style={linkStyle}>Dashboard</Link>
-        <Link to="/progress" style={linkStyle}>Progress</Link>
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <div style={logoBadge}>AI</div>
+        <div>
+          <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "#f8fafc", letterSpacing: "-0.02em" }}>
+            Interview Intelligence
+          </h2>
+          <span style={{ fontSize: "11px", color: "#94a3b8" }}>Enterprise Mock Assessment</span>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        {links.map((link) => {
+          const isActive = location.pathname === link.to;
+          return (
+            <Link
+              key={link.to}
+              to={link.to}
+              style={{
+                ...linkStyle,
+                backgroundColor: isActive ? "rgba(255, 255, 255, 0.12)" : "transparent",
+                color: isActive ? "#ffffff" : "#cbd5e1",
+                fontWeight: isActive ? "600" : "500",
+              }}
+            >
+              {link.label}
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );
@@ -19,18 +51,34 @@ const navStyle = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  padding: "18px 60px",
+  padding: "14px 40px",
   backgroundColor: "#0f172a",
   color: "white",
-  borderBottom: "1px solid #1e293b"
+  borderBottom: "1px solid #1e293b",
+  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+  position: "sticky",
+  top: 0,
+  zIndex: 50,
+};
+
+const logoBadge = {
+  backgroundColor: "#3b82f6",
+  color: "white",
+  fontWeight: "800",
+  fontSize: "14px",
+  padding: "4px 8px",
+  borderRadius: "6px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
 };
 
 const linkStyle = {
-  marginLeft: "30px",
+  padding: "8px 14px",
+  borderRadius: "6px",
   textDecoration: "none",
-  color: "#cbd5e1",
-  fontSize: "14px",
-  fontWeight: "500"
+  fontSize: "13px",
+  transition: "all 0.15s ease",
 };
 
 export default Navbar;

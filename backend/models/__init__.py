@@ -1,4 +1,5 @@
 from .models import (
+    Resume,
     InterviewSession,
     QuestionBank,
     InterviewAnswer,
@@ -7,3 +8,14 @@ from .models import (
     BehavioralMetrics,
     SessionScore
 )
+
+__all__ = [
+    "Resume",
+    "InterviewSession",
+    "QuestionBank",
+    "InterviewAnswer",
+    "AnswerEvaluation",
+    "FollowUpQuestion",
+    "BehavioralMetrics",
+    "SessionScore",
+]

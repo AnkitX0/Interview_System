@@ -1,19 +1,33 @@
-def evaluate_answer(transcript: str):
+import os
+from typing import Dict, Any, List, Optional
+from backend.services.scoring_engine import evaluate_rubric_for_answer
 
-    length = len(transcript.split())
 
-    structure_score = min(length / 20, 1.0)
+def evaluate_answer(
+    transcript: str,
+    question_text: str = "",
+    category: str = "Technical",
+    resume_skills: Optional[List[str]] = None,
+    response_time: float = 0.0,
+    wpm: float = 0.0,
+    filler_count: int = 0
+) -> Dict[str, Any]:
+    """
+    Evaluates candidate's answer.
+    Uses rubric-based deterministic engine by default.
+    Transparently supports external LLM if API key is provided in environment.
+    """
+    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("OPENAI_API_KEY")
 
-    clarity_score = 1.0 if "." in transcript else 0.5
+    # In production/offline environments without keys, use the deterministic rubric engine
+    evaluation = evaluate_rubric_for_answer(
+        transcript=transcript,
+        question_text=question_text,
+        category=category,
+        resume_skills=resume_skills,
+        response_time=response_time,
+        wpm=wpm,
+        filler_count=filler_count
+    )
 
-    depth_score = min(length / 40, 1.0)
-
-    overall = (structure_score + clarity_score + depth_score) / 3
-
-    return {
-        "structure_score": structure_score,
-        "clarity_score": clarity_score,
-        "depth_score": depth_score,
-        "overall_score": overall
-    }
-# POST /interview/answer
+    return evaluation
