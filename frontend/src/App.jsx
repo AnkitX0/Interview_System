@@ -9,6 +9,7 @@ import Register from "./pages/Register";
 import ResumeUpload from "./pages/ResumeUpload";
 import Interview from "./pages/Interview";
 import Dashboard from "./pages/Dashboard";
+import Practice from "./pages/Practice";
 import Report from "./pages/Report";
 import FixAnswer from "./pages/FixAnswer";
 import Progress from "./pages/Progress";
@@ -32,6 +33,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ResumeUpload />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/practice"
+              element={
+                <ProtectedRoute>
+                  <Practice />
                 </ProtectedRoute>
               }
             />
