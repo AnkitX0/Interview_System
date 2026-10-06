@@ -1,7 +1,11 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 import Landing from "./pages/Landing";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 import ResumeUpload from "./pages/ResumeUpload";
 import Interview from "./pages/Interview";
 import Dashboard from "./pages/Dashboard";
@@ -11,29 +15,79 @@ import InterviewSetup from "./pages/InterviewSetup";
 
 function App() {
   return (
-    <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/resume" element={<ResumeUpload />} />
-          <Route path="/setup" element={<InterviewSetup />} />
+    <AuthProvider>
+      <Router>
+        <Layout>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
-          {/* Interview Screen */}
-          <Route path="/interview" element={<Interview />} />
+            {/* Protected interview routes */}
+            <Route
+              path="/resume"
+              element={
+                <ProtectedRoute>
+                  <ResumeUpload />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/setup"
+              element={
+                <ProtectedRoute>
+                  <InterviewSetup />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/interview"
+              element={
+                <ProtectedRoute>
+                  <Interview />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/report"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/fix-answer"
+              element={
+                <ProtectedRoute>
+                  <FixAnswer />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/progress"
+              element={
+                <ProtectedRoute>
+                  <Progress />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Performance Report Screen */}
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/report" element={<Dashboard />} />
-
-          {/* Fix My Answer & Progress */}
-          <Route path="/fix-answer" element={<FixAnswer />} />
-          <Route path="/progress" element={<Progress />} />
-
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Layout>
-    </Router>
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Layout>
+      </Router>
+    </AuthProvider>
   );
 }
 

@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { API_BASE_URL } from "../config";
+import { apiFetch } from "../utils/api";
 
 function Progress() {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ function Progress() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/progress`)
+    apiFetch("/progress")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch progress");
         return res.json();

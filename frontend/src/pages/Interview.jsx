@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { FaceMesh } from "@mediapipe/face_mesh";
 import { Camera } from "@mediapipe/camera_utils";
 import { ReportContext } from "../context/ReportContext";
-import { API_BASE_URL } from "../config";
+import { apiFetch } from "../utils/api";
 
 function Interview() {
   const navigate = useNavigate();
@@ -330,9 +330,8 @@ function Interview() {
         filler_count: fillerCount,
       };
 
-      const res = await fetch(`${API_BASE_URL}/interview/${sessionId}/answer`, {
+      const res = await apiFetch(`/interview/${sessionId}/answer`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
@@ -430,9 +429,8 @@ function Interview() {
         duration_seconds: durationSeconds,
       };
 
-      const res = await fetch(`${API_BASE_URL}/interview/${sessionId}/complete`, {
+      const res = await apiFetch(`/interview/${sessionId}/complete`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 

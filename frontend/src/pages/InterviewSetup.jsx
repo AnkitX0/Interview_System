@@ -1,21 +1,36 @@
 import { useState, useContext, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ReportContext } from "../context/ReportContext";
-import { API_BASE_URL } from "../config";
+import { useAuth } from "../context/AuthContext";
+import { apiFetch } from "../utils/api";
 
 function InterviewSetup() {
   const navigate = useNavigate();
   const location = useLocation();
   const { resumeData, setCurrentSessionId } = useContext(ReportContext);
+  const { user } = useAuth();
 
   const [mode, setMode] = useState("technical");
   const [difficulty, setDifficulty] = useState("medium");
   const [questionCount, setQuestionCount] = useState(3);
-  const [targetRole, setTargetRole] = useState("Software Engineer");
+  const [targetRole, setTargetRole] = useState(user?.profile?.target_role || "Software Engineer");
   const [systemReady, setSystemReady] = useState(false);
   const [isCheckingMedia, setIsCheckingMedia] = useState(false);
   const [loadingStart, setLoadingStart] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
+
+  // Pre-fill preferences from authenticated user profile
+  useEffect(() => {
+    if (user?.profile?.target_role) {
+      setTargetRole(user.profile.target_role);
+    }
+    if (user?.profile?.experience_level) {
+      const exp = user.profile.experience_level.toLowerCase();
+      if (exp.includes("entry") || exp.includes("junior")) setDifficulty("easy");
+      else if (exp.includes("senior") || exp.includes("staff") || exp.includes("lead")) setDifficulty("hard");
+      else setDifficulty("medium");
+    }
+  }, [user]);
 
   // Resume profile if passed from Resume page or context
   const activeResume = location.state?.resumeId
@@ -82,9 +97,8 @@ function InterviewSetup() {
         target_role: targetRole,
       };
 
-      const res = await fetch(`${API_BASE_URL}/interview/start`, {
+      const res = await apiFetch("/interview/start", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 

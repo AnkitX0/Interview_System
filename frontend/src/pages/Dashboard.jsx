@@ -15,7 +15,7 @@ import {
   Radar,
 } from "recharts";
 import { ReportContext } from "../context/ReportContext";
-import { API_BASE_URL } from "../config";
+import { apiFetch } from "../utils/api";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -39,22 +39,22 @@ function Dashboard() {
       setError(null);
 
       try {
-        let endpoint = `${API_BASE_URL}/report/latest`;
+        let endpoint = "/report/latest";
         if (targetSessionId) {
-          endpoint = `${API_BASE_URL}/report/${targetSessionId}`;
+          endpoint = `/report/${targetSessionId}`;
         }
 
-        const res = await fetch(endpoint);
+        const res = await apiFetch(endpoint);
         if (res.ok) {
           const data = await res.json();
           setReport(data);
         } else {
           // If specific session failed, try latest session score
-          const latestRes = await fetch(`${API_BASE_URL}/interview/latest`);
+          const latestRes = await apiFetch("/interview/latest");
           if (latestRes.ok) {
             const latestData = await latestRes.json();
             if (latestData.session_id) {
-              const repRes = await fetch(`${API_BASE_URL}/report/${latestData.session_id}`);
+              const repRes = await apiFetch(`/report/${latestData.session_id}`);
               if (repRes.ok) {
                 const repData = await repRes.json();
                 setReport(repData);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { API_BASE_URL } from "../config";
+import { apiFetch } from "../utils/api";
 
 function FixAnswer() {
   const location = useLocation();
@@ -36,9 +36,8 @@ function FixAnswer() {
     setCopied(false);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/answer/improve`, {
+      const res = await apiFetch("/answer/improve", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           question: question.trim(),
           answer: answer.trim(),
