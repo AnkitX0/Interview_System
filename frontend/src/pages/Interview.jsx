@@ -1,9 +1,12 @@
-import { useState, useEffect, useRef, useContext } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useRef, useContext } from "react";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { FaceMesh } from "@mediapipe/face_mesh";
 import { Camera } from "@mediapipe/camera_utils";
 import { ReportContext } from "../context/ReportContext";
 import { apiFetch } from "../utils/api";
+import { Card } from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
+import { Badge } from "../components/ui/Badge";
 
 function Interview() {
   const navigate = useNavigate();
@@ -25,6 +28,7 @@ function Interview() {
   const difficulty = location.state?.difficulty || savedState.difficulty || "medium";
   const targetRole = location.state?.targetRole || savedState.targetRole || "Software Engineer";
   const textOnly = Boolean(location.state?.textOnly ?? savedState.textOnly ?? false);
+  const isPracticeDrill = Boolean(location.state?.isPractice);
 
   const initialQuestions = location.state?.questions || savedState.questions || [
     { id: 1, question: "Explain REST API architecture and how HTTP status codes are utilized." },
@@ -34,36 +38,33 @@ function Interview() {
 
   const [questions, setQuestions] = useState(initialQuestions);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(90);
+  const [timeLeft, setTimeLeft] = useState(currentMode === "pressure" ? 45 : 90);
   const [answer, setAnswer] = useState("");
 
-  // Media & Behavioral tracking state
+  // Media & sensor state (used for telemetry, not displayed distractingly to user)
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [isMicOn, setIsMicOn] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const [eyeContact, setEyeContact] = useState(false);
-  const [blinkCount, setBlinkCount] = useState(0);
   const [eyeContactPercent, setEyeContactPercent] = useState(null);
+  const [blinkCount, setBlinkCount] = useState(0);
 
-  // Speech-to-text recognition & input mode state
+  // Speech-to-text recognition state
   const [speechRecognitionActive, setSpeechRecognitionActive] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(!textOnly);
-  const [inputMode, setInputMode] = useState(textOnly ? "text" : "mic"); // "mic" | "text"
-  const [speechNotice, setSpeechNotice] = useState(textOnly ? "Text-only mode active. Camera and microphone processing are disabled per your privacy preference." : "");
-  const [inputWarning, setInputWarning] = useState("");
+  const [inputMode, setInputMode] = useState(textOnly ? "text" : "mic");
+  const [speechNotice, setSpeechNotice] = useState("");
   const speechRecognizerRef = useRef(null);
   const speechSegmentsRef = useRef([]);
   const currentSpeechStartRef = useRef(null);
 
-  // Feedback & Follow-up state
+  // Question submission & progress state
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [evaluating, setEvaluating] = useState(false);
-  const [latestEvaluation, setLatestEvaluation] = useState(null);
+  const [loadingNext, setLoadingNext] = useState(false);
+  const [submittingFinal, setSubmittingFinal] = useState(false);
   const [isFollowUp, setIsFollowUp] = useState(false);
   const [followUpQuestion, setFollowUpQuestion] = useState("");
-  const [submittingFinal, setSubmittingFinal] = useState(false);
-  const [loadingNext, setLoadingNext] = useState(false);
 
-  // Refs for camera and metrics
+  // Sensor calculation refs
   const blinkRef = useRef(false);
   const totalFramesRef = useRef(0);
   const eyeContactFramesRef = useRef(0);
@@ -88,19 +89,21 @@ function Interview() {
 
   const currentQ = questions[currentIndex] || { id: 1, question: "Interview Question" };
 
-  // Timer countdown per question
+  // Timer countdown
   useEffect(() => {
-    if (timeLeft <= 0) return;
+    if (timeLeft <= 0 || isSubmitted) return;
     const timer = setInterval(() => {
       setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
     return () => clearInterval(timer);
-  }, [timeLeft]);
+  }, [timeLeft, isSubmitted]);
 
   // Reset timer on question change
   useEffect(() => {
-    const q = questions[currentIndex];
-    setTimeLeft(q?.time_limit_seconds || 90);
+    const defaultTime = currentMode === "pressure" ? 45 : (currentQ.time_limit_seconds || 90);
+    setTimeLeft(defaultTime);
+    setAnswer("");
+    setIsSubmitted(false);
     questionStartTimeRef.current = Date.now();
     speechSegmentsRef.current = [];
     currentSpeechStartRef.current = null;
@@ -113,339 +116,227 @@ function Interview() {
       lastPosition: null,
       shifts: 0,
     };
-  }, [currentIndex, isFollowUp]);
+  }, [currentIndex, currentMode]);
 
-  // Initialize Speech Recognition (Web Speech API)
+  // Speech Recognition setup (Web Speech API)
   useEffect(() => {
     if (textOnly) {
       setSpeechSupported(false);
-      setInputMode("text");
       return;
     }
+
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      setSpeechSupported(true);
-      const recognizer = new SpeechRecognition();
-      recognizer.continuous = true;
-      recognizer.interimResults = true;
-      recognizer.lang = "en-US";
-
-      recognizer.onspeechstart = () => {
-        const segStart = (Date.now() - questionStartTimeRef.current) / 1000;
-        currentSpeechStartRef.current = Math.max(0, segStart);
-      };
-
-      recognizer.onspeechend = () => {
-        const segEnd = (Date.now() - questionStartTimeRef.current) / 1000;
-        if (currentSpeechStartRef.current !== null) {
-          speechSegmentsRef.current.push({
-            start: Number(currentSpeechStartRef.current.toFixed(2)),
-            end: Number(Math.max(currentSpeechStartRef.current + 0.1, segEnd).toFixed(2)),
-          });
-          currentSpeechStartRef.current = null;
-        }
-      };
-
-      recognizer.onresult = (event) => {
-        const nowSec = (Date.now() - questionStartTimeRef.current) / 1000;
-        if (currentSpeechStartRef.current === null) {
-          currentSpeechStartRef.current = Math.max(0, nowSec - 0.5);
-        }
-        let transcriptText = "";
-        let isFinalChunk = false;
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          transcriptText += event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            isFinalChunk = true;
-          }
-        }
-        setAnswer((prev) => {
-          const base = prev ? prev.trim() + " " : "";
-          return base + transcriptText.trim();
-        });
-        setInputWarning("");
-
-        if (isFinalChunk) {
-          speechSegmentsRef.current.push({
-            start: Number(currentSpeechStartRef.current.toFixed(2)),
-            end: Number(Math.max(currentSpeechStartRef.current + 0.2, nowSec).toFixed(2)),
-          });
-          currentSpeechStartRef.current = null;
-        }
-      };
-
-      recognizer.onerror = (e) => {
-        console.warn("Speech recognition notice:", e.error);
-        setSpeechRecognitionActive(false);
-        if (e.error === "not-allowed" || e.error === "service-not-allowed") {
-          setSpeechNotice("Microphone permission was not granted for speech recognition. You can type your response directly below.");
-          setInputMode("text");
-        } else if (e.error !== "no-speech") {
-          setSpeechNotice(`Speech recognition notice: ${e.error}. You can type your response directly below.`);
-        }
-      };
-
-      recognizer.onend = () => {
-        if (currentSpeechStartRef.current !== null) {
-          const segEnd = (Date.now() - questionStartTimeRef.current) / 1000;
-          speechSegmentsRef.current.push({
-            start: Number(currentSpeechStartRef.current.toFixed(2)),
-            end: Number(Math.max(currentSpeechStartRef.current + 0.1, segEnd).toFixed(2)),
-          });
-          currentSpeechStartRef.current = null;
-        }
-        setSpeechRecognitionActive(false);
-      };
-
-      speechRecognizerRef.current = recognizer;
-    } else {
+    if (!SpeechRecognition) {
       setSpeechSupported(false);
       setInputMode("text");
-      setSpeechNotice("Speech recognition is not supported in this browser. You can type your response directly below.");
+      setSpeechNotice("Speech recognition is not available in this browser. You can type your answers.");
+      return;
     }
+
+    const recognizer = new SpeechRecognition();
+    recognizer.continuous = true;
+    recognizer.interimResults = true;
+    recognizer.lang = "en-US";
+
+    recognizer.onstart = () => {
+      setSpeechRecognitionActive(true);
+      setIsMicOn(true);
+      currentSpeechStartRef.current = Date.now();
+    };
+
+    recognizer.onresult = (event) => {
+      let finalTranscript = "";
+      for (let i = 0; i < event.results.length; i++) {
+        finalTranscript += event.results[i][0].transcript + " ";
+      }
+      setAnswer(finalTranscript.trim());
+    };
+
+    recognizer.onerror = (event) => {
+      console.warn("Speech recognition notice:", event.error);
+      if (event.error === "not-allowed") {
+        setSpeechNotice("Microphone permission denied. Switched to text input.");
+        setInputMode("text");
+      }
+      setSpeechRecognitionActive(false);
+    };
+
+    recognizer.onend = () => {
+      setSpeechRecognitionActive(false);
+      if (currentSpeechStartRef.current) {
+        const segStart = (currentSpeechStartRef.current - questionStartTimeRef.current) / 1000;
+        const segEnd = (Date.now() - questionStartTimeRef.current) / 1000;
+        if (segEnd > segStart) {
+          speechSegmentsRef.current.push({
+            start_seconds: Math.max(0, segStart),
+            end_seconds: Math.max(segStart, segEnd),
+          });
+        }
+        currentSpeechStartRef.current = null;
+      }
+    };
+
+    speechRecognizerRef.current = recognizer;
 
     return () => {
       try {
-        speechRecognizerRef.current?.stop();
-      } catch {}
+        recognizer.abort();
+      } catch {
+        // cleanup
+      }
     };
-  }, []);
+  }, [textOnly]);
 
   const toggleSpeechRecognition = () => {
-    if (!speechRecognizerRef.current) {
-      setSpeechNotice("Speech recognition is not supported in this browser. Please type your response directly below.");
-      setInputMode("text");
-      return;
-    }
-
+    if (!speechRecognizerRef.current) return;
     if (speechRecognitionActive) {
       speechRecognizerRef.current.stop();
       setSpeechRecognitionActive(false);
-      setIsRecording(false);
     } else {
       try {
         speechRecognizerRef.current.start();
         setSpeechRecognitionActive(true);
-        setIsRecording(true);
-        setInputMode("mic");
-        setSpeechNotice("");
       } catch (e) {
-        console.warn("Speech recognition start failed:", e);
-        setSpeechNotice("Could not start speech recognition. You can type your response directly below.");
-        setInputMode("text");
+        console.warn("Speech recognition start warning:", e);
       }
     }
   };
 
-  // Initialize MediaPipe FaceMesh & Camera
+  // Background MediaPipe FaceMesh for post-interview telemetry
   useEffect(() => {
-    if (textOnly) {
-      setIsCameraOn(false);
-      setIsMicOn(false);
-      return;
-    }
-    if (meshInitialized.current) return;
-    meshInitialized.current = true;
+    if (textOnly) return;
 
-    const startMedia = async () => {
+    let isSubscribed = true;
+
+    async function initCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true,
+          video: { width: 640, height: 480 },
+          audio: false,
         });
+
+        if (!isSubscribed) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
 
         streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
-
         setIsCameraOn(true);
-        setIsMicOn(true);
 
         const faceMesh = new FaceMesh({
           locateFile: (file) => `/mediapipe/face_mesh/${file}`,
         });
 
-        faceMeshRef.current = faceMesh;
         faceMesh.setOptions({
           maxNumFaces: 1,
           refineLandmarks: true,
-          minDetectionConfidence: 0.6,
-          minTrackingConfidence: 0.6,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5,
         });
 
         faceMesh.onResults((results) => {
-          const canvas = canvasRef.current;
-          const video = videoRef.current;
-          if (!canvas || !video || !video.videoWidth) return;
+          if (!isSubscribed) return;
+          totalFramesRef.current += 1;
+          const av = answerVisualFramesRef.current;
+          av.totalSampled += 1;
 
-          const ctx = canvas.getContext("2d");
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-          const vt = answerVisualFramesRef.current;
-          vt.totalSampled++;
-
-          if (results.multiFaceLandmarks?.length > 0) {
-            vt.faceDetected++;
+          if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+            av.faceDetected += 1;
             const landmarks = results.multiFaceLandmarks[0];
-
-            // Eye Contact calculation
             const nose = landmarks[1];
-            const noseX = nose.x * canvas.width;
-            const centerX = canvas.width / 2;
+            const isAligned = Math.abs(nose.x - 0.5) < 0.15;
 
-            totalFramesRef.current++;
-            if (Math.abs(noseX - centerX) < 65) {
-              eyeContactFramesRef.current++;
-              vt.alignedCount++;
-              setEyeContact(true);
-            } else {
-              setEyeContact(false);
+            if (isAligned) {
+              eyeContactFramesRef.current += 1;
+              av.alignedCount += 1;
             }
 
-            // Head movement variance and abrupt shift tracking
-            vt.positions.push({ x: nose.x, y: nose.y });
-            if (vt.lastPosition) {
-              const dx = nose.x - vt.lastPosition.x;
-              const dy = nose.y - vt.lastPosition.y;
-              if (Math.sqrt(dx * dx + dy * dy) > 0.08) {
-                vt.shifts++;
-              }
-            }
-            vt.lastPosition = { x: nose.x, y: nose.y };
+            // Blink calculation
+            const topEye = landmarks[159];
+            const botEye = landmarks[145];
+            const eyeDist = Math.abs(topEye.y - botEye.y);
 
-            // Blink Detection
-            const leftEyeTop = landmarks[159];
-            const leftEyeBottom = landmarks[145];
-            const leftEyeLeft = landmarks[33];
-            const leftEyeRight = landmarks[133];
-
-            const verticalDist = Math.abs(leftEyeTop.y - leftEyeBottom.y) * canvas.height;
-            const horizontalDist = Math.abs(leftEyeLeft.x - leftEyeRight.x) * canvas.width;
-            const eyeRatio = verticalDist / (horizontalDist || 1);
-
-            if (eyeRatio < 0.20) {
-              if (!blinkRef.current) {
-                setBlinkCount((prev) => prev + 1);
-                vt.blinks++;
-                blinkRef.current = true;
-              }
-            } else {
+            if (eyeDist < 0.015 && !blinkRef.current) {
+              blinkRef.current = true;
+              setBlinkCount((prev) => prev + 1);
+              av.blinks += 1;
+            } else if (eyeDist >= 0.015 && blinkRef.current) {
               blinkRef.current = false;
             }
-          } else {
-            setEyeContact(false);
+
+            if (totalFramesRef.current % 30 === 0) {
+              const currentPercent = (eyeContactFramesRef.current / totalFramesRef.current) * 100;
+              setEyeContactPercent(Number(currentPercent.toFixed(1)));
+            }
           }
         });
 
-        const camera = new Camera(videoRef.current, {
-          onFrame: async () => {
-            if (faceMeshRef.current && videoRef.current) {
-              await faceMeshRef.current.send({ image: videoRef.current });
-            }
-          },
-          width: 640,
-          height: 480,
-        });
+        faceMeshRef.current = faceMesh;
 
-        camera.start();
-        cameraRef.current = camera;
+        if (videoRef.current) {
+          const camera = new Camera(videoRef.current, {
+            onFrame: async () => {
+              if (faceMeshRef.current && videoRef.current) {
+                await faceMeshRef.current.send({ image: videoRef.current });
+              }
+            },
+            width: 640,
+            height: 480,
+          });
+          camera.start();
+          cameraRef.current = camera;
+        }
       } catch (err) {
-        console.warn("Webcam access unavailable or skipped:", err);
+        console.warn("Camera could not be accessed:", err);
         setIsCameraOn(false);
-        setIsMicOn(false);
       }
-    };
+    }
 
-    startMedia();
+    initCamera();
 
     return () => {
-      try {
-        cameraRef.current?.stop();
-        streamRef.current?.getTracks().forEach((track) => track.stop());
-        faceMeshRef.current?.close();
-      } catch {}
-    };
-  }, []);
-
-  // Update Eye Contact % continuously
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (totalFramesRef.current > 0) {
-        const percent = (eyeContactFramesRef.current / totalFramesRef.current) * 100;
-        setEyeContactPercent(Number(percent.toFixed(1)));
+      isSubscribed = false;
+      if (cameraRef.current) {
+        try { cameraRef.current.stop(); } catch {}
       }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [textOnly]);
 
-  // Compute live communication indicators
-  const words = answer.trim().split(/\s+/).filter(Boolean);
-  const wordCount = words.length;
-  const fillerRegex = /\b(um|uh|like|basically|actually|literally|you know|sort of|kind of)\b/gi;
-  const fillerMatches = answer.match(fillerRegex);
-  const fillerCount = fillerMatches ? fillerMatches.length : 0;
-  const elapsedMinutes = (Date.now() - questionStartTimeRef.current) / 60000 || 0.5;
-  const liveWpm = Math.round(wordCount / elapsedMinutes);
-
-  // Submit Answer & Evaluate
+  // Handle Answer Submission
   const handleSubmitAnswer = async () => {
+    if (speechRecognitionActive && speechRecognizerRef.current) {
+      speechRecognizerRef.current.stop();
+      setSpeechRecognitionActive(false);
+    }
+
     if (!answer.trim()) {
-      setInputWarning("Please enter or record an answer before submitting.");
+      setSpeechNotice("Please speak or type your answer before submitting.");
       return;
-    }
-    setInputWarning("");
-
-    if (speechRecognitionActive) {
-      try {
-        speechRecognizerRef.current?.stop();
-        setSpeechRecognitionActive(false);
-      } catch {}
-    }
-
-    if (currentSpeechStartRef.current !== null) {
-      const segEnd = (Date.now() - questionStartTimeRef.current) / 1000;
-      speechSegmentsRef.current.push({
-        start: Number(currentSpeechStartRef.current.toFixed(2)),
-        end: Number(Math.max(currentSpeechStartRef.current + 0.1, segEnd).toFixed(2)),
-      });
-      currentSpeechStartRef.current = null;
     }
 
     setEvaluating(true);
-    const responseDuration = (Date.now() - questionStartTimeRef.current) / 1000;
+    setIsSubmitted(true);
+
     const isTyped = inputMode === "text";
+    const responseDuration = (Date.now() - questionStartTimeRef.current) / 1000;
+    const words = answer.trim().split(/\s+/).filter(Boolean).length;
+    const liveWpm = responseDuration > 0 ? Number(((words / responseDuration) * 60).toFixed(1)) : 0;
 
-    // Compute client-side FaceMesh aggregates for this turn
-    const vt = answerVisualFramesRef.current;
-    let visualPayload = null;
-    if (isCameraOn && vt.totalSampled > 0) {
-      const durMinutes = Math.max(0.01, responseDuration / 60);
-      const faceVisRatio = Number((vt.faceDetected / vt.totalSampled).toFixed(3));
-      const headAlignPercent = vt.faceDetected > 0 ? Number(((vt.alignedCount / vt.faceDetected) * 100).toFixed(1)) : 0.0;
-      const calculatedBlinkRate = Number((vt.blinks / durMinutes).toFixed(1));
-
-      let moveVariance = 0.0;
-      if (vt.positions.length > 1) {
-        const meanX = vt.positions.reduce((s, p) => s + p.x, 0) / vt.positions.length;
-        const meanY = vt.positions.reduce((s, p) => s + p.y, 0) / vt.positions.length;
-        const sumSq = vt.positions.reduce((s, p) => s + Math.pow(p.x - meanX, 2) + Math.pow(p.y - meanY, 2), 0);
-        moveVariance = Number((sumSq / vt.positions.length).toFixed(6));
-      }
-
-      visualPayload = {
-        head_alignment_percent: headAlignPercent,
-        blink_rate: calculatedBlinkRate,
-        head_movement_variance: moveVariance,
-        face_visibility_ratio: faceVisRatio,
-        head_shift_count: vt.shifts,
-        frames_sampled: vt.totalSampled,
-      };
-    }
+    const av = answerVisualFramesRef.current;
+    const visualPayload = isCameraOn && av.totalSampled > 0
+      ? {
+          head_alignment_percent: av.faceDetected > 0 ? Number(((av.alignedCount / av.faceDetected) * 100).toFixed(1)) : null,
+          blink_rate: responseDuration > 0 ? Number(((av.blinks / (responseDuration / 60)).toFixed(1))) : null,
+          face_visibility_ratio: Number((av.faceDetected / av.totalSampled).toFixed(2)),
+          frames_sampled: av.totalSampled,
+        }
+      : null;
 
     try {
       const payload = {
@@ -456,7 +347,7 @@ function Interview() {
         response_time: responseDuration,
         duration_seconds: responseDuration,
         wpm: liveWpm,
-        filler_count: fillerCount,
+        filler_count: 0,
         speech_segments: isTyped ? null : (speechSegmentsRef.current.length > 0 ? speechSegmentsRef.current : null),
         speech_source: isTyped ? "typed" : "speech",
         visual_metrics: visualPayload,
@@ -468,65 +359,23 @@ function Interview() {
       });
 
       if (!res.ok) {
-        throw new Error(`Answer submission failed with status: ${res.status}`);
+        throw new Error("Answer recording failed");
       }
-
-      const evalData = await res.json();
-      setLatestEvaluation(evalData);
     } catch (err) {
-      console.warn("Using offline evaluation fallback:", err);
-      setLatestEvaluation({
-        score: 75.0,
-        technical_score: 75.0,
-        structure_score: 70.0,
-        reasoning_score: 80.0,
-        star_score: 70.0,
-        dimensions: {
-          structure: {
-            score: 70.0,
-            evidence: ["Structured across 3 sentences", "0 filler words"],
-            explanation: "Narrative flow is coherent.",
-            recommended_action: "Add explicit transitions."
-          },
-          technical: {
-            score: 75.0,
-            evidence: ["3 domain keywords found"],
-            explanation: "Demonstrated solid technical understanding.",
-            recommended_action: "Incorporate specific mechanisms and edge cases."
-          },
-          reasoning: {
-            score: 80.0,
-            evidence: ["trade-off terms: 1"],
-            explanation: "Articulated architectural trade-offs.",
-            recommended_action: "Contrast against alternative solutions."
-          },
-          star: {
-            score: 70.0,
-            evidence: ["3/4 STAR components identified", "1 quantified result found"],
-            explanation: "Followed the STAR method.",
-            recommended_action: "Quantify final outcomes with SLAs."
-          }
-        },
-        strengths: ["Answer addresses the key concepts of the question."],
-        weaknesses: ["Could include more specific architectural metrics and examples."],
-        suggestions: ["Quantify your experience with specific engineering SLAs."],
-      });
+      console.warn("Answer submission notice (offline fallback):", err);
     } finally {
       setEvaluating(false);
     }
   };
 
-  // Proceed to Next Question via Adaptive Policy
+  // Proceed to next question via adaptive policy
   const handleProceed = async () => {
     speechSegmentsRef.current = [];
     currentSpeechStartRef.current = null;
     setLoadingNext(true);
 
     try {
-      const res = await apiFetch(`/interview/${sessionId}/next`, {
-        method: "POST",
-      });
-
+      const res = await apiFetch(`/interview/${sessionId}/next`, { method: "POST" });
       if (res.ok) {
         const data = await res.json();
         if (data.done) {
@@ -542,30 +391,21 @@ function Interview() {
             time_limit_seconds: data.question.time_limit_seconds || 90,
             question_type: data.question.question_type || "technical",
             difficulty: data.question.difficulty || difficulty,
-            ladder_stage: data.question.ladder_stage || null,
-            source: data.question.source || null,
           };
           setQuestions((prev) => [...prev, nextQ]);
           setCurrentIndex((prev) => prev + 1);
-          setLatestEvaluation(null);
           setIsFollowUp(false);
           setFollowUpQuestion("");
-          setAnswer("");
           return;
         }
       }
     } catch (err) {
-      console.warn("Error calling /next, falling back to local question queue:", err);
+      console.warn("Adaptive next question fetch notice:", err);
     } finally {
       setLoadingNext(false);
     }
 
-    // Local fallback if /next is unavailable or offline
-    setLatestEvaluation(null);
-    setIsFollowUp(false);
-    setFollowUpQuestion("");
-    setAnswer("");
-
+    // Local queue fallback
     if (currentIndex < questions.length - 1) {
       setCurrentIndex((prev) => prev + 1);
     } else {
@@ -573,19 +413,17 @@ function Interview() {
     }
   };
 
-
-  // Complete Interview
+  // Complete interview and navigate to Report
   const handleFinishInterview = async () => {
     setSubmittingFinal(true);
     try {
       const durationSeconds = (Date.now() - interviewStartRef.current) / 1000;
       const durationMinutes = durationSeconds / 60 || 1;
 
-      // Only send visual metrics if camera was active and recorded frames; never send default/imputed values
-      const finalEyeContact = (isCameraOn && totalFramesRef.current > 0 && eyeContactPercent !== null)
+      const finalEyeContact = isCameraOn && totalFramesRef.current > 0 && eyeContactPercent !== null
         ? eyeContactPercent
         : null;
-      const finalBlinkRate = (isCameraOn && totalFramesRef.current > 0)
+      const finalBlinkRate = isCameraOn && totalFramesRef.current > 0
         ? Number((blinkCount / durationMinutes).toFixed(1))
         : null;
 
@@ -605,656 +443,394 @@ function Interview() {
         const finalReport = await res.json();
         setReportData(finalReport);
       }
-
-      sessionStorage.setItem("interviewCompleted", "true");
-      sessionStorage.setItem("currentSessionId", String(sessionId));
-      navigate("/dashboard", { state: { sessionId } });
     } catch (err) {
-      console.error("Complete interview error:", err);
+      console.warn("Interview complete notice:", err);
+    } finally {
       sessionStorage.setItem("interviewCompleted", "true");
       sessionStorage.setItem("currentSessionId", String(sessionId));
-      navigate("/dashboard", { state: { sessionId } });
-    } finally {
       setSubmittingFinal(false);
+      navigate(`/report?sessionId=${sessionId}`);
     }
   };
 
-  const [switchingMode, setSwitchingMode] = useState(false);
-  const handleSwitchToPractice = async () => {
-    setSwitchingMode(true);
+  // De-escalate from pressure mode to standard
+  const handleSwitchToStandard = async () => {
     try {
-      const res = await apiFetch(`/interview/${sessionId}/switch-mode`, {
-        method: "POST",
-      });
+      const res = await apiFetch(`/interview/${sessionId}/switch-mode`, { method: "POST" });
       if (res.ok) {
         setCurrentMode("technical");
         setTimeLeft(90);
-        setSpeechNotice("Switched to practice mode. Shorter pressure timer disabled, time limit relaxed to 90s.");
+        setSpeechNotice("Switched to standard timing. Time limit relaxed to 90 seconds.");
       }
     } catch (err) {
-      console.error("Failed to switch mode:", err);
-    } finally {
-      setSwitchingMode(false);
+      console.warn("Mode switch notice:", err);
     }
   };
 
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  const timeFormatted = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+  const isTimeLow = timeLeft <= 15;
+  const wordCount = answer.trim().split(/\s+/).filter(Boolean).length;
+
   return (
-    <div style={{ maxWidth: "1200px", margin: "0 auto", paddingBottom: "60px" }}>
-      {/* TOP STATUS BAR */}
-      <div style={statusBar}>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
-          <span style={pillBadge}>Question {currentIndex + 1} of {questions.length}</span>
-          <span style={{ ...pillBadge, backgroundColor: "#f1f5f9", color: "#334155" }}>
-            {currentMode.toUpperCase()} ROUND
-          </span>
-          <span style={{ ...pillBadge, backgroundColor: "#f1f5f9", color: "#334155" }}>
-            {difficulty.toUpperCase()}
-          </span>
+    <div className="container" style={{ maxWidth: "1000px", paddingBottom: "40px" }}>
+      {/* Top Header Bar */}
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "12px",
+          paddingBottom: "16px",
+          borderBottom: "1px solid var(--border-default)",
+          marginBottom: "24px",
+        }}
+      >
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>
+              {isPracticeDrill ? "Practice Drill" : "Interview Session"}
+            </span>
+            <Badge variant="neutral">{targetRole}</Badge>
+            {currentMode === "pressure" && <Badge variant="warning">Incident Timing (45s)</Badge>}
+          </div>
+          <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "2px" }}>
+            Question {currentIndex + 1} of {questions.length}
+          </div>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
           {currentMode === "pressure" && (
             <button
-              onClick={handleSwitchToPractice}
-              disabled={switchingMode}
+              type="button"
+              onClick={handleSwitchToStandard}
               style={{
-                padding: "4px 10px",
                 fontSize: "12px",
-                fontWeight: "600",
-                color: "#92400e",
-                backgroundColor: "#fef3c7",
-                border: "1px solid #fde68a",
-                borderRadius: "6px",
-                cursor: switchingMode ? "wait" : "pointer",
+                color: "var(--text-secondary)",
+                background: "none",
+                border: "1px solid var(--border-default)",
+                borderRadius: "4px",
+                padding: "4px 8px",
+                cursor: "pointer",
               }}
-              title="Switch back to standard practice mode (relax time limit to 90s)"
             >
-              {switchingMode ? "Switching..." : "Switch to practice mode"}
+              Switch to Standard (90s)
             </button>
+          )}
+
+          {/* Clean Focused Timer */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "6px 14px",
+              borderRadius: "var(--radius-md)",
+              backgroundColor: isTimeLow ? "var(--danger-bg)" : "var(--slate-100)",
+              border: `1px solid ${isTimeLow ? "var(--danger-border)" : "var(--border-default)"}`,
+              color: isTimeLow ? "var(--danger-text)" : "var(--text-primary)",
+              fontWeight: "700",
+              fontSize: "15px",
+              fontFamily: "var(--font-family-mono)",
+            }}
+          >
+            <span>⏱</span>
+            <span>{timeFormatted}</span>
+          </div>
+        </div>
+      </div>
+
+      {speechNotice && (
+        <div className="alert alert-info" style={{ marginBottom: "16px" }}>
+          <span>{speechNotice}</span>
+          <button
+            type="button"
+            onClick={() => setSpeechNotice("")}
+            style={{ background: "none", border: "none", cursor: "pointer", marginLeft: "auto", fontWeight: "bold" }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* Prominent Question Card */}
+      <Card style={{ marginBottom: "20px", padding: "20px 24px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+          <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--primary-700)" }}>
+            {isFollowUp ? "Deep-Dive Follow-Up" : `Question ${currentIndex + 1}`}
+          </span>
+          {currentQ.caption && (
+            <Badge variant="info">{currentQ.caption}</Badge>
           )}
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-          <div style={{ fontSize: "14px", fontWeight: "700", color: timeLeft < 15 ? "#dc2626" : "#0f172a" }}>
-            ⏱ {timeLeft}s remaining
-          </div>
-          <button
-            onClick={() => {
-              if (confirm("Are you sure you want to conclude the interview and view your report?")) {
-                handleFinishInterview();
-              }
+        <h2 style={{ fontSize: "20px", fontWeight: "700", color: "var(--text-primary)", lineHeight: "1.4" }}>
+          {isFollowUp ? followUpQuestion : currentQ.question}
+        </h2>
+      </Card>
+
+      {/* Distraction-Free Workspace Grid (Desktop: 2 columns, Mobile: 1 column) */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+          gap: "20px",
+          alignItems: "start",
+        }}
+      >
+        {/* Left Column: Natural Candidate Camera Feed */}
+        <Card style={{ padding: "16px" }}>
+          <div
+            style={{
+              position: "relative",
+              aspectRatio: "4/3",
+              backgroundColor: "var(--slate-900)",
+              borderRadius: "var(--radius-md)",
+              overflow: "hidden",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-            style={exitBtn}
           >
-            End Interview Early
-          </button>
-        </div>
-      </div>
+            {isCameraOn && !textOnly ? (
+              <>
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    transform: "scaleX(-1)", // Mirror camera feed naturally
+                  }}
+                />
+                {/* Hidden canvas for background MediaPipe processing */}
+                <canvas ref={canvasRef} style={{ display: "none" }} />
 
-      {/* MAIN TWO COLUMN WORKSPACE */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1.35fr", gap: "25px", marginTop: "20px" }}>
-        {/* LEFT COLUMN: WEBCAM FEED & BEHAVIORAL INDICATORS */}
-        <div>
-          <div style={videoCard}>
-            <div style={{ position: "relative", minHeight: "280px", background: "#0f172a", borderRadius: "8px", overflow: "hidden" }}>
-              {isCameraOn ? (
-                <>
-                  <video ref={videoRef} autoPlay playsInline muted style={videoElement} />
-                  <canvas ref={canvasRef} style={canvasElement} />
-                  <div style={eyeContact ? greenDot : redDot} title={eyeContact ? "Centered in frame" : "Re-align with center"} />
-                  <div style={overlayMetrics}>
-                    <div title="Share of the session your head was positioned near the centre of the frame. It does not measure gaze, confidence, or nervousness.">
-                      Head alignment (proxy): <strong>{eyeContactPercent !== null ? `${eyeContactPercent}%` : "Calibrating..."}</strong>
-                    </div>
-                    <div>Blinks: <strong>{blinkCount}</strong></div>
-                  </div>
-                </>
-              ) : (
-                <div style={webcamFallback}>
-                  <div style={{ fontSize: "40px", marginBottom: "8px" }}>🎥</div>
-                  <p style={{ fontWeight: "600", fontSize: "14px" }}>
-                    {textOnly ? "Privacy Mode (Sensors Off)" : "Camera Inactive"}
-                  </p>
-                  <p style={{ fontSize: "12px", color: "#94a3b8", marginTop: "4px" }}>
-                    {textOnly
-                      ? "Webcam and microphone disabled per your privacy choice."
-                      : "Delivery & Visual Stability marked \"Not measured\"."}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* STATUS CHIPS */}
-            <div style={{ display: "flex", gap: "10px", marginTop: "14px" }}>
-              <StatusChip label="Camera" active={isCameraOn} />
-              <StatusChip label="Microphone" active={isMicOn || speechRecognitionActive} />
-              <StatusChip label="Speech Transcriber" active={speechRecognitionActive} />
-            </div>
-
-            {/* LIVE COMMUNICATION METRICS */}
-            <div style={{ marginTop: "20px", borderTop: "1px solid #f1f5f9", paddingTop: "14px" }}>
-              <h5 style={{ fontSize: "13px", color: "#475569", marginBottom: "8px" }}>Live Communication Stats</h5>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", textAlign: "center" }}>
-                <div style={statBox}>
-                  <div style={statNum}>{wordCount}</div>
-                  <div style={statLbl}>Words</div>
-                </div>
-                <div style={statBox}>
-                  <div style={statNum}>{liveWpm}</div>
-                  <div style={statLbl}>Est. WPM</div>
-                </div>
-                <div style={statBox}>
-                  <div style={{ ...statNum, color: fillerCount > 3 ? "#dc2626" : "#0f172a" }}>
-                    {fillerCount}
-                  </div>
-                  <div style={statLbl}>Fillers</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN: QUESTION & ANSWER PANEL */}
-        <div>
-          <div style={panelCard}>
-            {/* QUESTION DISPLAY */}
-            <div style={{ borderBottom: "1px solid #f1f5f9", paddingBottom: "16px", marginBottom: "16px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: "12px", fontWeight: "700", color: "#2563eb", textTransform: "uppercase" }}>
-                  {isFollowUp ? "Deep-Dive Follow-Up Question" : `Interview Prompt #${currentIndex + 1}`}
-                </span>
-                <span style={{ fontSize: "12px", color: "#64748b" }}>Target: {targetRole}</span>
-              </div>
-              {currentQ.caption && (
                 <div
                   style={{
-                    display: "inline-block",
-                    marginTop: "8px",
-                    padding: "3px 10px",
-                    backgroundColor: "#e0e7ff",
-                    color: "#312e81",
-                    fontSize: "12px",
-                    fontWeight: "600",
+                    position: "absolute",
+                    bottom: "10px",
+                    left: "10px",
+                    backgroundColor: "rgba(15, 23, 42, 0.75)",
+                    padding: "3px 8px",
                     borderRadius: "4px",
-                    border: "1px solid #c7d2fe",
+                    fontSize: "11px",
+                    color: "#ffffff",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
                   }}
                 >
-                  {currentQ.caption}
+                  <span style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#22c55e" }} />
+                  <span>Framing active</span>
                 </div>
-              )}
-              <h3 style={{ fontSize: "19px", color: "#0f172a", marginTop: "8px", lineHeight: "1.4" }}>
-                {isFollowUp ? followUpQuestion : currentQ.question}
-              </h3>
+              </>
+            ) : (
+              <div style={{ textAlign: "center", padding: "20px", color: "var(--slate-400)" }}>
+                <div style={{ fontSize: "36px", marginBottom: "8px" }}>📷</div>
+                <div style={{ fontSize: "13px", fontWeight: "600", color: "#f8fafc" }}>
+                  {textOnly ? "Privacy Mode Active" : "Camera Off"}
+                </div>
+                <div style={{ fontSize: "11px", marginTop: "4px" }}>
+                  {textOnly ? "Local video processing is disabled." : "Proceeding in text/microphone mode."}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px", fontSize: "12px", color: "var(--text-muted)" }}>
+            <span>Video frames stay strictly inside your browser.</span>
+            {!textOnly && (
+              <button
+                type="button"
+                onClick={() => setIsCameraOn(!isCameraOn)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--primary-600)",
+                  cursor: "pointer",
+                  fontSize: "11px",
+                  fontWeight: "600",
+                }}
+              >
+                {isCameraOn ? "Turn Camera Off" : "Turn Camera On"}
+              </button>
+            )}
+          </div>
+        </Card>
+
+        {/* Right Column: Answer Input & Controls */}
+        <Card style={{ padding: "20px" }}>
+          {/* Input Mode Selector */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+            <div style={{ display: "flex", gap: "6px", backgroundColor: "var(--slate-100)", padding: "3px", borderRadius: "6px" }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setInputMode("mic");
+                  if (!speechRecognitionActive && speechRecognizerRef.current) {
+                    toggleSpeechRecognition();
+                  }
+                }}
+                style={{
+                  padding: "5px 12px",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                  fontWeight: "600",
+                  border: "none",
+                  cursor: "pointer",
+                  backgroundColor: inputMode === "mic" ? "var(--slate-900)" : "transparent",
+                  color: inputMode === "mic" ? "#ffffff" : "var(--text-secondary)",
+                }}
+              >
+                Speak Answer
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setInputMode("text");
+                  if (speechRecognitionActive && speechRecognizerRef.current) {
+                    speechRecognizerRef.current.stop();
+                    setSpeechRecognitionActive(false);
+                  }
+                }}
+                style={{
+                  padding: "5px 12px",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                  fontWeight: "600",
+                  border: "none",
+                  cursor: "pointer",
+                  backgroundColor: inputMode === "text" ? "var(--slate-900)" : "transparent",
+                  color: inputMode === "text" ? "#ffffff" : "var(--text-secondary)",
+                }}
+              >
+                Type Answer
+              </button>
             </div>
 
+            <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+              {wordCount} {wordCount === 1 ? "word" : "words"}
+            </div>
+          </div>
 
-            {/* INLINE SPEECH / VALIDATION BANNERS */}
-            {speechNotice && (
-              <div
-                style={{
-                  backgroundColor: "#eff6ff",
-                  border: "1px solid #bfdbfe",
-                  color: "#1e40af",
-                  padding: "9px 12px",
-                  borderRadius: "6px",
-                  fontSize: "13px",
-                  marginBottom: "12px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <span>ℹ️ {speechNotice}</span>
-                <button
-                  type="button"
-                  onClick={() => setSpeechNotice("")}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    color: "#1e40af",
-                    fontWeight: "bold",
-                    fontSize: "14px",
-                    marginLeft: "8px",
-                  }}
-                  title="Dismiss notice"
-                >
-                  ✕
-                </button>
-              </div>
-            )}
-
-            {inputWarning && (
-              <div
-                style={{
-                  backgroundColor: "#fef2f2",
-                  border: "1px solid #fecaca",
-                  color: "#991b1b",
-                  padding: "9px 12px",
-                  borderRadius: "6px",
-                  fontSize: "13px",
-                  marginBottom: "12px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <span>⚠️ {inputWarning}</span>
-                <button
-                  type="button"
-                  onClick={() => setInputWarning("")}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    color: "#991b1b",
-                    fontWeight: "bold",
-                    fontSize: "14px",
-                    marginLeft: "8px",
-                  }}
-                  title="Dismiss warning"
-                >
-                  ✕
-                </button>
-              </div>
-            )}
-
-            {/* INPUT MODE TOGGLE (MIC / TEXT) */}
+          {/* Speech Active Indicator Banner */}
+          {speechRecognitionActive && (
             <div
               style={{
                 display: "flex",
-                justifyContent: "space-between",
                 alignItems: "center",
+                gap: "8px",
+                padding: "8px 12px",
+                borderRadius: "var(--radius-md)",
+                backgroundColor: "var(--danger-bg)",
+                border: "1px solid var(--danger-border)",
+                color: "var(--danger-text)",
+                fontSize: "12px",
+                fontWeight: "600",
                 marginBottom: "10px",
               }}
             >
-              <div style={{ display: "flex", gap: "6px", backgroundColor: "#f1f5f9", padding: "3px", borderRadius: "6px" }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setInputMode("mic");
-                    if (!speechRecognitionActive && speechRecognizerRef.current) {
-                      toggleSpeechRecognition();
-                    }
-                  }}
-                  style={{
-                    padding: "5px 12px",
-                    borderRadius: "4px",
-                    fontSize: "12px",
-                    fontWeight: "600",
-                    border: "none",
-                    cursor: "pointer",
-                    backgroundColor: inputMode === "mic" ? "#2563eb" : "transparent",
-                    color: inputMode === "mic" ? "#ffffff" : "#475569",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  Speak Answer
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setInputMode("text");
-                    if (speechRecognitionActive && speechRecognizerRef.current) {
-                      speechRecognizerRef.current.stop();
-                      setSpeechRecognitionActive(false);
-                    }
-                  }}
-                  style={{
-                    padding: "5px 12px",
-                    borderRadius: "4px",
-                    fontSize: "12px",
-                    fontWeight: "600",
-                    border: "none",
-                    cursor: "pointer",
-                    backgroundColor: inputMode === "text" ? "#2563eb" : "transparent",
-                    color: inputMode === "text" ? "#ffffff" : "#475569",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  Type Answer
-                </button>
-              </div>
-              <span style={{ fontSize: "12px", color: speechRecognitionActive ? "#dc2626" : "#64748b", fontWeight: speechRecognitionActive ? "600" : "400" }}>
-                {speechRecognitionActive
-                  ? "🔴 Recording speech live..."
-                  : inputMode === "mic"
-                  ? (speechSupported ? "Mic ready (click to speak)" : "Speech unavailable — use text")
-                  : "Text mode active"}
-              </span>
-            </div>
-
-            {/* ANSWER INPUT */}
-            <div style={{ position: "relative" }}>
-              <textarea
-                value={answer}
-                onChange={(e) => {
-                  setAnswer(e.target.value);
-                  if (inputWarning) setInputWarning("");
-                }}
-                placeholder={
-                  inputMode === "mic"
-                    ? "Speak your answer or click 'Start Speech-to-Text' below, or type directly..."
-                    : "Type your detailed answer here..."
-                }
-                style={answerTextarea}
-              />
-            </div>
-
-            {/* RECORDING & SUBMIT CONTROLS */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "14px" }}>
-              <button
-                onClick={toggleSpeechRecognition}
+              <span
                 style={{
-                  ...micButton,
-                  backgroundColor: speechRecognitionActive ? "#dc2626" : "#f1f5f9",
-                  color: speechRecognitionActive ? "white" : "#0f172a",
+                  width: "8px",
+                  height: "8px",
+                  borderRadius: "50%",
+                  backgroundColor: "var(--danger-text)",
+                  animation: "pulse 1s infinite",
                 }}
+              />
+              <span>Listening... speak your response clearly</span>
+            </div>
+          )}
+
+          {/* Textarea Input */}
+          <textarea
+            value={answer}
+            disabled={isSubmitted}
+            onChange={(e) => setAnswer(e.target.value)}
+            placeholder={
+              inputMode === "mic"
+                ? "Start speaking or type your answer here..."
+                : "Type your structured answer here..."
+            }
+            rows={8}
+            className="form-textarea"
+            style={{
+              resize: "vertical",
+              minHeight: "160px",
+              marginBottom: "14px",
+              lineHeight: "1.5",
+              fontSize: "14px",
+            }}
+          />
+
+          {/* Controls Bar */}
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "10px" }}>
+            {inputMode === "mic" && speechSupported ? (
+              <Button
+                variant={speechRecognitionActive ? "danger" : "secondary"}
+                size="sm"
+                onClick={toggleSpeechRecognition}
+                disabled={isSubmitted}
               >
-                {speechRecognitionActive ? "Stop Speaking" : "Start Speech-to-Text"}
-              </button>
+                {speechRecognitionActive ? "Stop Speaking" : "Start Speaking"}
+              </Button>
+            ) : <div />}
 
-              {!latestEvaluation ? (
-                <button
+            <div style={{ display: "flex", gap: "10px" }}>
+              {!isSubmitted ? (
+                <Button
+                  variant="primary"
                   onClick={handleSubmitAnswer}
-                  disabled={evaluating}
-                  style={submitBtn}
+                  loading={evaluating}
+                  disabled={!answer.trim()}
                 >
-                  {evaluating ? "Evaluating Answer..." : "Submit Answer →"}
-                </button>
+                  Submit Answer →
+                </Button>
               ) : (
-                <button
+                <Button
+                  variant="primary"
                   onClick={handleProceed}
-                  disabled={submittingFinal || loadingNext}
-                  style={nextBtn}
+                  loading={loadingNext || submittingFinal}
                 >
-                  {loadingNext
-                    ? "Evaluating Next Question..."
-                    : submittingFinal
-                    ? "Generating Final Report..."
-                    : "Proceed to Next Question →"}
-                </button>
-
+                  {currentIndex < questions.length - 1 ? "Next Question →" : "Finish & View Report →"}
+                </Button>
               )}
             </div>
-
-            {/* INSTANT EVALUATION FEEDBACK CARD */}
-            {latestEvaluation && (
-              <div style={feedbackCard}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                  <h4 style={{ margin: 0, fontSize: "15px", color: "#0f172a" }}>Immediate Answer Feedback</h4>
-                  <div style={{ fontSize: "18px", fontWeight: "800", color: "#16a34a" }}>
-                    {latestEvaluation.score}
-                    <span style={{ fontSize: "12px", color: "#64748b" }}>/100</span>
-                  </div>
-                </div>
-
-                {/* RUBRIC SCORES BADGES */}
-                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "12px" }}>
-                  <RubricBadge label="Tech Depth" value={latestEvaluation.technical_score} />
-                  <RubricBadge label="Structure" value={latestEvaluation.structure_score} />
-                  <RubricBadge label="Reasoning" value={latestEvaluation.reasoning_score} />
-                  <RubricBadge label="STAR" value={latestEvaluation.star_score} />
-                </div>
-
-                {/* STRENGTHS & WEAKNESSES */}
-                {latestEvaluation.strengths && latestEvaluation.strengths.length > 0 && (
-                  <div style={{ marginBottom: "8px" }}>
-                    <span style={{ fontSize: "12px", fontWeight: "700", color: "#16a34a" }}>Strengths:</span>
-                    <ul style={{ margin: "4px 0 0 16px", padding: 0, fontSize: "13px", color: "#334155" }}>
-                      {latestEvaluation.strengths.map((s, idx) => (
-                        <li key={idx}>{s}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {latestEvaluation.weaknesses && latestEvaluation.weaknesses.length > 0 && (
-                  <div style={{ marginBottom: "8px" }}>
-                    <span style={{ fontSize: "12px", fontWeight: "700", color: "#dc2626" }}>Weaknesses:</span>
-                    <ul style={{ margin: "4px 0 0 16px", padding: 0, fontSize: "13px", color: "#7f1d1d" }}>
-                      {latestEvaluation.weaknesses.map((w, idx) => (
-                        <li key={idx}>{w}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {latestEvaluation.suggestions && latestEvaluation.suggestions.length > 0 && (
-                  <div style={{ marginBottom: "10px" }}>
-                    <span style={{ fontSize: "12px", fontWeight: "700", color: "#2563eb" }}>Quick Tip:</span>
-                    <p style={{ margin: "2px 0 0", fontSize: "13px", color: "#1e40af" }}>
-                      {latestEvaluation.suggestions[0]}
-                    </p>
-                  </div>
-                )}
-
-                {/* OBSERVABLE EVIDENCE PER DIMENSION */}
-                {latestEvaluation.dimensions && Object.keys(latestEvaluation.dimensions).length > 0 && (
-                  <div style={{ marginTop: "10px", borderTop: "1px solid #e2e8f0", paddingTop: "8px" }}>
-                    <span style={{ fontSize: "11px", fontWeight: "700", color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                      Observable Evidence:
-                    </span>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "5px", marginTop: "6px" }}>
-                      {Object.entries(latestEvaluation.dimensions).map(([dimKey, dimVal]) => (
-                        <div key={dimKey} style={{ fontSize: "12px", color: "#334155", backgroundColor: "#f8fafc", padding: "5px 8px", borderRadius: "4px", border: "1px solid #e2e8f0" }}>
-                          <strong style={{ textTransform: "capitalize", color: "#1e293b" }}>{dimKey}: </strong>
-                          <span>{(dimVal.evidence || []).join(" • ")}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
-        </div>
+
+          {/* Post-submission Transition Notice */}
+          {isSubmitted && (
+            <div
+              style={{
+                marginTop: "16px",
+                padding: "12px 14px",
+                borderRadius: "var(--radius-md)",
+                backgroundColor: "var(--success-bg)",
+                border: "1px solid var(--success-border)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ fontSize: "13px", color: "var(--success-text)", fontWeight: "600" }}>
+                ✓ Response recorded
+              </div>
+              <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+                Click "{currentIndex < questions.length - 1 ? "Next Question" : "Finish"}" to continue
+              </span>
+            </div>
+          )}
+        </Card>
       </div>
     </div>
   );
 }
-
-function RubricBadge({ label, value }) {
-  if (value === undefined || value === null) return null;
-  return (
-    <span
-      style={{
-        fontSize: "11px",
-        fontWeight: "600",
-        backgroundColor: "#f8fafc",
-        border: "1px solid #e2e8f0",
-        padding: "3px 8px",
-        borderRadius: "4px",
-        color: "#334155",
-      }}
-    >
-      {label}: <strong>{Math.round(value)}%</strong>
-    </span>
-  );
-}
-
-function StatusChip({ label, active }) {
-  return (
-    <div
-      style={{
-        padding: "5px 10px",
-        borderRadius: "6px",
-        backgroundColor: active ? "#dcfce7" : "#f1f5f9",
-        color: active ? "#15803d" : "#64748b",
-        fontSize: "11px",
-        fontWeight: "600",
-        display: "flex",
-        alignItems: "center",
-        gap: "6px",
-      }}
-    >
-      <span style={{ fontSize: "8px" }}>{active ? "●" : "○"}</span>
-      {label}
-    </div>
-  );
-}
-
-/* STYLES */
-const statusBar = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  background: "white",
-  padding: "14px 20px",
-  borderRadius: "8px",
-  border: "1px solid #e2e8f0",
-  boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
-};
-
-const pillBadge = {
-  fontSize: "12px",
-  fontWeight: "700",
-  padding: "4px 10px",
-  borderRadius: "20px",
-  backgroundColor: "#0f172a",
-  color: "white",
-};
-
-const exitBtn = {
-  padding: "6px 12px",
-  fontSize: "12px",
-  border: "1px solid #cbd5e1",
-  borderRadius: "6px",
-  background: "white",
-  color: "#64748b",
-  cursor: "pointer",
-};
-
-const videoCard = {
-  background: "white",
-  padding: "16px",
-  borderRadius: "10px",
-  border: "1px solid #e2e8f0",
-  boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-};
-
-const videoElement = {
-  width: "100%",
-  height: "100%",
-  objectFit: "cover",
-  display: "block",
-};
-
-const canvasElement = {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  width: "100%",
-  height: "100%",
-};
-
-const greenDot = {
-  position: "absolute",
-  top: "12px",
-  right: "12px",
-  width: "12px",
-  height: "12px",
-  borderRadius: "50%",
-  backgroundColor: "#22c55e",
-  border: "2px solid white",
-};
-
-const redDot = {
-  ...greenDot,
-  backgroundColor: "#ef4444",
-};
-
-const overlayMetrics = {
-  position: "absolute",
-  bottom: "10px",
-  left: "10px",
-  backgroundColor: "rgba(15, 23, 42, 0.75)",
-  color: "white",
-  padding: "6px 10px",
-  borderRadius: "6px",
-  fontSize: "11px",
-  lineHeight: "1.5",
-};
-
-const webcamFallback = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  height: "280px",
-  color: "white",
-  textAlign: "center",
-};
-
-const statBox = {
-  background: "#f8fafc",
-  padding: "8px",
-  borderRadius: "6px",
-  border: "1px solid #e2e8f0",
-};
-
-const statNum = {
-  fontSize: "16px",
-  fontWeight: "700",
-  color: "#0f172a",
-};
-
-const statLbl = {
-  fontSize: "11px",
-  color: "#64748b",
-  marginTop: "2px",
-};
-
-const panelCard = {
-  background: "white",
-  padding: "24px",
-  borderRadius: "10px",
-  border: "1px solid #e2e8f0",
-  boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-};
-
-const answerTextarea = {
-  width: "100%",
-  minHeight: "180px",
-  padding: "14px",
-  borderRadius: "8px",
-  border: "1px solid #cbd5e1",
-  fontFamily: "Inter, sans-serif",
-  fontSize: "14px",
-  lineHeight: "1.5",
-  boxSizing: "border-box",
-  resize: "vertical",
-};
-
-const micButton = {
-  padding: "10px 16px",
-  borderRadius: "6px",
-  border: "1px solid #cbd5e1",
-  fontSize: "13px",
-  fontWeight: "600",
-  cursor: "pointer",
-  transition: "all 0.15s ease",
-};
-
-const submitBtn = {
-  padding: "10px 22px",
-  backgroundColor: "#0f172a",
-  color: "white",
-  border: "none",
-  borderRadius: "6px",
-  fontSize: "14px",
-  fontWeight: "600",
-  cursor: "pointer",
-};
-
-const nextBtn = {
-  ...submitBtn,
-  backgroundColor: "#2563eb",
-};
-
-const feedbackCard = {
-  marginTop: "20px",
-  padding: "16px",
-  backgroundColor: "#f8fafc",
-  borderRadius: "8px",
-  border: "1px solid #e2e8f0",
-};
 
 export default Interview;
