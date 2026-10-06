@@ -18,6 +18,7 @@ function InterviewSetup() {
   const [isCheckingMedia, setIsCheckingMedia] = useState(false);
   const [loadingStart, setLoadingStart] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [pressureAcknowledged, setPressureAcknowledged] = useState(false);
 
   // Privacy consent tracking
   const [consentStatus, setConsentStatus] = useState("loading"); // "loading" | "granted" | "declined" | "unspecified"
@@ -161,6 +162,10 @@ function InterviewSetup() {
   };
 
   const handleStart = async () => {
+    if (mode === "pressure" && !pressureAcknowledged) {
+      setErrorMessage("Please read and acknowledge the Safe Pressure Mode notice below before starting.");
+      return;
+    }
     if (consentStatus === "unspecified") {
       setPendingAction("start");
       setShowConsentModal(true);
@@ -168,6 +173,7 @@ function InterviewSetup() {
     }
     executeStart(consentStatus === "declined");
   };
+
 
   const executeStart = async (isTextOnly = false) => {
     setLoadingStart(true);
@@ -320,6 +326,32 @@ function InterviewSetup() {
             );
           })}
         </div>
+        {mode === "pressure" && (
+          <div style={{
+            marginTop: "16px",
+            padding: "16px",
+            backgroundColor: "#fffbeb",
+            border: "1px solid #fde68a",
+            borderRadius: "8px"
+          }}>
+            <h4 style={{ margin: "0 0 8px 0", color: "#92400e", fontSize: "14px", fontWeight: "600" }}>
+              Safe Pressure Mode Notice
+            </h4>
+            <p style={{ margin: "0 0 12px 0", fontSize: "13px", color: "#78350f", lineHeight: "1.5" }}>
+              Safe Pressure Mode tests time management, concise technical reasoning, and recovery under simulated incident conditions.
+              Questions feature shorter timers (45s) and direct architectural or validation follow-ups.
+              You can switch back to practice mode at any time during the interview without penalty.
+            </p>
+            <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#92400e", cursor: "pointer", fontWeight: "500" }}>
+              <input
+                type="checkbox"
+                checked={pressureAcknowledged}
+                onChange={(e) => setPressureAcknowledged(e.target.checked)}
+              />
+              <span>I understand this mode simulates fast-paced technical and incident scenarios, and I can switch back to practice mode at any time.</span>
+            </label>
+          </div>
+        )}
       </div>
 
       {/* DIFFICULTY */}

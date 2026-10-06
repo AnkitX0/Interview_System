@@ -82,12 +82,17 @@ def start_interview(
         target_role=target_role
     )
 
+    time_limit = 45 if mode == "pressure" else 90
+    for q in selected_questions:
+        q["time_limit_seconds"] = time_limit
+        q["caption"] = "Core Interview Question"
+
     init_decision = models.InterviewDecision(
         session_id=session.id,
         turn=1,
         decision="START_SESSION",
-        reason=f"Interview started in {mode} mode ({difficulty}) for role '{target_role}'.",
-        inputs={"mode": mode, "difficulty": difficulty, "target_role": target_role}
+        reason=f"Interview started in {mode} mode ({difficulty}) for role '{target_role}'. Time limit: {time_limit}s.",
+        inputs={"mode": mode, "difficulty": difficulty, "target_role": target_role, "time_limit_seconds": time_limit}
     )
     db.add(init_decision)
     db.commit()
@@ -100,6 +105,42 @@ def start_interview(
         "total_questions": len(selected_questions),
         "questions": selected_questions
     }
+
+
+# =========================
+# SWITCH INTERVIEW MODE (PRESSURE -> PRACTICE)
+# =========================
+@router.post("/{session_id}/switch-mode")
+def switch_interview_mode(
+    session_id: int,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    session = db.query(models.InterviewSession).filter(
+        models.InterviewSession.id == session_id,
+        models.InterviewSession.user_id == user.id
+    ).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+
+    session.mode = "technical"
+    decision_rec = models.InterviewDecision(
+        session_id=session.id,
+        turn=session.current_question_index + 1,
+        decision="SWITCH_TO_PRACTICE",
+        reason="Candidate requested mid-session switch from Safe Pressure Mode to Practice Mode. Time limit relaxed to 90s.",
+        inputs={"previous_mode": "pressure", "new_mode": "technical"}
+    )
+    db.add(decision_rec)
+    db.commit()
+
+    return {
+        "session_id": session.id,
+        "mode": "technical",
+        "time_limit_seconds": 90,
+        "message": "Switched to practice mode successfully."
+    }
+
 
 
 # =========================

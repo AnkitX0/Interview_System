@@ -12,6 +12,9 @@ import re
 from sqlalchemy.orm import Session
 import backend.models as models
 from backend.services.question_selector import select_questions
+from backend.config import PRESSURE_MODE_CONFIG
+
+
 
 LADDER_STAGES = [
     "T1_FOUNDATION",
@@ -121,11 +124,12 @@ def decide_next_question(
     total_answers = len(answers)
 
     # 1. Check if session limit reached
-    if total_answers >= session.total_questions:
+    target_total = session.total_questions if session.total_questions is not None else 5
+    if total_answers >= target_total:
         return PolicyDecisionResult(
             decision="COMPLETE_SESSION",
-            reason=f"Target question count ({session.total_questions}) reached.",
-            inputs={"total_questions": session.total_questions, "answers_count": total_answers},
+            reason=f"Target question count ({target_total}) reached.",
+            inputs={"total_questions": target_total, "answers_count": total_answers},
         )
 
     # Calculate rolling difficulty
@@ -133,20 +137,45 @@ def decide_next_question(
 
     # 2. Check for Safe Pressure Mode challenge trigger
     if session.mode == "pressure":
-        # In pressure mode, every second question or when candidate shows complacency, trigger high-stakes challenge
-        trigger_challenge = (turn % 2 == 0) or (len(evaluations) > 0 and (evaluations[-1].technical_score or 70) >= 75)
-        if trigger_challenge and turn > 1:
-            challenge_q = _deterministic_template_choice(CHALLENGE_TEMPLATES, f"challenge:{session.id}:{turn}")
-            return PolicyDecisionResult(
-                decision="TRIGGER_CHALLENGE",
-                reason="Pressure mode active: presenting fast-cadence technical incident scenario.",
-                inputs={"mode": "pressure", "turn": turn},
-                question_type="challenge",
-                source="pressure_trigger",
-                difficulty="hard",
-                time_limit_seconds=45,
-                question_text=challenge_q,
-            )
+        challenge_count = len([q for q in questions_asked if q.question_type == "challenge"])
+        last_q = questions_asked[-1] if questions_asked else None
+        last_was_challenge = bool(last_q and last_q.question_type == "challenge")
+
+        if (
+            challenge_count < PRESSURE_MODE_CONFIG["max_challenges_per_session"]
+            and not last_was_challenge
+            and answers
+        ):
+            last_ans = answers[-1]
+            ans_text = (last_ans.transcript or "").lower()
+
+            challenge_cat = None
+            challenge_reason = None
+            if re.search(r"\b\d+(\.\d+)?%?|\b\d+(?:ms|s|m|k|mb|gb|rps|qps)\b", ans_text):
+                challenge_cat = "numeric_validation"
+                challenge_reason = "Pressure mode challenge: numeric claim detected in candidate response; triggering validation challenge."
+            elif re.search(r"\b(i chose|i used|we chose|we used|i decided|i opted|my approach was|architecture was)\b", ans_text):
+                challenge_cat = "counterexample_failure"
+                challenge_reason = "Pressure mode challenge: architectural design decision stated; probing failure recovery and single point of failure."
+            elif turn > 1:
+                challenge_cat = "evidence_support"
+                challenge_reason = "Pressure mode challenge: probing empirical evidence and operational verification."
+
+            if challenge_cat:
+                templates = PRESSURE_MODE_CONFIG["challenge_templates"].get(challenge_cat, [])
+                if templates:
+                    challenge_q = _deterministic_template_choice(templates, f"challenge:{session.id}:{turn}")
+                    return PolicyDecisionResult(
+                        decision="TRIGGER_CHALLENGE",
+                        reason=challenge_reason,
+                        inputs={"mode": "pressure", "challenge_category": challenge_cat, "turn": turn},
+                        question_type="challenge",
+                        source="pressure",
+                        difficulty="hard",
+                        time_limit_seconds=PRESSURE_MODE_CONFIG["default_time_limit_seconds"],
+                        question_text=challenge_q,
+                    )
+
 
     # 3. Check if previous question was a claim probe
     last_q = questions_asked[-1] if questions_asked else None
@@ -178,7 +207,7 @@ def decide_next_question(
                     claim_id=target_claim.id,
                     ladder_stage=next_stage,
                     difficulty=adjusted_difficulty,
-                    time_limit_seconds=60 if session.mode == "pressure" else None,
+                    time_limit_seconds=45 if session.mode == "pressure" else 90,
                     question_text=q_text,
                 )
 
@@ -208,9 +237,10 @@ def decide_next_question(
             claim_id=top_claim.id,
             ladder_stage=first_stage,
             difficulty=adjusted_difficulty,
-            time_limit_seconds=60 if session.mode == "pressure" else None,
+            time_limit_seconds=45 if session.mode == "pressure" else 90,
             question_text=q_text,
         )
+
 
     # 5. Fallback to Question Bank
     asked_texts = {q.question_text for q in questions_asked}
@@ -257,6 +287,7 @@ def decide_next_question(
         question_type="bank",
         source="bank",
         difficulty=adjusted_difficulty,
-        time_limit_seconds=45 if session.mode == "pressure" else None,
+        time_limit_seconds=45 if session.mode == "pressure" else 90,
         question_text=chosen_bank_q["question"],
     )
+

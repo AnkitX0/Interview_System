@@ -20,7 +20,8 @@ function Interview() {
   })();
 
   const sessionId = location.state?.sessionId || savedState.sessionId || 1;
-  const mode = location.state?.mode || savedState.mode || "technical";
+  const initialMode = location.state?.mode || savedState.mode || "technical";
+  const [currentMode, setCurrentMode] = useState(initialMode);
   const difficulty = location.state?.difficulty || savedState.difficulty || "medium";
   const targetRole = location.state?.targetRole || savedState.targetRole || "Software Engineer";
   const textOnly = Boolean(location.state?.textOnly ?? savedState.textOnly ?? false);
@@ -555,18 +556,56 @@ function Interview() {
     }
   };
 
+  const [switchingMode, setSwitchingMode] = useState(false);
+  const handleSwitchToPractice = async () => {
+    setSwitchingMode(true);
+    try {
+      const res = await apiFetch(`/interview/${sessionId}/switch-mode`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        setCurrentMode("technical");
+        setTimeLeft(90);
+        setSpeechNotice("Switched to practice mode. Shorter pressure timer disabled, time limit relaxed to 90s.");
+      }
+    } catch (err) {
+      console.error("Failed to switch mode:", err);
+    } finally {
+      setSwitchingMode(false);
+    }
+  };
+
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto", paddingBottom: "60px" }}>
       {/* TOP STATUS BAR */}
       <div style={statusBar}>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
           <span style={pillBadge}>Question {currentIndex + 1} of {questions.length}</span>
           <span style={{ ...pillBadge, backgroundColor: "#f1f5f9", color: "#334155" }}>
-            {mode.toUpperCase()} ROUND
+            {currentMode.toUpperCase()} ROUND
           </span>
           <span style={{ ...pillBadge, backgroundColor: "#f1f5f9", color: "#334155" }}>
             {difficulty.toUpperCase()}
           </span>
+          {currentMode === "pressure" && (
+            <button
+              onClick={handleSwitchToPractice}
+              disabled={switchingMode}
+              style={{
+                padding: "4px 10px",
+                fontSize: "12px",
+                fontWeight: "600",
+                color: "#92400e",
+                backgroundColor: "#fef3c7",
+                border: "1px solid #fde68a",
+                borderRadius: "6px",
+                cursor: switchingMode ? "wait" : "pointer",
+              }}
+              title="Switch back to standard practice mode (relax time limit to 90s)"
+            >
+              {switchingMode ? "Switching..." : "Switch to practice mode"}
+            </button>
+          )}
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>

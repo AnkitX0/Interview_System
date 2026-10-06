@@ -231,3 +231,36 @@ VERIFICATION_RISK_CONFIG = {
 }
 
 
+# ---------------------------
+# Safe Pressure Mode Configuration (Phase 3 Intelligence)
+# ---------------------------
+PRESSURE_MODE_CONFIG = {
+    "default_time_limit_seconds": 45,       # 45s under pressure vs 90s in practice
+    "practice_time_limit_seconds": 90,
+    "max_challenges_per_session": 2,
+    "max_challenges_per_answer": 1,
+    "banned_terms": [
+        "stupid", "obviously", "wrong answer", "waste of time", "incompetent",
+        "idiot", "foolish", "nonsense", "terrible", "pathetic", "dumb"
+    ],
+    "challenge_templates": {
+        "numeric_validation": [
+            "You cited a specific quantitative metric. How did you benchmark or validate that number in production?",
+            "What baseline measurement did you compare against to verify that improvement percentage?",
+            "Under what peak operational load conditions did you test those throughput and latency figures?"
+        ],
+        "counterexample_failure": [
+            "What would occur if that architectural approach encountered extreme concurrency or sudden resource exhaustion in production?",
+            "What single point of failure exists in that design, and how would the service recover gracefully without data loss?",
+            "If downstream dependencies experienced a prolonged network partition, how would your service manage incoming traffic?"
+        ],
+        "evidence_support": [
+            "What telemetry data or logging evidence supported your decision to proceed with that approach?",
+            "What empirical analysis guided your team to select that architecture over standard industry alternatives?",
+            "How did you verify that this solution satisfied all operational SLAs and correctness constraints in staging?"
+        ]
+    }
+}
+
+
+
