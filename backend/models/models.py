@@ -17,9 +17,9 @@ class Resume(Base):
     experience = Column(Text)          # JSON string or text summary
     education = Column(Text)           # JSON string or text summary
     resume_score = Column(Float, default=75.0)
-    strengths = Column(Text)           # JSON string of list
-    weak_areas = Column(Text)          # JSON string of list
-    suggested_improvements = Column(Text) # JSON string of list
+    strengths = Column(Text, default="[]")           # JSON string of list
+    weak_areas = Column(Text, default="[]")          # JSON string of list
+    suggested_improvements = Column(Text, default="[]") # JSON string of list
     summary = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -100,6 +100,8 @@ class AnswerEvaluation(Base):
     weaknesses = Column(Text, default="[]")
     missing_concepts = Column(Text, default="[]")
     suggestions = Column(Text, default="[]")
+    engine_used = Column(String, default="rubric")
+    prompt_version = Column(String, default="v1.0")
 
 
 # -------------------------
@@ -115,7 +117,7 @@ class FollowUpQuestion(Base):
 
 
 # -------------------------
-# Behavioral Metrics
+# Behavioral Metrics (Physical Delivery Signals)
 # -------------------------
 class BehavioralMetrics(Base):
     __tablename__ = "behavioral_metrics"
@@ -123,9 +125,9 @@ class BehavioralMetrics(Base):
     id = Column(Integer, primary_key=True, index=True)
     session_id = Column(Integer, ForeignKey("interview_sessions.id"))
 
-    eye_contact_percent = Column(Float)
-    blink_rate = Column(Float)
-    pause_rate = Column(Float)
+    eye_contact_percent = Column(Float, nullable=True)
+    blink_rate = Column(Float, nullable=True)
+    pause_rate = Column(Float, nullable=True)
 
 
 # -------------------------
@@ -137,7 +139,7 @@ class SessionScore(Base):
     id = Column(Integer, primary_key=True, index=True)
     session_id = Column(Integer, ForeignKey("interview_sessions.id"))
 
-    behavioral_score = Column(Float, default=0.0)
+    behavioral_score = Column(Float, nullable=True, default=0.0)
     communication_score = Column(Float, default=0.0)
     technical_score = Column(Float, default=0.0)
     resume_consistency_score = Column(Float, default=0.0)
@@ -146,4 +148,5 @@ class SessionScore(Base):
     strongest_category = Column(String, default="Communication")
     weakest_category = Column(String, default="Technical")
     insights = Column(Text, default="[]")
+    weights_used = Column(Text, default="{}") # JSON storing normalized weights used
     created_at = Column(DateTime(timezone=True), server_default=func.now())
