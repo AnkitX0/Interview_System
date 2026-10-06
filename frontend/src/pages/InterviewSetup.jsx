@@ -1,8 +1,11 @@
-import { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ReportContext } from "../context/ReportContext";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../utils/api";
+import { Card, CardHeader } from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
+import { Badge } from "../components/ui/Badge";
 
 function InterviewSetup() {
   const navigate = useNavigate();
@@ -14,7 +17,8 @@ function InterviewSetup() {
   const [difficulty, setDifficulty] = useState("medium");
   const [questionCount, setQuestionCount] = useState(3);
   const [targetRole, setTargetRole] = useState(user?.profile?.target_role || "Software Engineer");
-  const [systemReady, setSystemReady] = useState(false);
+  const [mediaPreference, setMediaPreference] = useState("standard"); // "standard" (mic/camera) | "text_only"
+  const [hardwareChecked, setHardwareChecked] = useState(false);
   const [isCheckingMedia, setIsCheckingMedia] = useState(false);
   const [loadingStart, setLoadingStart] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -23,7 +27,7 @@ function InterviewSetup() {
   // Privacy consent tracking
   const [consentStatus, setConsentStatus] = useState("loading"); // "loading" | "granted" | "declined" | "unspecified"
   const [showConsentModal, setShowConsentModal] = useState(false);
-  const [pendingAction, setPendingAction] = useState(null); // "check" | "start"
+  const [pendingAction, setPendingAction] = useState(null);
 
   useEffect(() => {
     apiFetch("/consent")
@@ -34,6 +38,9 @@ function InterviewSetup() {
         );
         if (camMicRecord) {
           setConsentStatus(camMicRecord.granted ? "granted" : "declined");
+          if (!camMicRecord.granted) {
+            setMediaPreference("text_only");
+          }
         } else {
           setConsentStatus("unspecified");
         }
@@ -46,11 +53,8 @@ function InterviewSetup() {
     if (user?.profile?.target_role) {
       setTargetRole(user.profile.target_role);
     }
-    if (user?.profile?.experience_level) {
-      const exp = user.profile.experience_level.toLowerCase();
-      if (exp.includes("entry") || exp.includes("junior")) setDifficulty("easy");
-      else if (exp.includes("senior") || exp.includes("staff") || exp.includes("lead")) setDifficulty("hard");
-      else setDifficulty("medium");
+    if (user?.profile?.preferred_difficulty) {
+      setDifficulty(user.profile.preferred_difficulty);
     }
   }, [user]);
 
@@ -65,55 +69,53 @@ function InterviewSetup() {
 
   const modes = [
     {
-      id: "practice",
-      title: "Practice Mode",
-      desc: "Balanced feedback across technical, communication, and behavioral dimensions.",
+      id: "technical",
+      title: "Technical Interview",
+      desc: "System design, architectural decisions, database choices, and trade-offs.",
     },
     {
-      id: "technical",
-      title: "Technical Round",
-      desc: "Architecture, engineering tradeoffs, database design, and concepts.",
+      id: "practice",
+      title: "Comprehensive Practice",
+      desc: "Balanced coverage across technical competencies, communication structure, and delivery.",
     },
     {
       id: "hr",
-      title: "HR & Behavioral",
-      desc: "STAR-driven behavioral questions, leadership scenarios, and team culture.",
+      title: "Behavioral & Situational",
+      desc: "Past project challenges, teamwork, leadership, and structured STAR scenarios.",
     },
     {
       id: "pressure",
-      title: "Pressure & Incident",
-      desc: "Challenging live scenarios, production failure postmortems, and tough tradeoffs.",
+      title: "Incident Response",
+      desc: "Challenging live incident postmortems, production failure recovery, and 45s timers.",
     },
   ];
 
-  const difficulties = ["easy", "medium", "hard"];
+  const difficulties = [
+    { id: "easy", label: "Introductory" },
+    { id: "medium", label: "Standard (Mid-Level)" },
+    { id: "hard", label: "Advanced (Senior)" },
+  ];
 
   const runHardwareCheck = async () => {
     setIsCheckingMedia(true);
     setErrorMessage(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      // Release tracks right away
       stream.getTracks().forEach((track) => track.stop());
-      setSystemReady(true);
+      setHardwareChecked(true);
     } catch (err) {
-      console.warn("Media permissions not granted:", err);
-      setErrorMessage("Camera/mic access was not granted. You can still proceed in text/standard mode!");
-      // Allow proceeding regardless
-      setSystemReady(true);
+      console.warn("Hardware test notification:", err);
+      setErrorMessage("Camera or microphone access was not granted. You can practice in Text-Only mode.");
+      setMediaPreference("text_only");
     } finally {
       setIsCheckingMedia(false);
     }
   };
 
-  const handleSystemCheck = async () => {
+  const handleTestHardware = async () => {
     if (consentStatus === "unspecified") {
       setPendingAction("check");
       setShowConsentModal(true);
-      return;
-    }
-    if (consentStatus === "declined") {
-      setErrorMessage("Camera and microphone processing is disabled per your privacy preference. You can still proceed in text-only mode.");
       return;
     }
     runHardwareCheck();
@@ -137,7 +139,7 @@ function InterviewSetup() {
     if (pendingAction === "check") {
       runHardwareCheck();
     } else if (pendingAction === "start") {
-      executeStart(false);
+      executeStart(mediaPreference === "text_only");
     }
   };
 
@@ -155,6 +157,7 @@ function InterviewSetup() {
       console.warn("Consent persist notice:", e);
     }
     setConsentStatus("declined");
+    setMediaPreference("text_only");
     setShowConsentModal(false);
     if (pendingAction === "start") {
       executeStart(true);
@@ -163,17 +166,16 @@ function InterviewSetup() {
 
   const handleStart = async () => {
     if (mode === "pressure" && !pressureAcknowledged) {
-      setErrorMessage("Please read and acknowledge the Safe Pressure Mode notice below before starting.");
+      setErrorMessage("Please acknowledge the Incident Response notice below before continuing.");
       return;
     }
-    if (consentStatus === "unspecified") {
+    if (mediaPreference === "standard" && consentStatus === "unspecified") {
       setPendingAction("start");
       setShowConsentModal(true);
       return;
     }
-    executeStart(consentStatus === "declined");
+    executeStart(mediaPreference === "text_only" || consentStatus === "declined");
   };
-
 
   const executeStart = async (isTextOnly = false) => {
     setLoadingStart(true);
@@ -200,17 +202,19 @@ function InterviewSetup() {
       const session = await res.json();
       setCurrentSessionId(session.session_id);
 
-      // Save state in sessionStorage for page refreshes
       sessionStorage.setItem("interviewCompleted", "false");
-      sessionStorage.setItem("interviewSetupState", JSON.stringify({
-        sessionId: session.session_id,
-        mode,
-        difficulty,
-        targetRole,
-        questions: session.questions,
-        questionCount: session.questions.length,
-        textOnly: isTextOnly,
-      }));
+      sessionStorage.setItem(
+        "interviewSetupState",
+        JSON.stringify({
+          sessionId: session.session_id,
+          mode,
+          difficulty,
+          targetRole,
+          questions: session.questions,
+          questionCount: session.questions.length,
+          textOnly: isTextOnly,
+        })
+      );
 
       navigate("/interview", {
         state: {
@@ -225,309 +229,336 @@ function InterviewSetup() {
       });
     } catch (err) {
       console.error("Start interview error:", err);
-      // Fallback local session if backend unreachable
-      const fallbackQuestions = [
-        { id: 1, question: "Explain REST API architecture and how HTTP status codes are utilized." },
-        { id: 2, question: "Describe a challenging technical problem you solved in your past project." },
-        { id: 3, question: "How do you handle database indexing and optimize slow queries?" },
-      ].slice(0, questionCount);
-
-      const fallbackSessionId = Date.now();
-      setCurrentSessionId(fallbackSessionId);
-
-      sessionStorage.setItem("interviewSetupState", JSON.stringify({
-        sessionId: fallbackSessionId,
-        mode,
-        difficulty,
-        targetRole,
-        questions: fallbackQuestions,
-        questionCount,
-        textOnly: isTextOnly,
-      }));
-
-      navigate("/interview", {
-        state: {
-          sessionId: fallbackSessionId,
-          mode,
-          difficulty,
-          targetRole,
-          questions: fallbackQuestions,
-          questionCount,
-          textOnly: isTextOnly,
-        },
-      });
+      setErrorMessage("Could not start interview session. Please check your connection and try again.");
     } finally {
       setLoadingStart(false);
     }
   };
 
-  const estimatedMinutes = (questionCount * 2.0).toFixed(0);
+  const selectedModeObj = modes.find((m) => m.id === mode) || modes[0];
+  const estimatedMins = questionCount * 3;
 
   return (
-    <div style={{ maxWidth: "900px", margin: "0 auto", paddingBottom: "60px" }}>
-      {/* HEADER */}
-      <div>
-        <h1 style={{ fontSize: "28px", color: "#0f172a" }}>Configure Mock Interview Session</h1>
-        <p style={{ color: "#64748b", marginTop: "6px" }}>
-          Tailor question difficulty, interview focus, and target role benchmarks before beginning.
+    <div className="container" style={{ maxWidth: "860px" }}>
+      {/* Title */}
+      <div style={{ marginBottom: "28px" }}>
+        <h1 style={{ fontSize: "26px", fontWeight: "700", color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
+          Interview Setup
+        </h1>
+        <p style={{ fontSize: "14px", color: "var(--text-secondary)", marginTop: "4px" }}>
+          Configure your target role, round format, and preferences before beginning.
         </p>
       </div>
 
-      {/* RESUME PROFILE BANNER */}
-      {activeResume && (
-        <div style={resumeBanner}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ fontSize: "20px" }}>👤</span>
-            <div>
-              <strong>Profile Attached: {activeResume.candidate_name || "Candidate"}</strong>
-              <div style={{ fontSize: "12px", color: "#1e3a8a", marginTop: "2px" }}>
-                Skills: {Array.isArray(activeResume.skills) ? activeResume.skills.slice(0, 6).join(", ") : "Detected competencies"}
-              </div>
-            </div>
-          </div>
-          <span style={tailoredBadge}>Resume-Aware Questions Enabled</span>
+      {errorMessage && (
+        <div className="alert alert-danger" style={{ marginBottom: "20px" }}>
+          {errorMessage}
         </div>
       )}
 
-      {/* TARGET ROLE */}
-      <div style={{ ...cardStyle, marginTop: "25px" }}>
-        <h3 style={sectionHeader}>Target Job Title</h3>
-        <input
-          type="text"
-          value={targetRole}
-          onChange={(e) => setTargetRole(e.target.value)}
-          placeholder="e.g. Software Engineer, Full Stack Developer, Backend Specialist"
-          style={inputStyle}
-        />
-      </div>
-
-      {/* MODE SELECTION */}
-      <div style={{ ...cardStyle, marginTop: "20px" }}>
-        <h3 style={sectionHeader}>Select Interview Mode</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginTop: "14px" }}>
-          {modes.map((m) => {
-            const isSelected = mode === m.id;
-            return (
-              <div
-                key={m.id}
-                onClick={() => setMode(m.id)}
-                style={{
-                  ...modeOptionCard,
-                  borderColor: isSelected ? "#2563eb" : "#e2e8f0",
-                  backgroundColor: isSelected ? "#eff6ff" : "white",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <h4 style={{ fontSize: "15px", color: isSelected ? "#1e40af" : "#0f172a" }}>{m.title}</h4>
-                  {isSelected && <span style={{ color: "#2563eb", fontWeight: "bold" }}>●</span>}
-                </div>
-                <p style={{ fontSize: "13px", color: "#64748b", marginTop: "6px", lineHeight: "1.4" }}>{m.desc}</p>
-              </div>
-            );
-          })}
-        </div>
-        {mode === "pressure" && (
-          <div style={{
-            marginTop: "16px",
-            padding: "16px",
-            backgroundColor: "#fffbeb",
-            border: "1px solid #fde68a",
-            borderRadius: "8px"
-          }}>
-            <h4 style={{ margin: "0 0 8px 0", color: "#92400e", fontSize: "14px", fontWeight: "600" }}>
-              Safe Pressure Mode Notice
-            </h4>
-            <p style={{ margin: "0 0 12px 0", fontSize: "13px", color: "#78350f", lineHeight: "1.5" }}>
-              Safe Pressure Mode tests time management, concise technical reasoning, and recovery under simulated incident conditions.
-              Questions feature shorter timers (45s) and direct architectural or validation follow-ups.
-              You can switch back to practice mode at any time during the interview without penalty.
-            </p>
-            <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#92400e", cursor: "pointer", fontWeight: "500" }}>
-              <input
-                type="checkbox"
-                checked={pressureAcknowledged}
-                onChange={(e) => setPressureAcknowledged(e.target.checked)}
-              />
-              <span>I understand this mode simulates fast-paced technical and incident scenarios, and I can switch back to practice mode at any time.</span>
-            </label>
-          </div>
-        )}
-      </div>
-
-      {/* DIFFICULTY */}
-      <div style={{ ...cardStyle, marginTop: "20px" }}>
-        <h3 style={sectionHeader}>Select Difficulty</h3>
-        <div style={{ display: "flex", gap: "12px", marginTop: "14px" }}>
-          {difficulties.map((d) => {
-            const isSelected = difficulty === d;
-            return (
-              <button
-                key={d}
-                onClick={() => setDifficulty(d)}
-                style={{
-                  ...difficultyPill,
-                  backgroundColor: isSelected ? "#0f172a" : "#f1f5f9",
-                  color: isSelected ? "white" : "#475569",
-                  border: isSelected ? "1px solid #0f172a" : "1px solid #e2e8f0",
-                }}
-              >
-                {d.toUpperCase()}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* QUESTION COUNT */}
-      <div style={{ ...cardStyle, marginTop: "20px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h3 style={sectionHeader}>Number of Questions</h3>
-          <span style={{ fontSize: "16px", fontWeight: "700", color: "#0f172a" }}>
-            {questionCount} Questions (~{estimatedMinutes} mins)
-          </span>
-        </div>
-        <input
-          type="range"
-          min="1"
-          max="5"
-          value={questionCount}
-          onChange={(e) => setQuestionCount(Number(e.target.value))}
-          style={{ width: "100%", marginTop: "14px" }}
-        />
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#94a3b8", marginTop: "4px" }}>
-          <span>1 (Quick Test)</span>
-          <span>3 (Standard Round)</span>
-          <span>5 (Full Assessment)</span>
-        </div>
-      </div>
-
-      {/* HARDWARE PRE-CHECK */}
-      <div style={{ ...cardStyle, marginTop: "20px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <h3 style={sectionHeader}>Hardware & Behavior Check (Optional)</h3>
-            <p style={{ fontSize: "13px", color: "#64748b", marginTop: "4px" }}>
-              Enable webcam and microphone for eye contact and speech analytics, or proceed directly in text mode.
-            </p>
-          </div>
-
-          <button
-            onClick={handleSystemCheck}
-            disabled={isCheckingMedia}
-            style={{
-              ...checkButton,
-              backgroundColor: systemReady ? "#16a34a" : "#0f172a",
-            }}
-          >
-            {isCheckingMedia ? "Testing Hardware..." : systemReady ? "Hardware Checked ✓" : "Test Camera & Mic"}
-          </button>
-        </div>
-
-        {errorMessage && (
-          <p style={{ fontSize: "12px", color: "#b91c1c", marginTop: "10px" }}>
-            {errorMessage}
-          </p>
-        )}
-      </div>
-
-      {/* START INTERVIEW CTA */}
-      <div style={{ textAlign: "center", marginTop: "35px" }}>
-        <button
-          onClick={handleStart}
-          disabled={loadingStart}
-          style={{
-            ...startInterviewButton,
-            opacity: loadingStart ? 0.7 : 1,
-            cursor: loadingStart ? "wait" : "pointer",
-          }}
-        >
-          {loadingStart ? "Initializing AI Interview Room..." : "Begin Mock Interview →"}
-        </button>
-      </div>
-
-      {/* DATA RETENTION GUARANTEE */}
-      <div style={{ marginTop: "24px", textAlign: "center", fontSize: "12px", color: "#64748b" }}>
-        🔒 Data Privacy Guarantee: Video and audio are processed locally in your browser. Raw media is never recorded or uploaded. Your data is kept until you delete it.
-      </div>
-
-      {/* PRIVACY & SENSOR PROCESSING CONSENT MODAL */}
-      {showConsentModal && (
+      {/* Resume Attached Banner */}
+      {activeResume && (
         <div
           style={{
+            backgroundColor: "var(--primary-50)",
+            border: "1px solid var(--primary-200)",
+            borderRadius: "var(--radius-md)",
+            padding: "12px 16px",
+            marginBottom: "24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div>
+            <div style={{ fontSize: "13px", fontWeight: "600", color: "var(--primary-900)" }}>
+              Attached Resume: {activeResume.candidate_name || "Candidate"}
+            </div>
+            <div style={{ fontSize: "12px", color: "var(--primary-700)", marginTop: "2px" }}>
+              Questions will be anchored to your experience and resume claims.
+            </div>
+          </div>
+          <Badge variant="info">Resume Active</Badge>
+        </div>
+      )}
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "20px" }}>
+        {/* Step 1: Target Role */}
+        <Card>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label" style={{ fontWeight: "600" }}>
+              Target Job Title
+            </label>
+            <input
+              type="text"
+              className="form-input"
+              value={targetRole}
+              onChange={(e) => setTargetRole(e.target.value)}
+              placeholder="e.g. Backend Engineer, Full Stack Developer, Systems Engineer"
+            />
+            <span className="form-hint">
+              Used to calibrate question relevance and domain concepts.
+            </span>
+          </div>
+        </Card>
+
+        {/* Step 2: Interview Type */}
+        <Card>
+          <label className="form-label" style={{ fontWeight: "600", marginBottom: "12px" }}>
+            Interview Type
+          </label>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: "12px",
+            }}
+          >
+            {modes.map((m) => {
+              const isSelected = mode === m.id;
+              return (
+                <div
+                  key={m.id}
+                  onClick={() => setMode(m.id)}
+                  style={{
+                    padding: "14px 16px",
+                    borderRadius: "var(--radius-md)",
+                    border: isSelected ? "2px solid var(--slate-900)" : "1px solid var(--border-default)",
+                    backgroundColor: isSelected ? "var(--slate-50)" : "#ffffff",
+                    cursor: "pointer",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                    <div style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
+                      {m.title}
+                    </div>
+                    {isSelected && <Badge variant="neutral">Selected</Badge>}
+                  </div>
+                  <div style={{ fontSize: "12px", color: "var(--text-secondary)", lineHeight: "1.4" }}>
+                    {m.desc}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Incident / Pressure Mode notice */}
+          {mode === "pressure" && (
+            <div
+              style={{
+                marginTop: "16px",
+                padding: "14px",
+                backgroundColor: "var(--warning-bg)",
+                border: "1px solid var(--warning-border)",
+                borderRadius: "var(--radius-md)",
+              }}
+            >
+              <div style={{ fontSize: "13px", fontWeight: "600", color: "var(--warning-text)", marginBottom: "4px" }}>
+                Incident Response Notice
+              </div>
+              <p style={{ fontSize: "12px", color: "#78350f", lineHeight: "1.5", marginBottom: "10px" }}>
+                Simulates real-world urgent troubleshooting with strict 45-second response timers. You can switch back to standard timing at any time without penalty.
+              </p>
+              <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#78350f", cursor: "pointer" }}>
+                <input
+                  type="checkbox"
+                  checked={pressureAcknowledged}
+                  onChange={(e) => setPressureAcknowledged(e.target.checked)}
+                />
+                <span>I understand this mode simulates fast-paced incident reasoning with 45s timers.</span>
+              </label>
+            </div>
+          )}
+        </Card>
+
+        {/* Step 3: Difficulty & Length */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
+          <Card>
+            <label className="form-label" style={{ fontWeight: "600", marginBottom: "10px" }}>
+              Difficulty Level
+            </label>
+            <div style={{ display: "flex", gap: "8px" }}>
+              {difficulties.map((d) => (
+                <button
+                  key={d.id}
+                  type="button"
+                  onClick={() => setDifficulty(d.id)}
+                  style={{
+                    flex: 1,
+                    padding: "8px 10px",
+                    borderRadius: "var(--radius-md)",
+                    border: difficulty === d.id ? "1px solid var(--slate-900)" : "1px solid var(--border-default)",
+                    backgroundColor: difficulty === d.id ? "var(--slate-900)" : "var(--bg-surface)",
+                    color: difficulty === d.id ? "var(--text-inverse)" : "var(--text-secondary)",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                  }}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
+          </Card>
+
+          <Card>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+              <label className="form-label" style={{ fontWeight: "600", margin: 0 }}>
+                Question Count
+              </label>
+              <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)" }}>
+                {questionCount} questions (~{estimatedMins} min)
+              </span>
+            </div>
+            <input
+              type="range"
+              min="2"
+              max="6"
+              value={questionCount}
+              onChange={(e) => setQuestionCount(Number(e.target.value))}
+              style={{ width: "100%", marginTop: "8px" }}
+            />
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "var(--text-muted)", marginTop: "4px" }}>
+              <span>2 (Brief)</span>
+              <span>4 (Standard)</span>
+              <span>6 (Comprehensive)</span>
+            </div>
+          </Card>
+        </div>
+
+        {/* Step 4: Hardware & Input Mode */}
+        <Card>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "16px" }}>
+            <div>
+              <div style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "4px" }}>
+                Input & Hardware Preference
+              </div>
+              <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+                {mediaPreference === "standard"
+                  ? "Standard: Camera for alignment framing and microphone for speech transcription."
+                  : "Text-Only: Camera and microphone are completely disabled. Type your responses."}
+              </div>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <button
+                type="button"
+                onClick={() => setMediaPreference(mediaPreference === "standard" ? "text_only" : "standard")}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "var(--radius-md)",
+                  border: "1px solid var(--border-default)",
+                  backgroundColor: "var(--slate-100)",
+                  fontSize: "12px",
+                  fontWeight: "500",
+                  cursor: "pointer",
+                }}
+              >
+                Switch to {mediaPreference === "standard" ? "Text-Only" : "Standard Audio/Video"}
+              </button>
+
+              {mediaPreference === "standard" && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleTestHardware}
+                  loading={isCheckingMedia}
+                >
+                  {hardwareChecked ? "Hardware Ready ✓" : "Test Camera & Mic"}
+                </Button>
+              )}
+            </div>
+          </div>
+        </Card>
+
+        {/* Summary Card & Start Action */}
+        <Card
+          style={{
+            backgroundColor: "var(--slate-50)",
+            borderColor: "var(--slate-300)",
+            padding: "20px 24px",
+          }}
+        >
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "16px" }}>
+            <div>
+              <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", fontWeight: "600", marginBottom: "4px" }}>
+                Interview Summary
+              </div>
+              <div style={{ fontSize: "16px", fontWeight: "700", color: "var(--text-primary)" }}>
+                {selectedModeObj.title} · {targetRole}
+              </div>
+              <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "2px" }}>
+                {difficulty.toUpperCase()} difficulty · {questionCount} questions · ~{estimatedMins} minutes · {mediaPreference === "standard" ? "Audio/Video" : "Text-Only"}
+              </div>
+            </div>
+
+            <div>
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={handleStart}
+                loading={loadingStart}
+              >
+                Start Interview →
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Sensor Privacy Consent Modal */}
+      {showConsentModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{
             position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(15, 23, 42, 0.65)",
+            inset: 0,
+            backgroundColor: "rgba(15, 23, 42, 0.6)",
+            backdropFilter: "blur(2px)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 1000,
-            padding: "20px",
+            zIndex: 100,
+            padding: "16px",
           }}
         >
           <div
             style={{
-              backgroundColor: "white",
-              borderRadius: "12px",
-              padding: "28px",
-              maxWidth: "540px",
+              backgroundColor: "#ffffff",
+              borderRadius: "var(--radius-lg)",
+              maxWidth: "520px",
               width: "100%",
-              boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+              padding: "24px",
+              boxShadow: "var(--shadow-lg)",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
-              <span style={{ fontSize: "24px" }}>🛡️</span>
-              <h3 style={{ margin: 0, fontSize: "18px", color: "#0f172a" }}>Sensor Processing & Privacy Choice</h3>
-            </div>
-
-            <p style={{ fontSize: "13px", color: "#475569", lineHeight: "1.5", marginBottom: "14px" }}>
-              To provide delivery stability and cadence feedback, this system can analyze webcam alignment and microphone pacing.
-              Before continuing, please review how your data is handled:
+            <h3 style={{ fontSize: "18px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "8px" }}>
+              Sensor Processing & Privacy
+            </h3>
+            <p style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.6", marginBottom: "14px" }}>
+              To practice with natural speech and camera framing, please review our sensor policies:
             </p>
+            <ul style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.5", paddingLeft: "18px", marginBottom: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>
+              <li>
+                <strong>Video:</strong> Frames are analyzed locally in your browser for camera positioning. Video is never uploaded or stored.
+              </li>
+              <li>
+                <strong>Audio:</strong> Spoken answers use your browser’s speech service. Only transcribed text is evaluated.
+              </li>
+              <li>
+                <strong>Alternative:</strong> You can decline and practice in Text-Only mode at any time.
+              </li>
+            </ul>
 
-            <div style={{ backgroundColor: "#f8fafc", borderRadius: "8px", padding: "14px", border: "1px solid #e2e8f0", fontSize: "12px", color: "#334155", lineHeight: "1.6", marginBottom: "20px" }}>
-              <ul style={{ margin: 0, paddingLeft: "18px" }}>
-                <li><strong>Local-only video analysis:</strong> Video frames are analysed locally and never leave the browser. Head alignment and visual stability proxies are computed on-device via MediaPipe.</li>
-                <li><strong>Speech recognition notice:</strong> Speech recognition is performed by the browser's own speech service, which may process audio on the vendor's servers under its own policy.</li>
-                <li><strong>Server data processing:</strong> Our server receives only transcript text, timing, and derived numbers. Raw video and raw audio files are never stored or uploaded to our server.</li>
-                <li><strong>Text-only fallback:</strong> Text-only mode avoids both video and speech processing.</li>
-                <li><strong>Retention policy:</strong> <em>Your data is kept until you delete it.</em> You may delete individual sessions or your entire account at any time.</li>
-              </ul>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
-              <button
-                onClick={handleDeclineConsent}
-                style={{
-                  padding: "10px 16px",
-                  backgroundColor: "#f1f5f9",
-                  color: "#475569",
-                  border: "1px solid #cbd5e1",
-                  borderRadius: "6px",
-                  fontSize: "13px",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                }}
-              >
-                Decline (Use Text-Only Mode)
-              </button>
-              <button
-                onClick={handleGrantConsent}
-                style={{
-                  padding: "10px 18px",
-                  backgroundColor: "#0f172a",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "6px",
-                  fontSize: "13px",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                }}
-              >
-                Agree & Enable Camera / Audio
-              </button>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+              <Button variant="secondary" onClick={handleDeclineConsent}>
+                Use Text-Only Mode
+              </Button>
+              <Button variant="primary" onClick={handleGrantConsent}>
+                Enable Audio & Video
+              </Button>
             </div>
           </div>
         </div>
@@ -535,91 +566,5 @@ function InterviewSetup() {
     </div>
   );
 }
-
-/* STYLES */
-const cardStyle = {
-  background: "white",
-  padding: "24px",
-  borderRadius: "10px",
-  border: "1px solid #e2e8f0",
-  boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-};
-
-const sectionHeader = {
-  fontSize: "15px",
-  color: "#0f172a",
-  fontWeight: "600",
-};
-
-const inputStyle = {
-  width: "100%",
-  padding: "10px 14px",
-  borderRadius: "6px",
-  border: "1px solid #cbd5e1",
-  marginTop: "10px",
-  fontSize: "14px",
-  boxSizing: "border-box",
-};
-
-const resumeBanner = {
-  backgroundColor: "#eff6ff",
-  border: "1px solid #bfdbfe",
-  borderRadius: "8px",
-  padding: "14px 20px",
-  marginTop: "20px",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-};
-
-const tailoredBadge = {
-  fontSize: "11px",
-  fontWeight: "700",
-  color: "#1d4ed8",
-  backgroundColor: "#dbeafe",
-  padding: "4px 10px",
-  borderRadius: "12px",
-  textTransform: "uppercase",
-  letterSpacing: "0.03em",
-};
-
-const modeOptionCard = {
-  padding: "16px",
-  borderRadius: "8px",
-  border: "1px solid",
-  cursor: "pointer",
-  transition: "all 0.15s ease",
-};
-
-const difficultyPill = {
-  padding: "8px 22px",
-  borderRadius: "20px",
-  fontSize: "13px",
-  fontWeight: "600",
-  cursor: "pointer",
-  transition: "all 0.15s ease",
-};
-
-const checkButton = {
-  padding: "9px 18px",
-  borderRadius: "6px",
-  color: "white",
-  border: "none",
-  fontSize: "13px",
-  fontWeight: "600",
-  cursor: "pointer",
-};
-
-const startInterviewButton = {
-  padding: "14px 36px",
-  backgroundColor: "#0f172a",
-  color: "white",
-  border: "none",
-  borderRadius: "8px",
-  fontSize: "16px",
-  fontWeight: "600",
-  cursor: "pointer",
-  boxShadow: "0 4px 12px rgba(15, 23, 42, 0.15)",
-};
 
 export default InterviewSetup;
