@@ -648,6 +648,95 @@ Conducted on branch `phase-4-performance-intelligence` from commit `5a39741`.
 4. **Third-Party LLM Provider Keys (Gemini / OpenAI)**:
    - Verification steps: Set `GEMINI_API_KEY` in environment, answer question, check report header shows `LLM (GEMINI) [prompt v1.0]`. Without keys, verified that deterministic rubric engine runs seamlessly with zero disruption.
 
+---
 
+## 10. Phase 5 Baseline Audit: Productization, UX, Visual System & Professional Web Experience
 
+**Date**: 2026-10-06  
+**Branch**: `phase-5-productization`  
+**Status**: Completed — Baseline Verified  
 
+### 1. Baseline Verification & Tooling Status
+
+- **Automated Test Suite**: 159/159 passing across 25 test files in 7.77s (`./venv/bin/pytest`). Zero failures, zero regressions.
+- **Frontend Production Build**: `npm --prefix frontend run build` succeeds cleanly in 1.98s (`dist/index.html` 0.46 kB, `dist/assets/index-DBTW3ARK.js` 806.75 kB).
+- **Bundle Notice**: 806 kB uncompressed JS bundle (243 kB gzip) due to bundled Recharts and MediaPipe FaceMesh assets; to be addressed in Step 15.
+- **Database Schema**: 16 SQLAlchemy models across Alembic migrations 0001 through 0004. Backend remains strict single source of truth.
+
+---
+
+### 2. Comprehensive Codebase & UI Audit
+
+#### A. Architecture, Routing & Layout
+- **Routing (`frontend/src/App.jsx`)**:
+  - Routes present: `/`, `/login`, `/register`, `/resume`, `/setup`, `/interview`, `/dashboard`, `/report/:session_id?`, `/fix-answer`, `/progress`, `/history`.
+  - Inconsistency: `/dashboard` and `/report` both render `Dashboard.jsx`. There is no dedicated calm "Product Home" Dashboard distinct from the single-session post-interview report.
+  - Missing dedicated `/practice` route for drill catalog selection.
+- **Layout & Navigation (`Navbar.jsx`, `Layout.jsx`)**:
+  - `Navbar.jsx` contains decorative branding: badge `"AI"` and title `"Enterprise AI Mock Assessment"`.
+  - Links: Resume Analysis, Mock Interview, Report, Fix My Answer, Progress, History.
+  - Lacks structured Information Architecture: needs `Dashboard`, `Practice`, `Resume`, `Progress`, `History`, plus a clean `Account` menu (`Profile`, `Privacy`, `Export Data`, `Delete Account`, `Sign Out`).
+  - Mobile menu: lacks a responsive hamburger navigation toggle; links simply wrap or clip on narrow viewports.
+
+#### B. Visual System, Global CSS & Design Tokens
+- **CSS Status**:
+  - `frontend/src/styles/global.css` is currently empty (0 bytes).
+  - `frontend/src/index.css` contains minimal reset rules (`margin: 0`, basic font-family).
+  - Hardcoded color hexes, radii, and paddings are scattered across JSX files (`#0f172a`, `#2563eb`, `#f8fafc`, `#16a34a`, `#dc2626`, `#e2e8f0`).
+  - Inconsistent button styles, pill badges, and card borders.
+  - No unified design tokens for spacing, typography scale, shadows, and interactive state transitions.
+
+#### C. Product Language & AI Terminology
+- **Overuse of "AI" Terminology**:
+  - Landing: "Enterprise AI Interview Preparation", "Practice Interviews with Objective AI Intelligence", "Fix My Answer AI Coach", "AI Mock Interview".
+  - Interview Setup: "AI Interview Setup".
+  - Resume Review: "Interview Risk & Verification Priorities" with developer-centric labels like `probe_priority: 85%` and `ladder_step: T3_INCIDENT`.
+  - Progress: "Longitudinal AI Readiness Engine".
+- **Internal Jargon Exposed**:
+  - Internal engine terms (`verification_risk`, `probe_ladder`, `claim_consistency`, `T1_FOUNDATION` through `T4_EDGE_CASE`) leak directly into user-facing badges and cards.
+
+#### D. Live Interview Screen
+- **Distraction Factor**:
+  - Live interview screen currently renders a "Live Communication Stats" sidebar displaying real-time word count, estimated WPM, and filler counts while the user is actively speaking.
+  - Video feed overlay displays visual centering metrics directly on top of the webcam feed while recording.
+  - Violates Section 11 rule: Candidate must be focused purely on the question and their answer without live analytical scoreboards.
+
+#### E. State Handling (Loading, Empty, Error)
+- **Loading States**: Spinners are ad-hoc; lacks clean skeleton screens.
+- **Empty States**: Several pages display bare text ("No sessions yet" or "No data") instead of guided empty states explaining how to begin.
+- **Error States**: While API handles uniform errors, UI sometimes falls back to generic banners or silent failures; needs inline recovery actions.
+
+---
+
+### 3. Baseline Audit Categorization Matrix
+
+| Category | Features / Components |
+|---|---|
+| **IMPLEMENTED** | • 159 backend tests passing (auth, scoring, adaptive engine, timeline, weakness diagnosis, velocity, comparability, practice recommendations, readiness, export, cascade deletion).<br>• Full air-gapped / offline capability.<br>• Secure JWT httpOnly cookie auth, Argon2 hashing, CSRF tokens.<br>• Session recording, FaceMesh head alignment proxy, Web Speech STT. |
+| **PARTIALLY IMPLEMENTED** | • **Dashboard**: Currently shares component with post-interview report; needs separation into calm product home.<br>• **Practice**: Endpoints exist (`/practice/start`, `/practice/recommendations`), but lacks dedicated drill catalog page `/practice`.<br>• **Report**: Comprehensive metrics exist, but information density is high and lacks progressive disclosure hierarchy.<br>• **Responsive Layout**: Pages render on desktop, but mobile/tablet viewports experience horizontal scrolling, tight padding, and un-optimized camera framing. |
+| **MISSING** | • Unified CSS design tokens (`tokens.css`) defining typography, colors, radii, shadows, and button hierarchy.<br>• Account menu with quick access to Privacy settings, Data Export, and Account Deletion.<br>• Dedicated Practice Hub (`/practice`) with Next Practice highlight and drill categories.<br>• Component primitives: `Card`, `Badge`, `Button`, `EmptyState`, `Skeleton`, `Modal`.<br>• Textual accessibility summaries for Recharts data visualizers. |
+| **BROKEN** | • Live interview distracts candidate with live WPM/filler scoreboard and camera-overlay centering indicators while answering.<br>• Navbar collapses awkwardly on mobile screens without hamburger navigation.<br>• Excessive decorative "AI" branding across Landing, Navbar, Setup, and Report. |
+| **NEEDS DESIGN** | • Calm, professional visual foundation avoiding sci-fi gradients, neon colors, and gaming aesthetics.<br>• Focused, distraction-free live interview room (Question at top, webcam framing, answer input, clear timer, minimal controls).<br>• Executive Performance Report structured as Observation $\rightarrow$ Problem $\rightarrow$ Action with prominent Next Practice CTA.<br>• Clear, accessible empty states guiding new users to their first session. |
+
+---
+
+### 4. Implementation Plan (18 Steps per Section 58)
+
+1. `phase-5 baseline audit` *(This commit)*
+2. `feat: add design tokens and visual foundation`
+3. `feat: redesign navigation and application shell`
+4. `feat: redesign dashboard as focused product home`
+5. `feat: redesign targeted practice flow`
+6. `feat: streamline interview setup and hardware preferences`
+7. `feat: redesign live interview interface for distraction-free practice`
+8. `feat: redesign performance report with progressive disclosure`
+9. **Checkpoint: Section 57 Design Review** *(STOP and report)*
+10. `feat: redesign progress and interview history views`
+11. `feat: redesign resume review and verification view`
+12. `feat: complete responsive and mobile pass across critical flows`
+13. `feat: implement accessibility audit and screen-reader enhancements`
+14. `feat: implement polished error loading and empty states`
+15. `feat: copy and terminology audit removing decorative AI phrasing`
+16. `feat: performance and bundle optimization pass`
+17. `feat: enhance privacy trust and consent user experience`
+18. `feat: final visual consistency pass and documentation audit`
