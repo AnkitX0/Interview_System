@@ -381,7 +381,14 @@ function Dashboard() {
                       Question #{idx + 1}
                     </span>
                     <h4 style={{ fontSize: "17px", color: "#0f172a", marginTop: "4px" }}>{ans.question_text}</h4>
+                    {ans.generated_reason && (
+                      <div style={{ marginTop: "6px", fontSize: "12px", color: "#3730a3", backgroundColor: "#eef2ff", padding: "4px 8px", borderRadius: "4px", border: "1px solid #c7d2fe", display: "inline-block" }}>
+                        <strong>Rationale: </strong>
+                        <span>{ans.generated_reason}</span>
+                      </div>
+                    )}
                   </div>
+
 
                   <div style={{ textAlign: "right" }}>
                     <div style={{ fontSize: "24px", fontWeight: "800", color: getScoreColor(ans.overall_score) }}>
@@ -550,9 +557,61 @@ function Dashboard() {
               <p style={{ color: "#64748b" }}>No specific answer details recorded for this session.</p>
             </div>
           )}
+
+          {/* ADAPTIVE DECISION LOG */}
+          {report.decision_log && report.decision_log.length > 0 && (
+
+            <div style={{ ...cardStyle, marginTop: "20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                <h3 style={{ fontSize: "16px", color: "#0f172a", margin: 0 }}>
+                  Why Each Question Was Asked (Adaptive Decision Log)
+                </h3>
+                <span style={{ fontSize: "11px", fontWeight: "700", color: "#64748b", backgroundColor: "#f1f5f9", padding: "2px 8px", borderRadius: "4px" }}>
+                  {report.decision_log.length} DECISIONS
+                </span>
+              </div>
+              <p style={{ fontSize: "12px", color: "#64748b", margin: "0 0 16px 0" }}>
+                Deterministic audit trail showing how question types, resume claim probes, and challenge scenarios were chosen based on your preceding answers.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {report.decision_log.map((item, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      padding: "10px 14px",
+                      backgroundColor: "#f8fafc",
+                      borderRadius: "6px",
+                      border: "1px solid #e2e8f0",
+                      fontSize: "13px",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                      <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                        <span style={{ fontSize: "11px", fontWeight: "700", backgroundColor: "#e2e8f0", color: "#1e293b", padding: "2px 6px", borderRadius: "4px" }}>
+                          Turn {item.turn}
+                        </span>
+                        <span style={{ fontSize: "11px", fontWeight: "700", color: "#2563eb", textTransform: "uppercase" }}>
+                          {item.decision.replace(/_/g, " ")}
+                        </span>
+                      </div>
+                      {item.timestamp && (
+                        <span style={{ fontSize: "11px", color: "#94a3b8" }}>
+                          {new Date(item.timestamp).toLocaleTimeString()}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ color: "#334155", lineHeight: "1.4" }}>
+                      {item.reason}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
+
   );
 }
 

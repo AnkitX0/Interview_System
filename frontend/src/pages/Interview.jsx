@@ -60,6 +60,7 @@ function Interview() {
   const [isFollowUp, setIsFollowUp] = useState(false);
   const [followUpQuestion, setFollowUpQuestion] = useState("");
   const [submittingFinal, setSubmittingFinal] = useState(false);
+  const [loadingNext, setLoadingNext] = useState(false);
 
   // Refs for camera and metrics
   const blinkRef = useRef(false);
@@ -88,7 +89,8 @@ function Interview() {
 
   // Reset timer on question change
   useEffect(() => {
-    setTimeLeft(90);
+    const q = questions[currentIndex];
+    setTimeLeft(q?.time_limit_seconds || 90);
     questionStartTimeRef.current = Date.now();
     speechSegmentsRef.current = [];
     currentSpeechStartRef.current = null;
@@ -450,20 +452,51 @@ function Interview() {
     }
   };
 
-  // Proceed to Next Question or Follow-up
-  const handleProceed = () => {
+  // Proceed to Next Question via Adaptive Policy
+  const handleProceed = async () => {
     speechSegmentsRef.current = [];
     currentSpeechStartRef.current = null;
+    setLoadingNext(true);
 
-    // Check if we should ask follow-up for short answer once
-    if (!isFollowUp && wordCount < 30) {
-      setIsFollowUp(true);
-      setFollowUpQuestion("Can you expand on that with a concrete practical example from your experience?");
-      setLatestEvaluation(null);
-      setAnswer("");
-      return;
+    try {
+      const res = await apiFetch(`/interview/${sessionId}/next`, {
+        method: "POST",
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.done) {
+          await handleFinishInterview();
+          return;
+        }
+
+        if (data.question) {
+          const nextQ = {
+            id: data.question.id,
+            question: data.question.question || data.question.question_text,
+            caption: data.question.caption || null,
+            time_limit_seconds: data.question.time_limit_seconds || 90,
+            question_type: data.question.question_type || "technical",
+            difficulty: data.question.difficulty || difficulty,
+            ladder_stage: data.question.ladder_stage || null,
+            source: data.question.source || null,
+          };
+          setQuestions((prev) => [...prev, nextQ]);
+          setCurrentIndex((prev) => prev + 1);
+          setLatestEvaluation(null);
+          setIsFollowUp(false);
+          setFollowUpQuestion("");
+          setAnswer("");
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn("Error calling /next, falling back to local question queue:", err);
+    } finally {
+      setLoadingNext(false);
     }
 
+    // Local fallback if /next is unavailable or offline
     setLatestEvaluation(null);
     setIsFollowUp(false);
     setFollowUpQuestion("");
@@ -475,6 +508,7 @@ function Interview() {
       handleFinishInterview();
     }
   };
+
 
   // Complete Interview
   const handleFinishInterview = async () => {
@@ -626,10 +660,28 @@ function Interview() {
                 </span>
                 <span style={{ fontSize: "12px", color: "#64748b" }}>Target: {targetRole}</span>
               </div>
+              {currentQ.caption && (
+                <div
+                  style={{
+                    display: "inline-block",
+                    marginTop: "8px",
+                    padding: "3px 10px",
+                    backgroundColor: "#e0e7ff",
+                    color: "#312e81",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    borderRadius: "4px",
+                    border: "1px solid #c7d2fe",
+                  }}
+                >
+                  {currentQ.caption}
+                </div>
+              )}
               <h3 style={{ fontSize: "19px", color: "#0f172a", marginTop: "8px", lineHeight: "1.4" }}>
                 {isFollowUp ? followUpQuestion : currentQ.question}
               </h3>
             </div>
+
 
             {/* INLINE SPEECH / VALIDATION BANNERS */}
             {speechNotice && (
@@ -808,15 +860,16 @@ function Interview() {
               ) : (
                 <button
                   onClick={handleProceed}
-                  disabled={submittingFinal}
+                  disabled={submittingFinal || loadingNext}
                   style={nextBtn}
                 >
-                  {currentIndex < questions.length - 1
-                    ? "Proceed to Next Question →"
+                  {loadingNext
+                    ? "Evaluating Next Question..."
                     : submittingFinal
                     ? "Generating Final Report..."
-                    : "Finish Interview & View Report →"}
+                    : "Proceed to Next Question →"}
                 </button>
+
               )}
             </div>
 

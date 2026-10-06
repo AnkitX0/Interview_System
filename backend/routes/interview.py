@@ -503,6 +503,27 @@ def get_next_question(
     db.commit()
     db.refresh(q_rec)
 
+    caption = None
+    if decision_res.claim_id:
+        claim_obj = db.query(models.ResumeClaim).filter(models.ResumeClaim.id == decision_res.claim_id).first()
+        if claim_obj:
+            project_title = None
+            if claim_obj.project_id:
+                proj = db.query(models.ResumeProject).filter(models.ResumeProject.id == claim_obj.project_id).first()
+                if proj:
+                    project_title = proj.title
+            tech_list = []
+            if claim_obj.technologies:
+                try:
+                    tech_list = json.loads(claim_obj.technologies) if isinstance(claim_obj.technologies, str) else claim_obj.technologies
+                except Exception:
+                    pass
+            tech_str = tech_list[0] if tech_list else None
+            anchor = project_title or tech_str or "Resume Claim"
+            caption = f"Follow-up on: {anchor}"
+    elif decision_res.source in ("pressure_trigger", "challenge") or decision_res.question_type == "challenge":
+        caption = "Technical Challenge Scenario"
+
     return {
         "done": False,
         "question": {
@@ -512,6 +533,7 @@ def get_next_question(
             "source": q_rec.source,
             "ladder_stage": q_rec.ladder_stage,
             "claim_id": q_rec.claim_id,
+            "caption": caption,
             "difficulty": q_rec.difficulty,
             "time_limit_seconds": q_rec.time_limit_seconds,
             "sequence_order": q_rec.sequence_order,
@@ -522,6 +544,7 @@ def get_next_question(
             "reason": decision_record.reason,
         }
     }
+
 
 
 # =========================

@@ -121,10 +121,24 @@ def get_session_report(
                 },
             }
 
+        iq = db.query(models.InterviewQuestion).filter(
+            models.InterviewQuestion.session_id == session_id,
+            models.InterviewQuestion.id == ans.question_id
+        ).first()
+        if not iq:
+            iq = db.query(models.InterviewQuestion).filter(
+                models.InterviewQuestion.session_id == session_id,
+                models.InterviewQuestion.question_text == ans.question_text
+            ).first()
+
         answer_evals.append({
             "answer_id": ans.id,
             "question_id": ans.question_id,
             "question_text": ans.question_text or "Question",
+            "question_type": iq.question_type if iq else "technical",
+            "source": iq.source if iq else "bank",
+            "ladder_stage": iq.ladder_stage if iq else None,
+            "generated_reason": iq.generated_reason if iq else None,
             "transcript": ans.transcript or "",
             "response_time": ans.response_time or 0.0,
             "wpm": ans.wpm or 0.0,
@@ -216,6 +230,26 @@ def get_session_report(
         "note": "Measured" if delivery_measured else "Not measured: camera was off"
     }
 
+    decisions = db.query(models.InterviewDecision).filter(
+        models.InterviewDecision.session_id == session_id
+    ).order_by(models.InterviewDecision.turn.asc()).all()
+
+    decision_log = []
+    for d in decisions:
+        parsed_inputs = {}
+        if d.inputs:
+            try:
+                parsed_inputs = json.loads(d.inputs) if isinstance(d.inputs, str) else d.inputs
+            except Exception:
+                pass
+        decision_log.append({
+            "turn": d.turn,
+            "decision": d.decision,
+            "reason": d.reason,
+            "inputs": parsed_inputs,
+            "timestamp": d.created_at.isoformat() if d.created_at else None,
+        })
+
     return {
         "session_id": session.id,
         "mode": session.mode,
@@ -243,8 +277,10 @@ def get_session_report(
         "delivery_metrics": delivery_metrics_dict,
         "behavioral_metrics": delivery_metrics_dict,
         "radar_data": radar_data,
-        "answers": answer_evals
+        "answers": answer_evals,
+        "decision_log": decision_log
     }
+
 
 
 # =========================

@@ -175,6 +175,28 @@ def test_adaptive_probe_ladder_and_next_flow(client, golden_answers):
     assert next_res_final.json()["done"] is True
     assert next_res_final.json()["decision"]["decision"] == "COMPLETE_SESSION"
 
+    # 10. Verify caption on probe question
+    assert n1["question"]["caption"] is not None
+    assert "Follow-up on:" in n1["question"]["caption"]
+
+    # 11. Complete interview and verify report contains decision_log and question metadata
+    client.post(f"/interview/{session_id}/complete")
+    rep_res = client.get(f"/report/{session_id}")
+    assert rep_res.status_code == 200
+    rep_data = rep_res.json()
+    assert "decision_log" in rep_data
+    assert len(rep_data["decision_log"]) >= 4
+    dec_types = [d["decision"] for d in rep_data["decision_log"]]
+    assert "START_SESSION" in dec_types
+    assert "PROBE_CLAIM" in dec_types
+    assert "ADVANCE_LADDER" in dec_types
+    assert "COMPLETE_SESSION" in dec_types
+
+    # Ensure answers have generated_reason attached
+    assert len(rep_data["answers"]) == 3
+    assert rep_data["answers"][0]["generated_reason"] is not None
+
+
 
 def test_difficulty_stepping_logic():
     """Verify calculate_adjusted_difficulty steps up on strong scores and steps down on weak."""
