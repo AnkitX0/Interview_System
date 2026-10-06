@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 import backend.models as models
 from backend.services.question_selector import select_questions
 from backend.config import PRESSURE_MODE_CONFIG
+from backend.services.probe_rephraser import rephrase_probe_question
 
 
 
@@ -192,7 +193,8 @@ def decide_next_question(
             curr_stage_idx = LADDER_STAGES.index(last_q.ladder_stage) if last_q.ladder_stage in LADDER_STAGES else 0
             if curr_stage_idx < len(LADDER_STAGES) - 1:
                 next_stage = LADDER_STAGES[curr_stage_idx + 1]
-                q_text = format_probe_question(target_claim.claim_text, next_stage)
+                tmpl_q = format_probe_question(target_claim.claim_text, next_stage)
+                q_text = rephrase_probe_question(target_claim.claim_text, next_stage, tmpl_q)
                 return PolicyDecisionResult(
                     decision="ADVANCE_LADDER",
                     reason=f"Candidate adequately handled {last_q.ladder_stage} (score {last_score:.1f}); advancing to {next_stage}.",
@@ -222,7 +224,8 @@ def decide_next_question(
     if unprobed_claims:
         top_claim = unprobed_claims[0]
         first_stage = "T1_FOUNDATION"
-        q_text = format_probe_question(top_claim.claim_text, first_stage)
+        tmpl_q = format_probe_question(top_claim.claim_text, first_stage)
+        q_text = rephrase_probe_question(top_claim.claim_text, first_stage, tmpl_q)
         return PolicyDecisionResult(
             decision="PROBE_CLAIM",
             reason=f"Initiating probe on high-priority resume claim '{top_claim.claim_type}' (priority: {top_claim.probe_priority}).",
