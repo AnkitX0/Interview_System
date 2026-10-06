@@ -136,23 +136,36 @@ def test_legacy_pre_alembic_db_upgrades_without_data_loss():
         assert score_row[3] == '{}'  # server_default applied
 
         # Verify alembic_version table exists and is at head
+        from alembic.script import ScriptDirectory
+        script = ScriptDirectory.from_config(alembic_cfg)
+        expected_head = script.get_current_head()
+
         cur.execute("SELECT version_num FROM alembic_version")
         version_row = cur.fetchone()
         assert version_row is not None
-        assert version_row[0] == '0002_auth_and_user_scoping'
+        assert version_row[0] == expected_head
 
-        # Verify new Phase 2 tables and columns created
+        # Verify new Phase 2 & 3 tables and columns created
         cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
         tables = [r[0] for r in cur.fetchall()]
         assert "users" in tables
         assert "user_profile" in tables
         assert "voice_metrics" in tables
         assert "consent_records" in tables
+        assert "resume_skills" in tables
+        assert "resume_projects" in tables
+        assert "resume_claims" in tables
+        assert "resume_flags" in tables
+        assert "interview_questions" in tables
+        assert "interview_decisions" in tables
+        assert "claim_consistency" in tables
+        assert "answer_visual_metrics" in tables
 
         # Verify user_id added to resumes and interview_sessions
         cur.execute("PRAGMA table_info(resumes)")
         resume_cols = [r[1] for r in cur.fetchall()]
         assert "user_id" in resume_cols
+        assert "role_fit_scores" in resume_cols
 
         cur.execute("PRAGMA table_info(interview_sessions)")
         session_cols = [r[1] for r in cur.fetchall()]

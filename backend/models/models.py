@@ -58,10 +58,82 @@ class Resume(Base):
     strengths = Column(Text, default="[]")           # JSON string of list
     weak_areas = Column(Text, default="[]")          # JSON string of list
     suggested_improvements = Column(Text, default="[]") # JSON string of list
+    role_fit_scores = Column(JSON, default=dict)
+    risk_areas = Column(JSON, default=list)
     summary = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="resumes")
+    skills_list = relationship("ResumeSkill", back_populates="resume", cascade="all, delete-orphan")
+    projects = relationship("ResumeProject", back_populates="resume", cascade="all, delete-orphan")
+    claims = relationship("ResumeClaim", back_populates="resume", cascade="all, delete-orphan")
+    flags = relationship("ResumeFlag", back_populates="resume", cascade="all, delete-orphan")
+
+
+# -------------------------
+# Resume Intelligence Components
+# -------------------------
+class ResumeSkill(Base):
+    __tablename__ = "resume_skills"
+
+    id = Column(Integer, primary_key=True, index=True)
+    resume_id = Column(Integer, ForeignKey("resumes.id", ondelete="CASCADE"), nullable=False, index=True)
+    name = Column(String, nullable=False)
+    category = Column(String, nullable=False)
+    confidence = Column(Float, default=1.0)
+    evidenced = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    resume = relationship("Resume", back_populates="skills_list")
+
+
+class ResumeProject(Base):
+    __tablename__ = "resume_projects"
+
+    id = Column(Integer, primary_key=True, index=True)
+    resume_id = Column(Integer, ForeignKey("resumes.id", ondelete="CASCADE"), nullable=False, index=True)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    technologies = Column(JSON, default=list)
+    bullets = Column(JSON, default=list)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    resume = relationship("Resume", back_populates="projects")
+    claims = relationship("ResumeClaim", back_populates="project", cascade="all, delete-orphan")
+
+
+class ResumeClaim(Base):
+    __tablename__ = "resume_claims"
+
+    id = Column(Integer, primary_key=True, index=True)
+    resume_id = Column(Integer, ForeignKey("resumes.id", ondelete="CASCADE"), nullable=False, index=True)
+    project_id = Column(Integer, ForeignKey("resume_projects.id", ondelete="SET NULL"), nullable=True, index=True)
+    claim_text = Column(Text, nullable=False)
+    claim_type = Column(String, nullable=False, default="general")
+    technologies = Column(JSON, default=list)
+    has_metric = Column(Boolean, default=False)
+    probe_priority = Column(Float, default=0.5)
+    reasons = Column(JSON, default=list)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    resume = relationship("Resume", back_populates="claims")
+    project = relationship("ResumeProject", back_populates="claims")
+    flags = relationship("ResumeFlag", back_populates="claim", cascade="all, delete-orphan")
+
+
+class ResumeFlag(Base):
+    __tablename__ = "resume_flags"
+
+    id = Column(Integer, primary_key=True, index=True)
+    resume_id = Column(Integer, ForeignKey("resumes.id", ondelete="CASCADE"), nullable=False, index=True)
+    claim_id = Column(Integer, ForeignKey("resume_claims.id", ondelete="CASCADE"), nullable=True, index=True)
+    flag_type = Column(String, nullable=False)
+    description = Column(Text, nullable=False)
+    severity = Column(String, nullable=False, default="info")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    resume = relationship("Resume", back_populates="flags")
+    claim = relationship("ResumeClaim", back_populates="flags")
 
 
 # -------------------------
@@ -90,6 +162,9 @@ class InterviewSession(Base):
     behavioral_metrics = relationship("BehavioralMetrics", back_populates="session", cascade="all, delete-orphan")
     session_scores = relationship("SessionScore", back_populates="session", cascade="all, delete-orphan")
     followup_questions = relationship("FollowUpQuestion", back_populates="session", cascade="all, delete-orphan")
+    questions_list = relationship("InterviewQuestion", back_populates="session", cascade="all, delete-orphan")
+    decisions = relationship("InterviewDecision", back_populates="session", cascade="all, delete-orphan")
+    claim_consistencies = relationship("ClaimConsistency", back_populates="session", cascade="all, delete-orphan")
 
 
 # -------------------------
@@ -127,6 +202,7 @@ class InterviewAnswer(Base):
     session = relationship("InterviewSession", back_populates="answers")
     evaluations = relationship("AnswerEvaluation", back_populates="answer", cascade="all, delete-orphan")
     voice_metrics = relationship("VoiceMetrics", back_populates="answer", uselist=False, cascade="all, delete-orphan")
+    visual_metrics = relationship("AnswerVisualMetrics", back_populates="answer", uselist=False, cascade="all, delete-orphan")
 
 
 # -------------------------
@@ -154,6 +230,12 @@ class AnswerEvaluation(Base):
     engine_used = Column(String, default="rubric")
     prompt_version = Column(String, default="v1.0")
 
+    # Verification risk evaluation
+    verification_risk_score = Column(Float, nullable=True)
+    verification_risk_level = Column(String, nullable=True)
+    verification_risk_evidence = Column(JSON, default=list)
+    verification_risk_explanation = Column(Text, nullable=True)
+
     answer = relationship("InterviewAnswer", back_populates="evaluations")
 
 
@@ -169,6 +251,56 @@ class FollowUpQuestion(Base):
     followup_text = Column(Text)
 
     session = relationship("InterviewSession", back_populates="followup_questions")
+
+
+# -------------------------
+# Adaptive Interview Questions & Probes
+# -------------------------
+class InterviewQuestion(Base):
+    __tablename__ = "interview_questions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(Integer, ForeignKey("interview_sessions.id", ondelete="CASCADE"), nullable=False, index=True)
+    sequence_order = Column(Integer, nullable=False)
+    question_text = Column(Text, nullable=False)
+    question_type = Column(String, nullable=False, default="bank")  # bank | probe | followup | challenge
+    source = Column(String, nullable=False, default="bank")  # bank | resume_claim | followup | pressure_trigger
+    claim_id = Column(Integer, ForeignKey("resume_claims.id", ondelete="SET NULL"), nullable=True, index=True)
+    ladder_stage = Column(String, nullable=True)  # T1_FOUNDATION | T2_TRADE_OFFS | T3_INCIDENT | T4_EDGE_CASE
+    difficulty = Column(String, default="medium")
+    time_limit_seconds = Column(Integer, nullable=True)
+    generated_reason = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    session = relationship("InterviewSession", back_populates="questions_list")
+
+
+class InterviewDecision(Base):
+    __tablename__ = "interview_decisions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(Integer, ForeignKey("interview_sessions.id", ondelete="CASCADE"), nullable=False, index=True)
+    turn = Column(Integer, nullable=False)
+    decision = Column(String, nullable=False)  # PROBE_CLAIM | ADVANCE_LADDER | NEXT_BANK_QUESTION | TRIGGER_CHALLENGE | COMPLETE_SESSION
+    reason = Column(Text, nullable=False)
+    inputs = Column(JSON, default=dict)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    session = relationship("InterviewSession", back_populates="decisions")
+
+
+class ClaimConsistency(Base):
+    __tablename__ = "claim_consistency"
+
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(Integer, ForeignKey("interview_sessions.id", ondelete="CASCADE"), nullable=False, index=True)
+    claim_id = Column(Integer, ForeignKey("resume_claims.id", ondelete="CASCADE"), nullable=False, index=True)
+    label = Column(String, nullable=False, default="unverified")  # supported | partially_supported | unsupported | contradicted | unverified
+    evidence = Column(JSON, default=list)
+    answers_considered = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    session = relationship("InterviewSession", back_populates="claim_consistencies")
 
 
 # -------------------------
@@ -200,6 +332,7 @@ class SessionScore(Base):
     communication_score = Column(Float, default=0.0)
     technical_score = Column(Float, default=0.0)
     resume_consistency_score = Column(Float, default=0.0)
+    consistency_source = Column(String, default="heuristic")
     readiness_score = Column(Float, default=0.0)
 
     strongest_category = Column(String, default="Communication")
@@ -233,6 +366,25 @@ class VoiceMetrics(Base):
 
 
 # -------------------------
+# Extended Visual Metrics (Per Answer)
+# -------------------------
+class AnswerVisualMetrics(Base):
+    __tablename__ = "answer_visual_metrics"
+
+    id = Column(Integer, primary_key=True, index=True)
+    answer_id = Column(Integer, ForeignKey("interview_answers.id", ondelete="CASCADE"), unique=True, nullable=False, index=True)
+    head_alignment_percent = Column(Float, nullable=True)
+    blink_rate = Column(Float, nullable=True)
+    head_movement_variance = Column(Float, nullable=True)
+    face_visibility_ratio = Column(Float, nullable=True)
+    head_shift_count = Column(Integer, nullable=True)
+    frames_sampled = Column(Integer, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    answer = relationship("InterviewAnswer", back_populates="visual_metrics")
+
+
+# -------------------------
 # Consent Records
 # -------------------------
 class ConsentRecord(Base):
@@ -241,7 +393,7 @@ class ConsentRecord(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     consent_type = Column(String, nullable=False)  # camera | microphone | transcript_storage
-    policy_version = Column(String, default="v1.0", server_default="v1.0", nullable=False)
+    policy_version = Column(String, default="2.0", server_default="2.0", nullable=False)
     granted = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
