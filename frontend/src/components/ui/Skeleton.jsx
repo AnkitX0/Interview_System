@@ -13,3 +13,4 @@ export function Skeleton({ width = "100%", height = "1rem", borderRadius, classN
     />
   );
 }
+

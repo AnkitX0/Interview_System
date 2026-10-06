@@ -363,3 +363,4 @@ export function AccountModal({ isOpen, onClose, initialTab = "profile" }) {
     </div>
   );
 }
+
