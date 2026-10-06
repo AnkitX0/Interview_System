@@ -110,3 +110,64 @@ class ImproveAnswerRequest(BaseModel):
     question: str
     answer: str
     target_role: Optional[str] = "Software Engineer"
+
+
+# ---------------------------
+# Authentication & Profile Schemas
+# ---------------------------
+class RegisterRequest(BaseModel):
+    email: str = Field(..., min_length=5, description="User email address")
+    password: str = Field(..., min_length=10, description="Password (at least 10 characters)")
+    full_name: Optional[str] = Field(None, description="User full name")
+
+
+class LoginRequest(BaseModel):
+    email: str = Field(..., description="User email address")
+    password: str = Field(..., description="User password")
+
+
+class UserProfileSchema(BaseModel):
+    target_role: Optional[str] = None
+    domain: Optional[str] = None
+    experience_level: Optional[str] = None
+    university: Optional[str] = None
+    graduation_year: Optional[int] = None
+    current_status: Optional[str] = None
+    target_companies: Optional[List[str]] = None
+    interview_goal: Optional[str] = None
+    weekly_practice_goal: Optional[int] = None
+
+
+class UserResponse(BaseModel):
+    id: int
+    email: str
+    full_name: Optional[str] = None
+    profile: Optional[UserProfileSchema] = None
+
+
+class PasswordConfirmRequest(BaseModel):
+    password: str = Field(..., description="Password required for critical account actions")
+
+
+# ---------------------------
+# Speech Segment Schema (Voice Metrics)
+# ---------------------------
+class SpeechSegment(BaseModel):
+    start: float = Field(..., ge=0.0, description="Start timestamp in seconds relative to answer start")
+    end: float = Field(..., ge=0.0, description="End timestamp in seconds relative to answer start")
+
+
+# ---------------------------
+# Consent Record Schemas
+# ---------------------------
+class ConsentInput(BaseModel):
+    consent_type: str = Field(..., description="Type of consent: camera | microphone | transcript_storage")
+    granted: bool = Field(..., description="True if granted, False if withdrawn")
+    policy_version: Optional[str] = Field(None, description="Policy version granted")
+
+
+class ConsentResponse(BaseModel):
+    consent_type: str
+    granted: bool
+    policy_version: str
+    updated_at: Optional[Any] = None

@@ -6,7 +6,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.database import init_db
 import backend.models as models
-from backend.routes import resume, interview, analytics
 
 # Configure structured logging
 logging.basicConfig(
@@ -94,7 +93,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+import os
+from backend.routes import auth, resume, interview, analytics
+
 # Register route modules
+app.include_router(auth.router)
 app.include_router(resume.router)
 app.include_router(interview.router)
 app.include_router(analytics.router)
