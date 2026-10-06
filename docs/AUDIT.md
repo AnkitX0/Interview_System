@@ -443,7 +443,7 @@ All Phase 3 requirements have been fully implemented, tested, and verified on br
     - Cascading deletion: `DELETE /auth/account` and `DELETE /interview/{session_id}` cascade across all 8 intelligence tables with zero orphan rows left in SQLite.
     - Added `tests/test_intelligence_export_and_cascade.py`.
 
-12. **Documentation & Phase 3 Audit Log** (`Current Commit`):
+12. **Documentation & Phase 3 Audit Log** (`5a39741`):
     - Updated `README.md`, `docs/ARCHITECTURE.md`, and `docs/AUDIT.md` reflecting all Phase 3 capabilities, API schemas, testing metrics, and privacy contracts.
 
 ---
@@ -473,6 +473,66 @@ All Phase 3 requirements have been fully implemented, tested, and verified on br
    - Clean, reproducible git history on `phase-3-intelligence` branch with one commit per sub-step.
    - Full air-gapped / offline capability preserved with zero external network dependencies.
 2. **Phase 4 Gate**:
-   - Stop and wait for user review and approval before proceeding to Phase 4 (Feedback Quality & Answer Improvement, Drill-down practice, Enterprise multi-role rubrics).
+   - Approved to proceed to Phase 4 (Performance Intelligence, Learning Loop & Readiness Engine).
+
+---
+
+## 8. Phase 4 Baseline Audit
+
+Conducted on branch `phase-4-performance-intelligence` from commit `5a39741`.
+
+### Baseline Verification Status
+
+1. **Test Suite**: 107/107 automated pytest tests passing in 6.81s across 16 test files.
+2. **Frontend Build**: Vite production build succeeded with 0 errors (`dist/index.html` 0.46 kB, `dist/assets/index-BlmvpAY2.js` 790.08 kB).
+3. **Database Migration State**: Alembic head at `0003_intelligence_layer` (all 15 tables present and verified).
+4. **Offline / Air-Gapped Mode**: Functional with zero API keys required; bundled FaceMesh assets in `frontend/public/mediapipe/face_mesh/`.
+
+### Baseline Matrix
+
+- **IMPLEMENTED**:
+  - Single-session adaptive interview loop (`/interview/start`, `/next`, `/answer`, `/complete`).
+  - Resume intelligence & claim extraction with role fit and risk flags (`POST /resume/{id}/reanalyze`).
+  - Deterministic 4-step probe ladder (`T1_FOUNDATION` -> `T2_TRADE_OFFS` -> `T3_INCIDENT` -> `T4_EDGE_CASE`) with difficulty stepping.
+  - Interview decision logging (`interview_decisions` table).
+  - Verification risk observable indicators (generic phrasing, buzzwords, specificity gap, repetition, ownership vagueness).
+  - Claim consistency tracking (`consistent`, `weak_support`, `low_consistency`, `insufficient_evidence`) with dynamic session scoring.
+  - Safe Pressure Mode with 45s timer, challenge triggers, de-escalation `/switch-mode` (90s).
+  - Client-side extended visual metrics with quality gating (`face_visibility_ratio < 0.60` or `frames_sampled < 30`).
+  - Diagnostic metric score invariance (`USE_VOICE_METRICS_IN_SCORE = False`, `USE_EXTENDED_VISUAL_METRICS_IN_SCORE = False`).
+  - User authentication (Argon2, httpOnly JWT cookies, CSRF tokens, rate limiting).
+  - Cascading deletion and data export covering all 15 DB models.
+  - 107 automated tests across 16 test files.
+  - Production frontend build.
+
+- **PARTIALLY IMPLEMENTED**:
+  - Longitudinal progress: `/interview/history` returns past sessions, and `Progress.jsx` charts past scores, but lacks comparability criteria, trend detection, or data-sufficiency gating.
+  - Single-turn answer improvement: `FixAnswer.jsx` exists, but is not tied into recurring weaknesses or structured practice recommendations.
+
+- **MISSING** (Phase 4 Objectives):
+  - Session Timeline service deriving normalized chronological performance event stream from stored answers/metrics.
+  - Performance Dimension Model contract formalizing value, measured state, evidence, explanation, and action for each dimension.
+  - Weakness diagnosis engine with symptom -> pattern -> root weakness detection and configurable evidence thresholds.
+  - Longitudinal recurring weakness tracking across comparable sessions (`MIN_SESSIONS_FOR_RECURRING`).
+  - Deterministic weakness severity model (`low`, `moderate`, `high`, `critical`).
+  - Longitudinal improvement velocity calculation with minimum-session guards and comparability criteria.
+  - Session comparability engine (`is_comparable(session_a, session_b)` checking role, mode, difficulty, completed answers).
+  - Practice recommendation engine (`select_next_practice(user_history)`) generating prioritized, explainable practice plans.
+  - Targeted practice session mode leveraging existing interview infrastructure (question bank, claim ladder, rubrics).
+  - Longitudinal readiness engine with data-sufficiency confidence (`insufficient_data`, `low`, `medium`, `high`) and smoothed trend (`improving`, `stable`, `declining`).
+  - Target readiness gap analysis and bounded baseline score projection (non-ML, explicit heuristic).
+  - Redesigned minimal Report UI with visual timeline, what went well, what held you back, and next practice.
+  - Dashboard "Next Best Practice" banner with one-click practice launch.
+  - Weakness history UI tracking first/last seen, occurrences, severity trend, and improvement confirmation.
+
+- **BROKEN**:
+  - None. Zero regressions, 107/107 tests passing.
+
+- **UNVERIFIED**:
+  - Physical browser camera capture.
+  - Physical microphone audio and Web Speech recognition.
+  - Non-Chromium speech recognition behavior (Firefox / Safari).
+  - Live third-party LLM providers (Gemini / OpenAI API keys).
+
 
 
