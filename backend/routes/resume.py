@@ -6,6 +6,7 @@ from typing import Optional
 from backend.database import get_db
 import backend.models as models
 from backend.schemas.schemas import ResumeAnalyzeRequest
+from backend.services.auth_service import get_current_user
 from backend.services.resume_service import (
     extract_text_from_pdf_bytes,
     parse_resume_text
@@ -18,11 +19,12 @@ router = APIRouter(prefix="/resume", tags=["Resume"])
 async def upload_resume(
     file: Optional[UploadFile] = File(None),
     raw_text: Optional[str] = Form(None),
+    user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
     Uploads and extracts resume text from PDF or raw text,
-    performs structured analysis, persists in database, and returns candidate profile.
+    performs structured analysis, persists in database scoped to user, and returns candidate profile.
     """
     text = ""
     filename = "uploaded_resume.txt"
@@ -51,8 +53,9 @@ async def upload_resume(
 
     parsed = parse_resume_text(text)
 
-    # Persist in DB
+    # Persist in DB scoped to authenticated user
     resume_record = models.Resume(
+        user_id=user.id,
         filename=filename,
         candidate_name=parsed["candidate_name"],
         raw_text=text,
@@ -87,12 +90,19 @@ async def upload_resume(
 
 
 @router.post("/analyze")
-def analyze_resume(data: ResumeAnalyzeRequest, db: Session = Depends(get_db)):
+def analyze_resume(
+    data: ResumeAnalyzeRequest,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """
-    Analyzes provided resume text or retrieves existing parsed resume.
+    Analyzes provided resume text or retrieves existing parsed resume scoped to user.
     """
     if data.resume_id:
-        resume_record = db.query(models.Resume).filter(models.Resume.id == data.resume_id).first()
+        resume_record = db.query(models.Resume).filter(
+            models.Resume.id == data.resume_id,
+            models.Resume.user_id == user.id
+        ).first()
         if not resume_record:
             raise HTTPException(status_code=404, detail="Resume not found")
         return {
@@ -118,11 +128,18 @@ def analyze_resume(data: ResumeAnalyzeRequest, db: Session = Depends(get_db)):
 
 
 @router.get("/{resume_id}")
-def get_resume(resume_id: int, db: Session = Depends(get_db)):
+def get_resume(
+    resume_id: int,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """
-    Retrieves stored resume profile by ID.
+    Retrieves stored resume profile by ID scoped to current user.
     """
-    resume_record = db.query(models.Resume).filter(models.Resume.id == resume_id).first()
+    resume_record = db.query(models.Resume).filter(
+        models.Resume.id == resume_id,
+        models.Resume.user_id == user.id
+    ).first()
     if not resume_record:
         raise HTTPException(status_code=404, detail="Resume not found")
 
@@ -139,4 +156,25 @@ def get_resume(resume_id: int, db: Session = Depends(get_db)):
         "suggested_improvements": json.loads(resume_record.suggested_improvements or "[]"),
         "summary": resume_record.summary
     }
+
+
+@router.delete("/{resume_id}")
+def delete_resume(
+    resume_id: int,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Permanently deletes a resume owned by current user.
+    """
+    resume_record = db.query(models.Resume).filter(
+        models.Resume.id == resume_id,
+        models.Resume.user_id == user.id
+    ).first()
+    if not resume_record:
+        raise HTTPException(status_code=404, detail="Resume not found")
+
+    db.delete(resume_record)
+    db.commit()
+    return {"message": "Resume deleted successfully", "id": resume_id}
 

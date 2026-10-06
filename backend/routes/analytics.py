@@ -6,6 +6,7 @@ from typing import Optional
 import backend.models as models
 from backend.database import get_db
 from backend.schemas.schemas import ImproveAnswerRequest
+from backend.services.auth_service import get_current_user
 from backend.services.answer_improvement_service import improve_interview_answer
 from backend.services.scoring_engine import evaluate_rubric_for_answer
 
@@ -16,9 +17,14 @@ router = APIRouter(tags=["Analytics & Reports"])
 # GET SESSION REPORT
 # =========================
 @router.get("/report/{session_id}")
-def get_session_report(session_id: int, db: Session = Depends(get_db)):
+def get_session_report(
+    session_id: int,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     session = db.query(models.InterviewSession).filter(
-        models.InterviewSession.id == session_id
+        models.InterviewSession.id == session_id,
+        models.InterviewSession.user_id == user.id
     ).first()
 
     if not session:
@@ -195,8 +201,13 @@ def get_session_report(session_id: int, db: Session = Depends(get_db)):
 # GET PROGRESS HISTORY
 # =========================
 @router.get("/progress")
-def get_progress_data(db: Session = Depends(get_db)):
-    sessions = db.query(models.InterviewSession).order_by(
+def get_progress_data(
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    sessions = db.query(models.InterviewSession).filter(
+        models.InterviewSession.user_id == user.id
+    ).order_by(
         models.InterviewSession.id.asc()
     ).all()
 
@@ -267,9 +278,16 @@ def get_progress_data(db: Session = Depends(get_db)):
 # FIX MY ANSWER ENDPOINTS
 # =========================
 @router.post("/answer/{answer_id}/improve")
-def improve_answer_by_id(answer_id: int, db: Session = Depends(get_db)):
-    answer_rec = db.query(models.InterviewAnswer).filter(
-        models.InterviewAnswer.id == answer_id
+def improve_answer_by_id(
+    answer_id: int,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    answer_rec = db.query(models.InterviewAnswer).join(
+        models.InterviewSession
+    ).filter(
+        models.InterviewAnswer.id == answer_id,
+        models.InterviewSession.user_id == user.id
     ).first()
 
     if not answer_rec:
@@ -287,7 +305,10 @@ def improve_answer_by_id(answer_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/answer/improve")
-def improve_custom_answer(data: ImproveAnswerRequest):
+def improve_custom_answer(
+    data: ImproveAnswerRequest,
+    user: models.User = Depends(get_current_user)
+):
     if not data.answer.strip():
         raise HTTPException(status_code=400, detail="Answer text cannot be empty")
 

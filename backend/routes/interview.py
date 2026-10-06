@@ -13,6 +13,7 @@ from backend.schemas.schemas import (
     BehavioralInput,
     CompleteInterviewRequest
 )
+from backend.services.auth_service import get_current_user
 from backend.services.evaluation_engine import evaluate_answer
 from backend.services.followup_generator import generate_followup
 from backend.services.scoring_engine import calculate_session_score
@@ -25,7 +26,11 @@ router = APIRouter(prefix="/interview", tags=["Interview"])
 # START INTERVIEW
 # =========================
 @router.post("/start")
-def start_interview(data: StartInterviewRequest, db: Session = Depends(get_db)):
+def start_interview(
+    data: StartInterviewRequest,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     mode = data.mode or "practice"
     difficulty = data.difficulty or "medium"
     number_of_questions = data.number_of_questions or 3
@@ -33,7 +38,12 @@ def start_interview(data: StartInterviewRequest, db: Session = Depends(get_db)):
 
     resume_skills = []
     if data.resume_id:
-        resume = db.query(models.Resume).filter(models.Resume.id == data.resume_id).first()
+        resume = db.query(models.Resume).filter(
+            models.Resume.id == data.resume_id,
+            models.Resume.user_id == user.id
+        ).first()
+        if not resume:
+            raise HTTPException(status_code=404, detail="Resume not found")
         if resume and resume.skills:
             try:
                 resume_skills = json.loads(resume.skills)
@@ -41,6 +51,7 @@ def start_interview(data: StartInterviewRequest, db: Session = Depends(get_db)):
                 resume_skills = [s.strip() for s in resume.skills.split(",") if s.strip()]
 
     session = models.InterviewSession(
+        user_id=user.id,
         mode=mode,
         difficulty=difficulty,
         target_role=target_role,
@@ -76,11 +87,63 @@ def start_interview(data: StartInterviewRequest, db: Session = Depends(get_db)):
 
 
 # =========================
-# LATEST & ALL SESSIONS
+# HISTORY, LATEST & ALL SESSIONS
 # =========================
+@router.get("/history")
+def get_interview_history(
+    page: int = 1,
+    limit: int = 10,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Paginated list of interview sessions for the current user, newest first."""
+    offset = max(0, (page - 1) * limit)
+    total = db.query(models.InterviewSession).filter(
+        models.InterviewSession.user_id == user.id
+    ).count()
+
+    sessions = db.query(models.InterviewSession).filter(
+        models.InterviewSession.user_id == user.id
+    ).order_by(
+        models.InterviewSession.id.desc()
+    ).offset(offset).limit(limit).all()
+
+    items = []
+    for s in sessions:
+        score = db.query(models.SessionScore).filter(
+            models.SessionScore.session_id == s.id
+        ).first()
+        items.append({
+            "session_id": s.id,
+            "created_at": s.created_at.isoformat() if s.created_at else None,
+            "mode": s.mode,
+            "difficulty": s.difficulty,
+            "target_role": s.target_role,
+            "status": s.status,
+            "readiness_score": score.readiness_score if score else None,
+            "delivery_score": score.behavioral_score if score else None,
+            "communication_score": score.communication_score if score else None,
+            "technical_score": score.technical_score if score else None,
+        })
+
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "limit": limit
+    }
+
+
 @router.get("/latest")
-def get_latest_session(db: Session = Depends(get_db)):
-    latest = db.query(models.SessionScore).order_by(
+def get_latest_session(
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    latest = db.query(models.SessionScore).join(
+        models.InterviewSession
+    ).filter(
+        models.InterviewSession.user_id == user.id
+    ).order_by(
         models.SessionScore.id.desc()
     ).first()
 
@@ -95,8 +158,15 @@ def get_latest_session(db: Session = Depends(get_db)):
 
 
 @router.get("/all")
-def get_all_sessions(db: Session = Depends(get_db)):
-    sessions = db.query(models.SessionScore).all()
+def get_all_sessions(
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    sessions = db.query(models.SessionScore).join(
+        models.InterviewSession
+    ).filter(
+        models.InterviewSession.user_id == user.id
+    ).all()
     result = []
     for index, s in enumerate(sessions):
         result.append({
@@ -111,8 +181,15 @@ def get_all_sessions(db: Session = Depends(get_db)):
 # GET SESSION STATUS / DETAILS
 # =========================
 @router.get("/{session_id}")
-def get_session_details(session_id: int, db: Session = Depends(get_db)):
-    session = db.query(models.InterviewSession).filter(models.InterviewSession.id == session_id).first()
+def get_session_details(
+    session_id: int,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    session = db.query(models.InterviewSession).filter(
+        models.InterviewSession.id == session_id,
+        models.InterviewSession.user_id == user.id
+    ).first()
     if not session:
         raise HTTPException(status_code=404, detail="Interview session not found")
 
@@ -137,11 +214,17 @@ def get_session_details(session_id: int, db: Session = Depends(get_db)):
 # =========================
 @router.post("/answer")
 @router.post("/{session_id}/answer")
-def submit_answer(data: AnswerInput, session_id: Optional[int] = None, db: Session = Depends(get_db)):
+def submit_answer(
+    data: AnswerInput,
+    session_id: Optional[int] = None,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     target_session_id = session_id or data.session_id
 
     session = db.query(models.InterviewSession).filter(
-        models.InterviewSession.id == target_session_id
+        models.InterviewSession.id == target_session_id,
+        models.InterviewSession.user_id == user.id
     ).first()
 
     if not session:
@@ -255,11 +338,16 @@ def submit_answer(data: AnswerInput, session_id: Optional[int] = None, db: Sessi
 # FOLLOW-UP QUESTION
 # =========================
 @router.post("/followup")
-def followup(data: FollowUpRequest, db: Session = Depends(get_db)):
+def followup(
+    data: FollowUpRequest,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     MAX_FOLLOWUPS = 2
 
     session = db.query(models.InterviewSession).filter(
-        models.InterviewSession.id == data.session_id
+        models.InterviewSession.id == data.session_id,
+        models.InterviewSession.user_id == user.id
     ).first()
 
     if not session:
@@ -293,10 +381,12 @@ def followup(data: FollowUpRequest, db: Session = Depends(get_db)):
 def complete_interview(
     session_id: int,
     data: CompleteInterviewRequest,
+    user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     session = db.query(models.InterviewSession).filter(
-        models.InterviewSession.id == session_id
+        models.InterviewSession.id == session_id,
+        models.InterviewSession.user_id == user.id
     ).first()
 
     if not session:
@@ -381,22 +471,18 @@ def complete_interview(
 # SUBMIT BEHAVIORAL (BACKWARD COMPATIBLE)
 # =========================
 @router.post("/submit")
-def submit_interview_legacy(data: BehavioralInput, db: Session = Depends(get_db)):
+def submit_interview_legacy(
+    data: BehavioralInput,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     session = db.query(models.InterviewSession).filter(
-        models.InterviewSession.id == data.session_id
+        models.InterviewSession.id == data.session_id,
+        models.InterviewSession.user_id == user.id
     ).first()
 
     if not session:
-        # Auto-create session if missing to avoid breaking frontend
-        session = models.InterviewSession(
-            mode="practice",
-            difficulty="easy",
-            total_questions=3,
-            status="completed"
-        )
-        db.add(session)
-        db.commit()
-        db.refresh(session)
+        raise HTTPException(status_code=404, detail="Interview session not found")
 
     behavioral = models.BehavioralMetrics(
         session_id=session.id,
@@ -456,7 +542,18 @@ def submit_interview_legacy(data: BehavioralInput, db: Session = Depends(get_db)
 # GET RESULT (BACKWARD COMPATIBLE)
 # =========================
 @router.get("/result/{session_id}")
-def get_result(session_id: int, db: Session = Depends(get_db)):
+def get_result(
+    session_id: int,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    session = db.query(models.InterviewSession).filter(
+        models.InterviewSession.id == session_id,
+        models.InterviewSession.user_id == user.id
+    ).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+
     score = db.query(models.SessionScore).filter(
         models.SessionScore.session_id == session_id
     ).first()
@@ -482,4 +579,28 @@ def get_result(session_id: int, db: Session = Depends(get_db)):
         "answer_scores": answer_scores,
         "behavioral_score": 75.0,
         "final_score": 75.0
+    }
+
+
+# =========================
+# DELETE INTERVIEW SESSION
+# =========================
+@router.delete("/{session_id}")
+def delete_session(
+    session_id: int,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    session = db.query(models.InterviewSession).filter(
+        models.InterviewSession.id == session_id,
+        models.InterviewSession.user_id == user.id
+    ).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+
+    db.delete(session)
+    db.commit()
+    return {
+        "message": "Interview session deleted successfully",
+        "session_id": session_id
     }

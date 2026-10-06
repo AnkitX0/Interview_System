@@ -108,8 +108,9 @@ def test_auth_login_happy_and_failure(client: TestClient):
         "full_name": "Login Tester",
     })
 
-    # Clear cookies
+    # Clear cookies and auth header
     client.cookies.clear()
+    client.headers.pop("Authorization", None)
 
     # Login with wrong password
     res_wrong = client.post("/auth/login", json={
@@ -139,10 +140,12 @@ def test_auth_login_happy_and_failure(client: TestClient):
 
 
 def test_auth_logout_clears_cookie(client: TestClient):
-    client.post("/auth/register", json={
+    client.cookies.clear()
+    res_reg = client.post("/auth/register", json={
         "email": "logout_test@example.com",
         "password": "validsecurepassword10",
     })
+    assert res_reg.status_code == 200
     assert AUTH_COOKIE_NAME in client.cookies
 
     res = client.post("/auth/logout")
@@ -157,6 +160,7 @@ def test_auth_logout_clears_cookie(client: TestClient):
 def test_auth_me_and_profile_management(client: TestClient):
     # Unauthenticated call to /auth/me returns 401
     client.cookies.clear()
+    client.headers.pop("Authorization", None)
     res_unauth = client.get("/auth/me")
     assert res_unauth.status_code == 401
 

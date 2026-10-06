@@ -62,8 +62,46 @@ def db_session():
         connection.close()
 
 
+from backend.services.auth_service import hash_password, create_access_token
+from backend.config import AUTH_COOKIE_NAME
+
+
 @pytest.fixture
-def client(db_session):
+def test_user(db_session):
+    user = db_session.query(models.User).filter(models.User.email == "testuser@example.com").first()
+    if not user:
+        user = models.User(
+            email="testuser@example.com",
+            password_hash=hash_password("testpassword1234"),
+            full_name="Default Tester"
+        )
+        db_session.add(user)
+        db_session.flush()
+        profile = models.UserProfile(user_id=user.id, target_role="Software Engineer")
+        db_session.add(profile)
+        db_session.commit()
+        db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+def client(db_session, test_user):
+    def override_get_db():
+        try:
+            yield db_session
+        finally:
+            pass
+
+    app.dependency_overrides[get_db] = override_get_db
+    token = create_access_token(test_user.id)
+    with TestClient(app) as test_client:
+        test_client.headers["Authorization"] = f"Bearer {token}"
+        yield test_client
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def unauth_client(db_session):
     def override_get_db():
         try:
             yield db_session
@@ -72,6 +110,37 @@ def client(db_session):
 
     app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as test_client:
+        test_client.cookies.clear()
+        test_client.headers.pop("Authorization", None)
+        yield test_client
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def client_b(db_session):
+    def override_get_db():
+        try:
+            yield db_session
+        finally:
+            pass
+
+    app.dependency_overrides[get_db] = override_get_db
+    user_b = db_session.query(models.User).filter(models.User.email == "user_b@example.com").first()
+    if not user_b:
+        user_b = models.User(
+            email="user_b@example.com",
+            password_hash=hash_password("userbpassword1234"),
+            full_name="User B"
+        )
+        db_session.add(user_b)
+        db_session.flush()
+        profile = models.UserProfile(user_id=user_b.id, target_role="Product Manager")
+        db_session.add(profile)
+        db_session.commit()
+        db_session.refresh(user_b)
+    token_b = create_access_token(user_b.id)
+    with TestClient(app) as test_client:
+        test_client.headers["Authorization"] = f"Bearer {token_b}"
         yield test_client
     app.dependency_overrides.clear()
 
