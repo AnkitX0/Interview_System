@@ -48,27 +48,38 @@ The **AI Interview Intelligence System** bridges the gap between passive intervi
   - Takes candidate answers and diagnoses flaws (passive verbs, missing metrics, lack of STAR structure).
   - Generates a polished, senior-level STAR response that strictly preserves the candidate's authentic experience without fabricating fictional achievements.
   - Provides a 4-part STAR breakdown and before/after vocabulary upgrade recommendations.
+- **User Authentication & Multi-Tenancy (Phase 2)**:
+  - Argon2 password hashing (minimum 10 characters, rejects trivially weak passwords).
+  - Secure httpOnly, SameSite=Lax JWT cookie transport (`interview_auth`).
+  - Strict resource ownership isolation across all routes (cross-user access returns uniform `404 Not Found`).
+  - Account profile pre-filling target role and experience level.
+  - Legacy data claiming utility script: `python scripts/claim_legacy_data.py --email <user@example.com>`.
+- **Per-Answer Voice Metrics & Cadence Tracking (Phase 2)**:
+  - Web Speech event timing approximates speech segment intervals without word-level audio leakage.
+  - Computes Words Per Minute (WPM), verbal filler word counts, pause count, average pause duration, longest pause, and silence ratio.
+  - Length-guarded Moving-Average Type-Token Ratio (MATTR) for vocabulary diversity (guarded against short responses < 20 words).
+  - Transparent display-only contract (`USE_VOICE_METRICS_IN_SCORE = False` ensures readiness scores remain 100% stable).
+  - All metrics labeled: *"approximate, based on speech-recognition timing"*.
+  - For typed responses, audio cadence metrics are reported as `null` ("Not measured"), never zeroed or fabricated.
+- **Privacy Consent, Right to be Forgotten & Data Export (Phase 2)**:
+  - Sensor Processing & Privacy Choice modal before camera/mic activation.
+  - One-click Text-Only Mode fallback that completely avoids camera/mic permission requests.
+  - Data retention guarantee: *"Your data is kept until you delete it."*
+  - Cascading session and resume deletion (`DELETE /interview/{session_id}`, `DELETE /resume/{resume_id}`).
+  - Account deletion with password confirmation (`DELETE /auth/account`) permanently removing all user data and child rows.
+  - Complete data portability export (`GET /auth/export`) per GDPR/CCPA principles.
 - **Progress & Session History Tracking**:
-  - Historical session audit log with date, mode, difficulty, readiness scores, and deep-link report views.
+  - Historical session audit log (`/history` and `/progress`) with date, mode, difficulty, readiness scores, deep-link report views, and session deletion.
   - Multi-line trend chart tracking Readiness, Technical Depth, Communication, and Behavioral signals across consecutive mock interviews.
   - Clean empty state with zero fabricated user data.
-
-### 🟡 Partially Implemented
-- **Speech Audio Archival**: Audio chunks recorded via browser `MediaRecorder` are buffered client-side; transcripts are parsed and scored server-side.
-- **Contextual Follow-ups**: Follow-up prompt generator evaluates response length, metrics, and tradeoff keywords to probe deeper on weak responses.
-
-### 🔮 Future Work (P2)
-- Server-side Whisper transcription pipeline for offline voice recordings.
-- Emotion & micro-expression detection (roadmap explicitly cautions against overclaiming emotion AI in HR contexts).
-- Company-specific question sets (e.g., Google, Amazon, Meta behavioral loops).
 
 ---
 
 ## 3. Tech Stack
 
-- **Backend**: Python 3.12+ / 3.14, FastAPI, SQLAlchemy, SQLite, Pydantic, Poppler `pdftotext`, Uvicorn.
-- **Frontend**: React 19, Vite, React Router 7, Recharts, MediaPipe FaceMesh & Camera Utils, Web Speech API.
-- **Architecture**: Modular Service Layer (`resume_service`, `scoring_engine`, `question_selector`, `answer_improvement_service`, `evaluation_engine`, `followup_generator`).
+- **Backend**: Python 3.12+ / 3.14, FastAPI, SQLAlchemy 2, Alembic, SQLite (`interview.db`), Pydantic v2, Argon2-cffi, PyJWT, Poppler `pdftotext`, Uvicorn.
+- **Frontend**: React 19, Vite 7, React Router 7, Recharts, MediaPipe FaceMesh & Camera Utils, Web Speech API.
+- **Architecture**: Modular Monolith Service Layer (`auth_service`, `voice_service`, `resume_service`, `scoring_engine`, `question_selector`, `answer_improvement_service`, `evaluation_engine`, `followup_generator`).
 
 ---
 
@@ -76,32 +87,39 @@ The **AI Interview Intelligence System** bridges the gap between passive intervi
 
 ```
 Frontend (React 19 / Vite)
-  ├── Landing (/)
-  ├── Resume Intelligence (/resume)
-  ├── Interview Setup (/setup)
-  ├── Live Mock Interview (/interview)
-  │     ├── FaceMesh Computer Vision
-  │     └── Web Speech Recognition
-  ├── Performance Report (/dashboard & /report)
-  ├── Fix My Answer (/fix-answer)
-  └── Progress History (/progress)
+  ├── Public Routes: Landing (/), Login (/login), Register (/register)
+  ├── Protected Routes (ProtectedRoute):
+  │     ├── Resume Intelligence (/resume)
+  │     ├── Interview Setup (/setup) [Privacy Consent Modal]
+  │     ├── Live Mock Interview (/interview) [FaceMesh & Web Speech / Text-Only Mode]
+  │     ├── Performance Report (/dashboard & /report) [Rubric Evidence & Voice Cadence]
+  │     ├── Fix My Answer (/fix-answer)
+  │     ├── Session History (/history)
+  │     └── Progress Growth (/progress)
          │
-         │ REST API (JSON / FormData)
+         │ REST API (Credentials Included / httpOnly JWT Cookie)
          ▼
 FastAPI Backend (Port 8000)
+  ├── Authentication & Scoping: Argon2 Hashing, JWT httpOnly Cookie, Rate Limiter
   ├── Routes:
-  │     ├── /resume     (Upload, parse, audit, score)
-  │     ├── /interview  (Start, answer, evaluate, followup, complete)
-  │     ├── /report     (Detailed session analytics & review)
+  │     ├── /auth       (Register, login, logout, me, export, delete account)
+  │     ├── /profile    (Get, update candidate profile)
+  │     ├── /consent    (Get, record privacy consent logs)
+  │     ├── /resume     (Upload, parse, audit, score, delete)
+  │     ├── /interview  (Start, history, answer, followup, complete, delete)
+  │     ├── /report     (Detailed session analytics, voice metrics, rubric evidence)
   │     ├── /answer     (STAR refactoring & vocabulary upgrade)
   │     └── /progress   (Cross-session metrics & trajectory)
   ├── Services:
+  │     ├── auth_service.py (Argon2, JWT, rate limiting)
+  │     ├── voice_service.py (Cadence, pauses, MATTR diversity)
   │     ├── resume_service.py
-  │     ├── scoring_engine.py (Rubric formulas)
+  │     ├── scoring_engine.py (Rubric formulas & re-normalization)
   │     ├── question_selector.py (Resume skill matching)
   │     └── answer_improvement_service.py (STAR engine)
-  └── Database:
-        └── SQLite (interview.db)
+  └── Database & Migrations:
+        ├── Alembic Migrations (0001 initial, 0002 auth & user scoping)
+        └── SQLite (interview.db / PostgreSQL-ready SQLAlchemy models)
 ```
 
 ---
@@ -127,11 +145,16 @@ FastAPI Backend (Port 8000)
    ```bash
    source venv/bin/activate
    ```
-3. Start the FastAPI server on port 8000:
+3. Run migrations and start the FastAPI server on port 8000:
    ```bash
    uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
    ```
-   *The backend will automatically initialize `interview.db`, apply Alembic migrations to head, and load the pre-seeded question bank.*
+   *The backend will automatically initialize `interview.db`, run Alembic migrations to head, and load the pre-seeded question bank.*
+
+4. *(Optional)* Claim unassigned legacy pre-Alembic data for an account:
+   ```bash
+   python scripts/claim_legacy_data.py --email your_email@example.com
+   ```
 
 ### Frontend Startup
 
@@ -152,15 +175,11 @@ FastAPI Backend (Port 8000)
 
 ## 7. Running Tests
 
-Run the backend test suite:
-```bash
-pytest tests/
-```
-Or directly using the virtual environment:
+Run the complete backend test suite:
 ```bash
 ./venv/bin/pytest tests/
 ```
-All 30 unit, scoring rubric, API, and guarded LLM evaluation tests run completely offline with zero API keys in < 0.3s.
+All **57 automated unit, scoring, auth, user isolation, voice metrics, consent, migration, and LLM evaluation tests** execute completely offline with zero API keys.
 
 Run the frontend production build check:
 ```bash
@@ -173,38 +192,60 @@ cd frontend && npm run build
 
 All core functionality operates **100% deterministically and offline without requiring external API keys**.
 
-Optional external AI enhancements can be supplied in a `.env` file or environment:
+Configuration parameters in `backend/config.py` (overridable via environment):
 ```env
+# Security & Auth
+SECRET_KEY="your-random-secret-key"
+AUTH_COOKIE_NAME="interview_auth"
+ACCESS_TOKEN_EXPIRE_MINUTES="60"
+ENVIRONMENT="development"  # set to 'production' for Secure cookies
+
 # Optional external LLM providers (graceful fallback active if omitted)
 GEMINI_API_KEY=""
 OPENAI_API_KEY=""
+```
+
+Frontend environment configuration (`frontend/.env.example`):
+```env
+VITE_API_URL=http://127.0.0.1:8000
 ```
 
 ---
 
 ## 9. API Overview
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/resume/upload` | Upload PDF or raw text, parse skills, audit, and save resume profile |
-| `POST` | `/resume/analyze` | Analyze provided resume text or retrieve stored candidate profile |
-| `POST` | `/interview/start` | Initialize session with resume-aware question selection |
-| `POST` | `/interview/{session_id}/answer` | Submit answer transcript for structured rubric evaluation |
-| `POST` | `/interview/followup` | Generate contextual follow-up question based on answer |
-| `POST` | `/interview/{session_id}/complete`| Finalize interview, compute weighted scores, save metrics |
-| `GET`  | `/report/{session_id}` | Retrieve comprehensive performance report and answer reviews |
-| `POST` | `/answer/improve` | Refactor weak answer into STAR framework with vocabulary upgrades |
-| `GET`  | `/progress` | Fetch aggregated session counts, averages, and score trend data |
+| Method | Endpoint | Description | Scoped |
+|---|---|---|:---:|
+| `POST` | `/auth/register` | Register account with Argon2 hashing & set JWT cookie | No |
+| `POST` | `/auth/login` | Authenticate credentials & set JWT cookie | No |
+| `POST` | `/auth/logout` | Clear authentication cookie | No |
+| `GET`  | `/auth/me` | Current authenticated user and profile | Yes |
+| `GET/PUT` | `/profile` | Get or update user profile preferences | Yes |
+| `GET/POST`| `/consent` | Retrieve or record privacy consent logs | Yes |
+| `GET`  | `/auth/export` | Complete GDPR/CCPA data export (JSON) | Yes |
+| `DELETE`| `/auth/account` | Permanently delete account with password re-check | Yes |
+| `POST` | `/resume/upload` | Upload PDF/text, parse competencies, audit resume | Yes |
+| `POST` | `/resume/analyze` | Analyze provided resume text or fetch profile | Yes |
+| `DELETE`| `/resume/{id}` | Permanently delete stored resume | Yes |
+| `POST` | `/interview/start` | Initialize session with resume-aware questions | Yes |
+| `GET`  | `/interview/history`| Paginated list of past interviews (newest first) | Yes |
+| `POST` | `/interview/{session_id}/answer` | Submit answer with speech segments for evaluation | Yes |
+| `POST` | `/interview/followup` | Generate contextual follow-up question | Yes |
+| `POST` | `/interview/{session_id}/complete`| Finalize interview & compute normalized scores | Yes |
+| `DELETE`| `/interview/{session_id}`| Delete interview and cascade child rows | Yes |
+| `GET`  | `/report/{session_id}` | Retrieve report with observable rubric evidence | Yes |
+| `POST` | `/answer/improve` | Refactor weak answer into STAR framework | Yes |
+| `GET`  | `/progress` | Fetch cross-session score trajectories | Yes |
 
 ---
 
-## 10. Demo Workflow
+## 10. Privacy Guarantees & Honest Terminology
 
-1. **Landing Page (`/`)**: Overview of the platform with direct calls to action.
-2. **Resume Analysis (`/resume`)**: Upload a resume PDF or paste text. Review extracted competencies, audit score, strengths, and weak areas. Click **"Proceed to Interview Setup with this Profile"**.
-3. **Interview Setup (`/setup`)**: See your attached resume profile. Configure mode, difficulty, target role, and question count. Test or skip the camera check. Click **"Begin Mock Interview"**.
-4. **Live Interview Screen (`/interview`)**: View timer, question, and webcam feed. Click **"Start Speech-to-Text"** or type an answer. Submit for immediate rubric feedback. Progress through questions and complete the interview.
-5. **Performance Report (`/dashboard`)**: Inspect your overall Readiness Score, subscore breakdown bars, computer vision behavioral indicators, insights, and question reviews.
-6. **Fix My Answer (`/fix-answer`)**: Click **"Fix This Answer"** on any response in the report to see an AI-refactored STAR version, weaknesses audit, and vocabulary upgrades.
-7. **Progress History (`/progress`)**: View your historical mock interview sessions, multi-session score trajectory, and performance growth over time.
+- **No Raw Media Recording**: Webcam video and microphone audio are analyzed locally on-device inside your browser using MediaPipe FaceMesh and Web Speech API. Raw video and raw audio files are **never recorded, transmitted, or saved to any server**.
+- **Data Retention**: *Your data is kept until you delete it.* You can delete any session, resume, or your entire account at any time.
+- **Honest Metrics**: Physical indicators are reported as observable proxies:
+  - Head alignment is a *visual centering proxy*, not a measure of confidence, eye contact, or nervousness.
+  - Voice pacing and pause intervals are *approximations based on speech-recognition event timing*.
+  - Verification risks are *observable consistency indicators*, never accusations of dishonesty.
+
 

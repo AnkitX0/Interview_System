@@ -197,64 +197,88 @@ Managed via Alembic migrations (`alembic/versions/`):
 1. **`resumes`**:
    - `id` (PK), `filename`, `candidate_name`, `raw_text`, `skills` (JSON), `experience`, `education`, `resume_score`, `strengths` (JSON), `weak_areas` (JSON), `suggested_improvements` (JSON), `summary`, `created_at`.
 2. **`interview_sessions`**:
-   - `id` (PK), `resume_id` (FK), `mode`, `difficulty`, `target_role`, `total_questions`, `current_question_index`, `followup_count`, `status`, `created_at`.
-3. **`question_bank`**:
+### 5.2 Database Schema & Alembic Migrations
+
+The database (`interview.db`) is managed via Alembic migrations (with automated upgrade to `head` on application startup):
+- `0001_initial_schema.py`: Baseline 7 tables.
+- `0002_auth_and_user_scoping.py`: Multi-tenancy, voice metrics, and privacy tables.
+
+#### Table Definitions:
+1. **`users`**:
+   - `id` (PK), `email` (unique index), `password_hash` (Argon2), `full_name`, `is_active`, `created_at`.
+2. **`user_profile`**:
+   - `id` (PK), `user_id` (FK $\rightarrow$ users.id, CASCADE), `target_role`, `domain`, `experience_level`, `university`, `graduation_year`, `current_status`, `target_companies` (JSON), `interview_goal`, `weekly_practice_goal`, `created_at`, `updated_at`.
+3. **`consent_records`**:
+   - `id` (PK), `user_id` (FK $\rightarrow$ users.id, CASCADE), `consent_type` (`camera_mic_processing`), `policy_version`, `granted` (Boolean), `created_at`.
+4. **`resumes`**:
+   - `id` (PK), `user_id` (FK $\rightarrow$ users.id, CASCADE), `filename`, `candidate_name`, `raw_text`, `skills` (JSON), `experience`, `education`, `resume_score`, `strengths` (JSON), `weak_areas` (JSON), `suggested_improvements` (JSON), `summary`, `created_at`.
+5. **`interview_sessions`**:
+   - `id` (PK), `user_id` (FK $\rightarrow$ users.id, CASCADE), `resume_id` (FK), `mode`, `difficulty`, `target_role`, `total_questions`, `current_question_index`, `followup_count`, `status`, `created_at`.
+6. **`question_bank`**:
    - `id` (PK), `question_text`, `category`, `difficulty`, `role`.
-4. **`interview_answers`**:
-   - `id` (PK), `session_id` (FK), `question_id`, `question_text`, `transcript`, `response_time`, `duration_seconds`, `wpm`, `filler_count`, `created_at`.
-5. **`answer_evaluations`**:
-   - `id` (PK), `answer_id` (FK), `structure_score`, `clarity_score`, `depth_score`, `technical_score`, `reasoning_score`, `star_score`, `consistency_score`, `overall_score`, `strengths` (JSON), `weaknesses` (JSON), `missing_concepts` (JSON), `suggestions` (JSON), `dimensions` (JSON).
-6. **`behavioral_metrics`**:
-   - `id` (PK), `session_id` (FK), `eye_contact_percent` (nullable Float), `blink_rate` (nullable Float), `pause_rate` (Float).
-7. **`session_scores`**:
-   - `id` (PK), `session_id` (FK), `behavioral_score` (nullable Float), `communication_score`, `technical_score`, `resume_consistency_score`, `readiness_score`, `strongest_category`, `weakest_category`, `insights` (JSON), `weights_used` (JSON), `created_at`.
+7. **`interview_answers`**:
+   - `id` (PK), `session_id` (FK $\rightarrow$ interview_sessions.id, CASCADE), `question_id`, `question_text`, `transcript`, `response_time`, `duration_seconds`, `wpm`, `filler_count`, `created_at`.
+8. **`answer_evaluations`**:
+   - `id` (PK), `answer_id` (FK $\rightarrow$ interview_answers.id, CASCADE), `structure_score`, `clarity_score`, `depth_score`, `technical_score`, `reasoning_score`, `star_score`, `consistency_score`, `overall_score`, `strengths` (JSON), `weaknesses` (JSON), `missing_concepts` (JSON), `suggestions` (JSON), `engine_used`, `prompt_version`.
+9. **`voice_metrics`**:
+   - `id` (PK), `answer_id` (FK $\rightarrow$ interview_answers.id, CASCADE, unique), `words_per_minute` (nullable), `filler_word_count`, `avg_pause_duration` (nullable), `longest_pause` (nullable), `pause_count` (nullable), `silence_ratio` (nullable), `vocabulary_diversity_score` (nullable), `speech_source` (`speech` | `typed`), `created_at`.
+10. **`behavioral_metrics`**:
+    - `id` (PK), `session_id` (FK $\rightarrow$ interview_sessions.id, CASCADE), `eye_contact_percent` (nullable Float), `blink_rate` (nullable Float), `pause_rate` (Float).
+11. **`session_scores`**:
+    - `id` (PK), `session_id` (FK $\rightarrow$ interview_sessions.id, CASCADE), `behavioral_score` (nullable Float), `communication_score`, `technical_score`, `resume_consistency_score`, `readiness_score`, `strongest_category`, `weakest_category`, `insights` (JSON), `weights_used` (JSON), `created_at`.
 
 ---
 
 ### 5.3 Frontend Pages (`frontend/src/pages/`)
 
-| Page | Route | Description |
-|---|---|---|
-| **Landing** | `/` | Hero section, value propositions, and 4-step workflow walkthrough. |
-| **Resume Upload** | `/resume` | PDF/text uploader, competency badges, clarity audit, and one-click interview launch. |
-| **Interview Setup** | `/setup` | Mode selector, difficulty pills, target role input, question slider, and non-blocking camera check. |
-| **Live Interview** | `/interview` | MediaPipe FaceMesh webcam feed, speech recognition, live WPM/filler stats, and instant rubric feedback. |
-| **Dashboard / Report** | `/dashboard` & `/report` | Main readiness gauge, subscore bars, behavioral sensor stats, and question-by-question review. |
-| **Fix My Answer** | `/fix-answer` | Interactive AI response coach with STAR breakdown and vocabulary upgrade table. |
-| **Progress History** | `/progress` | Multi-session score trajectory line chart and historical sessions audit table. |
+| Page | Route | Access | Description |
+|---|---|:---:|---|
+| **Landing** | `/` | Public | Hero section, value propositions, and 4-step workflow walkthrough. |
+| **Sign In** | `/login` | Public | Email and password login with error boundary and redirect. |
+| **Register** | `/register` | Public | Account registration enforcing password strength guidelines. |
+| **Resume Upload** | `/resume` | Protected | PDF/text uploader, competency badges, clarity audit, and one-click launch. |
+| **Interview Setup** | `/setup` | Protected | Mode selector, difficulty, role input, and Privacy Consent Modal. |
+| **Live Interview** | `/interview` | Protected | FaceMesh feed, speech recognition, live stats, rubric feedback, or Text-Only mode. |
+| **Dashboard / Report**| `/dashboard` & `/report` | Protected | Main readiness gauge, subscore bars, voice cadence card, and answer reviews. |
+| **Fix My Answer** | `/fix-answer` | Protected | Interactive AI response coach with STAR breakdown and vocabulary upgrade table. |
+| **Session History** | `/history` | Protected | Paginated historical sessions log with report reopening and session deletion. |
+| **Progress History** | `/progress` | Protected | Multi-session score trajectory line chart, aggregate averages, and session deletion. |
 
 ---
 
 ## 6. Complete API Reference
 
-### Resume Endpoints
-- `POST /resume/upload`: Accepts `multipart/form-data` with `file` (PDF/TXT) or `raw_text`. Returns parsed candidate profile JSON with score.
+### Authentication & Privacy
+- `POST /auth/register`: Creates account, hashes password with Argon2, sets httpOnly JWT cookie.
+- `POST /auth/login`: Validates credentials, sets httpOnly JWT cookie.
+- `POST /auth/logout`: Clears authentication cookie.
+- `GET /auth/me`: Returns current user identity and profile.
+- `GET/PUT /profile`: Returns or updates user profile preferences.
+- `GET/POST /consent`: Retrieves or records privacy consent logs (`camera_mic_processing`).
+- `GET /auth/export`: Full JSON export of user profile, consent records, resumes, and interview evaluations.
+- `DELETE /auth/account`: Permanently cascades deletion of user and all personal data after password re-verification.
+
+### Resume Endpoints (User-Scoped)
+- `POST /resume/upload`: Accepts `multipart/form-data` with `file` (PDF/TXT) or `raw_text`. Parses and saves candidate profile.
 - `POST /resume/analyze`: Analyzes JSON payload containing `text` or existing `resume_id`.
 - `GET /resume/{resume_id}`: Fetches stored resume profile by ID.
+- `DELETE /resume/{resume_id}`: Permanently deletes resume profile.
 
-### Interview Session Endpoints
-- `POST /interview/start`:
-  - Request: `{ "mode": "technical", "difficulty": "medium", "number_of_questions": 3, "resume_id": 1, "target_role": "Backend Engineer" }`
-  - Response: `{ "session_id": 1, "questions": [...] }`
+### Interview Session Endpoints (User-Scoped)
+- `POST /interview/start`: Initializes session with resume-aware question selection.
+- `GET /interview/history`: Paginated list of user's past interviews (newest first).
 - `GET /interview/{session_id}`: Returns status, question count, and progress of session.
-- `POST /interview/{session_id}/answer`:
-  - Request: `{ "session_id": 1, "question_id": 1, "question_text": "...", "transcript": "...", "response_time": 25.0, "wpm": 130.0, "filler_count": 1 }`
-  - Response: `{ "score": 82.0, "technical_score": 85.0, "structure_score": 80.0, "strengths": [...], "weaknesses": [...], "suggestions": [...] }`
-- `POST /interview/followup`:
-  - Request: `{ "session_id": 1, "question_id": 1, "question": "...", "answer": "..." }`
-  - Response: `{ "followup_question": "...", "followup_count": 1 }`
-- `POST /interview/{session_id}/complete`:
-  - Request: `{ "eye_contact_percent": 78.5, "blink_rate": 18.0, "pause_rate": 1.8 }`
-  - Response: `{ "session_id": 1, "readiness_score": 76.5, "subscores": {...}, "insights": [...] }`
+- `POST /interview/{session_id}/answer`: Submits answer with speech segment intervals; evaluates rubric and persists voice cadence metrics.
+- `POST /interview/followup`: Generates contextual follow-up question.
+- `POST /interview/{session_id}/complete`: Finalizes interview, computes normalized scores, saves behavioral metrics.
+- `DELETE /interview/{session_id}`: Deletes interview session and cascades child answers, evaluations, and voice metrics.
 
-### Analytics & Reports
-- `GET /report/{session_id}`: Returns full performance report payload including radar chart points and answer evaluations.
+### Analytics & Reports (User-Scoped)
+- `GET /report/{session_id}`: Returns full performance report payload including radar chart points, voice metrics, and observable evidence.
 - `GET /progress`: Returns aggregated interview counts, averages, and multi-session trend history.
 
 ### Fix My Answer
-- `POST /answer/improve`:
-  - Request: `{ "question": "...", "answer": "...", "target_role": "Software Engineer" }`
-  - Response: `{ "original_answer": "...", "weaknesses": [...], "improved_answer": "...", "explanation": "...", "star_breakdown": {...}, "vocabulary_suggestions": [...] }`
+- `POST /answer/improve`: Refactors weak answer into STAR framework with vocabulary upgrade suggestions.
 
 ---
 
@@ -285,13 +309,11 @@ npm run dev
 
 ## 8. Verification & Test Suite
 
-The system includes a 30-test automated test suite across unit, rubric scoring, LLM provider caching/fallback, and FastAPI route layers:
+The system includes a **57-test automated test suite** across unit, rubric scoring, LLM provider caching/fallback, authentication, user isolation, voice metrics, consent, and cascading deletion:
 ```bash
-pytest tests/
-# or directly with venv:
 ./venv/bin/pytest tests/
 ```
-All 30 tests pass completely offline without external credentials in < 0.3 seconds.
+All 57 tests pass completely offline without external credentials in < 5 seconds.
 
 To run a production frontend build check:
 ```bash

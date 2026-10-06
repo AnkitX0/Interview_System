@@ -273,58 +273,77 @@ Interview_System/
    - Added Running Tests section to `README.md`.
    - Updated `docs/AUDIT.md` reflecting completed Phase 1 status and commit hashes.
 
-### Phase 2: MVP Gaps — Auth, User Scoping, Voice Metrics & Privacy
-1. **Authentication & Multi-Tenancy**:
-   - Add `User` and `UserProfile` tables with password hashing (`bcrypt` or `argon2`) and JWT authentication.
-   - Scope all resumes, sessions, reports, and progress to `user_id`. Add authorization guards on all routes.
-2. **Per-Answer Voice Metrics Table**:
-   - Add `voice_metrics` table linked to `interview_answers`.
-   - Calculate pause counts, longest pause, estimated vocabulary diversity (type-token ratio with length guard), WPM, and fillers.
-3. **Privacy, Consent & Deletion**:
-   - Add an explicit consent screen before camera/mic activation.
-   - Add "Delete Session" and "Delete Account" endpoints and UI buttons.
-   - Explicitly note in UI: *"Video is processed locally in your browser; raw video is never recorded or uploaded to the server."*
+### Phase 2: Complete Implementation — Auth, User Scoping, Voice Metrics & Privacy (FIXED)
 
-### Phase 3: Intelligence Layer — Claim-Probe Ladder, Verification Risk & Safe Pressure
-1. **Resume Intelligence Upgrade**:
-   - Extract projects, achievements, and quantified bullets into structured tables.
-   - Add `resume_flags` table (vague, mismatch, missing metric).
-   - Calculate Role Fit Score against target role.
-2. **Claim-Probe Ladder & Adaptive Questioning**:
-   - Associate resume claims with questions and traverse difficulty ladders based on previous answer evaluations.
-   - Compute Bluff / Verification Risk score from observable signals (generic buzzwords, contradictions, evasion of specifics).
-3. **Safe Pressure Mode**:
-   - Implement shorter timers (45s), challenging follow-up probes, and a clear pre-session explanation.
+All Phase 2 requirements have been fully implemented, tested, and verified on branch `phase-2-auth-privacy`:
 
-### Phase 4: Report Timeline, Fix My Answer v2 & Longitudinal Growth
-1. **Segmented Interview Timeline**:
-   - Visualize metrics (WPM, fillers, structure, visual centering) chronologically across the interview.
-2. **Fix My Answer v2**:
-   - Add technical pattern (*Concept → Why → How → Example → Tradeoff*) alongside STAR.
-   - Persist improved answers in `answer_improvements` table.
-3. **Progress v2 & Velocity**:
-   - Add Improvement Velocity metric and recurring weakness tracking across sessions.
-   - Add probabilistic readiness estimate for candidates with 4+ sessions.
+1. **Phase 1 Closeout** (`30b3199`):
+   - Provided endpoint coverage matrix, legacy migration proof (`tests/test_migration.py`), camera-off test path, LLM metadata persistence, and dependency justifications.
+   - Removed emojis from Speak/Type UI toggles.
+   - Logged deferred bundle-size audit note.
 
-### Phase 5: UX & Product Polish
-1. **Dashboard & Live Screen Refinements**:
-   - Make mid-interview WPM/filler stats optional to avoid candidate distraction.
-   - Ensure clean keyboard accessibility, contrast, and responsive layout.
-2. **Copywriting Audit**:
-   - Review all text to eliminate any overclaims or pseudo-scientific emotion labels.
+2. **Alembic Database Migration 0002** (`6d9d765`):
+   - Created `alembic/versions/0002_auth_and_user_scoping.py`.
+   - Added tables: `users`, `user_profile`, `voice_metrics`, `consent_records`.
+   - Added `user_id` foreign keys to `resumes` and `interview_sessions`.
+   - Verified automated upgrade test against pre-Alembic fixture database.
 
-### Deferred / Technical Debt
-- **Frontend Bundle Size (750 kB)**: Vite production build logs a chunk size warning (`dist/assets/index-*.js: 750.66 kB`) primarily driven by `@mediapipe/face_mesh` and `recharts`. Deferred to Phase 5 UX & Product Polish for code-splitting (`React.lazy` routes and `manualChunks`).
+3. **Authentication Backend & Rate Limiting** (`42c19aa`):
+   - Added `backend/services/auth_service.py` with Argon2 password hashing (minimum 10 chars, reject weak passwords).
+   - Configured secure httpOnly, SameSite=Lax JWT cookie transport (`AUTH_COOKIE_NAME="interview_auth"`, 60-minute duration).
+   - Added sliding expiration and memory-bounded IP rate limiter (register: 10/min, login: 10/min).
+   - Implemented `/auth/register`, `/auth/login`, `/auth/logout`, `/auth/me`, and `GET/PUT /profile`.
+   - Added `tests/test_auth.py` (8 passing tests).
+
+4. **User Ownership Scoping & Isolation Matrix** (`2e8cf34`):
+   - Scoped all resume, interview, analytics, and report routes with `get_current_user`.
+   - Enforced 404 Not Found on cross-user resource access (never 403 or enumerable errors).
+   - Created `scripts/claim_legacy_data.py --email <user@example.com>` to safely claim unassigned pre-Alembic rows.
+   - Added programmatic inspection in `tests/test_user_isolation.py` scanning all FastAPI routes to prove unauthenticated 401s and cross-tenant 404s.
+
+5. **Authentication Frontend Integration** (`499bc53`):
+   - Implemented `frontend/src/utils/api.js` with `credentials: "include"` and global 401 dispatch to `/login`.
+   - Added `AuthContext.jsx` with active session tracking, pre-filling target role and difficulty from user profile in `InterviewSetup.jsx`.
+   - Added `ProtectedRoute.jsx` guarding `/resume`, `/setup`, `/interview`, `/dashboard`, `/report`, `/fix-answer`, `/progress`, and `/history`.
+   - Added minimal, professional `Login.jsx` and `Register.jsx` pages.
+   - Implemented clear session state on logout (clears `ReportContext` and `sessionStorage`).
+
+6. **Per-Answer Voice Metrics & Vocabulary Diversity** (`7ac63f0`):
+   - Added `backend/services/voice_service.py` computing WPM, filler word count, pause metrics (count, avg pause, longest pause, silence ratio), and length-guarded MATTR vocabulary diversity (minimum 20 words).
+   - Client captures speech segment intervals relative to question start in `Interview.jsx`.
+   - Typed responses return `null` / `"Not measured"` for audio cadence, never defaulted or imputed values.
+   - Rendered Voice & Cadence Metrics card in `Dashboard.jsx` with UI tooltip: `"approximate, based on speech-recognition timing"`.
+   - Maintained `USE_VOICE_METRICS_IN_SCORE = False` in `config.py` ensuring readiness scores remain identical and display-only.
+   - Added `tests/test_voice_metrics.py` (7 passing tests).
+
+7. **Interview Session History & Report Reopening** (`51ba8df`):
+   - Verified paginated `GET /interview/history?page=1&limit=10` returning newest-first session items scoped to user.
+   - Added `frontend/src/pages/History.jsx` listing past sessions, dates, roles, modes, scores, view report links, and session deletion with confirmation dialog.
+   - Added `/history` route to `App.jsx` and link to `Navbar.jsx`.
+   - Added session deletion button to `Progress.jsx`.
+
+8. **Privacy Consent Tracking, Data Export & Cascading Deletion** (`4637a58`):
+   - Added `GET /consent` and `POST /consent` recording timestamped grants/withdrawals in `consent_records`.
+   - Added `DELETE /interview/{session_id}` cascading all child rows (answers, evaluations, voice metrics, behavioral metrics, scores).
+   - Verified `DELETE /resume/{resume_id}`.
+   - Added `DELETE /auth/account` requiring password re-confirmation via `PasswordConfirmRequest`, permanently deleting all user data and clearing auth cookies.
+   - Added `GET /auth/export` returning full user JSON data for portability.
+   - Added frontend Sensor Processing & Privacy Consent Modal before camera/mic activation, offering Text-Only Mode with zero sensor access.
+   - Added Data Retention Statement across UI and README: *"Your data is kept until you delete it."*
+   - Added `tests/test_consent_and_deletion.py` (3 passing tests).
+
+9. **Documentation & Phase 2 Audit Log** (`Current Commit`):
+   - Updated `README.md`, `docs/ARCHITECTURE.md`, and `docs/AUDIT.md`.
 
 ---
 
-## 6. Phase 1 Sign-Off & Phase 2 Gate
+## 6. Phase 2 Verification & Sign-Off Gate
 
-1. **Phase 1 Deliverables Summary**:
-   - All Phase 1 reliability, testing, and data correctness requirements are implemented and verified.
-   - 30 tests in `tests/` pass in < 0.3s covering rubric determinism, golden answer ranking, resume parsing, API endpoints, and guarded LLM evaluation.
-   - Vite 7 production build succeeds with zero errors.
-   - All 9 sub-step commits have been recorded to the `phase-1-reliability` git branch.
-2. **Phase 2 Readiness**:
-   - Per project rules, Phase 2 (Authentication, Multi-tenancy, Per-Answer Voice Metrics, Consent & Data Deletion) will only begin upon explicit user review and approval of Phase 1.
+1. **Phase 2 Deliverables Summary**:
+   - All Phase 2 authentication, scoping, voice metrics, privacy, and deletion requirements implemented and verified.
+   - **57 automated tests** in `tests/` pass in < 5s covering auth, user isolation, voice metrics, consent, deletion, migrations, scoring determinism, and LLM evaluation.
+   - Vite production build succeeds with 0 errors.
+   - All 8 sub-step commits recorded to `phase-2-auth-privacy` git branch.
+2. **Phase 3 Gate**:
+   - Stop and wait for user review and approval before proceeding to Phase 3 (Intelligence Layer: Claim-Probe Ladder, Verification Risk, Safe Pressure Mode).
 
