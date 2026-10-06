@@ -1,6 +1,6 @@
 import re
 from typing import Dict, Any, List, Optional
-from backend.config import DEFAULT_SESSION_WEIGHTS, WORD_COUNT_BANDS
+from backend.config import DEFAULT_SESSION_WEIGHTS, WORD_COUNT_BANDS, FILLER_WORDS
 
 TECHNICAL_KEYWORDS = [
     "api", "rest", "database", "sql", "nosql", "index", "cache", "redis",
@@ -47,7 +47,41 @@ def evaluate_rubric_for_answer(
     lower_text = text.lower()
 
     if word_count < WORD_COUNT_BANDS["floor_min"]:
+        empty_dimensions = {
+            "structure": {
+                "score": 20.0,
+                "evidence": [f"{word_count} words submitted (minimum expected: {WORD_COUNT_BANDS['floor_min']})", "0 sentence transitions"],
+                "explanation": "Answer is too brief or empty to assess narrative flow.",
+                "recommended_action": "Provide a complete verbal or written response of at least 70 words."
+            },
+            "technical": {
+                "score": 15.0,
+                "evidence": ["0 domain keywords found", f"Evaluated category: {category}"],
+                "explanation": "No technical concepts or mechanisms were provided.",
+                "recommended_action": "Describe specific tools, frameworks, protocols, and architectural patterns."
+            },
+            "reasoning": {
+                "score": 15.0,
+                "evidence": ["trade-off terms: 0", "No causal justification markers found"],
+                "explanation": "No rationale or comparative trade-offs were detected.",
+                "recommended_action": "Articulate why an engineering decision was made and compare against alternatives."
+            },
+            "star": {
+                "score": 10.0,
+                "evidence": ["0/4 STAR components identified", "0 quantified results found"],
+                "explanation": "No STAR elements (Situation, Task, Action, Result) detected in response.",
+                "recommended_action": "Use the STAR method: Situation, Task, Action, and measurable Result."
+            },
+            "consistency": {
+                "score": 50.0,
+                "evidence": ["Insufficient text to cross-reference against resume skills"],
+                "explanation": "Could not verify background claims from an empty or single-word answer.",
+                "recommended_action": "Reference specific project experiences from your background."
+            }
+        }
         return {
+            "score": 20.0,
+            "overall_score": 20.0,
             "structure_score": 20.0,
             "clarity_score": 20.0,
             "depth_score": 15.0,
@@ -55,7 +89,12 @@ def evaluate_rubric_for_answer(
             "reasoning_score": 15.0,
             "star_score": 10.0,
             "consistency_score": 50.0,
-            "overall_score": 20.0,
+            "dimensions": empty_dimensions,
+            "structure": empty_dimensions["structure"],
+            "technical": empty_dimensions["technical"],
+            "reasoning": empty_dimensions["reasoning"],
+            "star": empty_dimensions["star"],
+            "consistency": empty_dimensions["consistency"],
             "strengths": ["Answer was submitted."],
             "weaknesses": ["Answer is too brief or empty to assess meaningfully."],
             "missing_concepts": ["Detailed explanation", "Concrete examples"],
@@ -96,6 +135,7 @@ def evaluate_rubric_for_answer(
         matched_resume = [s for s in resume_skills if s.lower() in lower_text]
         consistency_score = round(min(95.0, max(55.0, 60.0 + (len(matched_resume) * 10.0))), 1)
     else:
+        matched_resume = []
         consistency_score = 75.0
 
     # 6. Overall Score
@@ -121,7 +161,98 @@ def evaluate_rubric_for_answer(
             1
         )
 
-    # Construct Qualitative Feedback
+    # Concrete Evidence Generation
+    metric_matches = re.findall(
+        r"\b\d+%(?!\w)|\b\d+(?:[xXkKmM]|\s*(?:percent|users|requests|ms|seconds|minutes|million|times|gb|mb|tb|queries))\b",
+        text,
+        re.IGNORECASE
+    )
+    metric_evidence = (
+        f"{len(metric_matches)} quantified metric(s) found ({', '.join(metric_matches[:3])})"
+        if metric_matches
+        else "0 quantified results found"
+    )
+
+    detected_fillers = filler_count
+    if detected_fillers == 0 and word_count > 0:
+        for fw in FILLER_WORDS:
+            detected_fillers += len(re.findall(r"\b" + re.escape(fw) + r"\b", lower_text))
+    filler_evidence = f"{detected_fillers} filler words in {word_count} words"
+
+    tradeoff_evidence = (
+        f"trade-off terms: {len(matched_reasoning)} ({', '.join(matched_reasoning[:3])})"
+        if matched_reasoning
+        else "trade-off terms: 0"
+    )
+
+    tech_evidence = (
+        f"{len(matched_tech)} domain keywords found ({', '.join(matched_tech[:4])})"
+        if matched_tech
+        else "0 domain keywords found"
+    )
+
+    missing_star = [k for k, v in star_hits.items() if not v]
+    star_evidence = (
+        f"{star_count}/4 STAR components identified"
+        + (f" (missing: {', '.join(missing_star)})" if missing_star else "")
+    )
+
+    if resume_skills and len(resume_skills) > 0:
+        resume_evidence = (
+            f"{len(matched_resume)} of {len(resume_skills)} declared resume skills verified ({', '.join(matched_resume[:3]) if matched_resume else 'none'})"
+        )
+    else:
+        resume_evidence = "No resume skills provided; evaluated against general engineering baseline"
+
+    dimensions = {
+        "structure": {
+            "score": structure_score,
+            "evidence": [
+                f"{word_count} words across {sentence_count} sentence(s)",
+                filler_evidence,
+                f"{transitions} transition markers detected"
+            ],
+            "explanation": "Clear communicative structure with coherent narrative flow." if structure_score >= 70 else "Narrative flow is brief or lacks transitional signposting.",
+            "recommended_action": "Structure responses into a clear 3-part narrative (Context, Action, Outcome) using explicit transitions ('First', 'Additionally', 'Finally')."
+        },
+        "technical": {
+            "score": tech_score,
+            "evidence": [
+                tech_evidence,
+                f"Evaluated category context: {category}"
+            ],
+            "explanation": f"Demonstrated solid domain concepts ({', '.join(matched_tech[:3]) if matched_tech else 'technical depth'})." if tech_score >= 70 else "Lacked specific architectural keywords or concrete protocol/database mechanisms.",
+            "recommended_action": "Mention specific mechanisms (e.g., caching strategies, index types, concurrency models) rather than generic descriptions."
+        },
+        "reasoning": {
+            "score": reasoning_score,
+            "evidence": [
+                tradeoff_evidence,
+                "Causal rationale detected ('because', 'therefore')" if any(m in lower_text for m in ["because", "therefore", "as a result", "in order to"]) else "No causal justification markers found"
+            ],
+            "explanation": "Clearly articulated engineering tradeoffs and rationales." if reasoning_score >= 70 else "Focused primarily on 'what' was done rather than 'why' architectural choices were made.",
+            "recommended_action": "Explicitly contrast your chosen architectural pattern against at least one viable alternative, noting the trade-offs."
+        },
+        "star": {
+            "score": star_score,
+            "evidence": [
+                star_evidence,
+                metric_evidence
+            ],
+            "explanation": "Followed the STAR method by highlighting action steps and tangible outcomes." if star_score >= 70 else "Incomplete STAR coverage; did not specify quantifiable final outcome.",
+            "recommended_action": "Always close with the Result stage: quantify the business or performance outcome (e.g., % improvement, latency reduction, user count)."
+        },
+        "consistency": {
+            "score": consistency_score,
+            "evidence": [
+                resume_evidence
+            ],
+            "explanation": "Skills and domain claims align with candidate's declared profile." if (resume_skills and len(matched_resume) > 0) else "General technical evaluation without resume verification linkage.",
+            "recommended_action": "Anchor technical decisions with direct references to projects and technologies listed on your resume."
+        }
+    }
+
+    # Construct Qualitative Feedback (Backward Compatible)
     strengths = []
     if structure_score >= 70:
         strengths.append("Clear communicative structure with coherent narrative flow.")
@@ -161,6 +292,8 @@ def evaluate_rubric_for_answer(
     ]
 
     return {
+        "score": overall_score,
+        "overall_score": overall_score,
         "structure_score": structure_score,
         "clarity_score": structure_score,
         "depth_score": tech_score,
@@ -168,7 +301,12 @@ def evaluate_rubric_for_answer(
         "reasoning_score": reasoning_score,
         "star_score": star_score,
         "consistency_score": consistency_score,
-        "overall_score": overall_score,
+        "dimensions": dimensions,
+        "structure": dimensions["structure"],
+        "technical": dimensions["technical"],
+        "reasoning": dimensions["reasoning"],
+        "star": dimensions["star"],
+        "consistency": dimensions["consistency"],
         "strengths": strengths,
         "weaknesses": weaknesses,
         "missing_concepts": missing_concepts,

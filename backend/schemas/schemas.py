@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 
 
@@ -14,7 +14,43 @@ class StartInterviewRequest(BaseModel):
 
 
 # ---------------------------
-# Submit Answer
+# Dimension Evidence Contract
+# ---------------------------
+class DimensionEvaluation(BaseModel):
+    score: float = Field(..., ge=0.0, le=100.0, description="0-100 dimension score")
+    evidence: List[str] = Field(default_factory=list, description="Concrete signals derived directly from answer text")
+    explanation: str = Field(..., description="Observable rationale for the dimension score")
+    recommended_action: str = Field(..., description="Actionable recommendation for improvement")
+
+
+# ---------------------------
+# Answer Evaluation Response
+# ---------------------------
+class AnswerEvaluationResponse(BaseModel):
+    message: str = "Answer stored and evaluated successfully"
+    answer_id: Optional[int] = None
+    score: float
+    dimensions: Dict[str, DimensionEvaluation] = Field(default_factory=dict)
+    structure: Optional[DimensionEvaluation] = None
+    technical: Optional[DimensionEvaluation] = None
+    reasoning: Optional[DimensionEvaluation] = None
+    star: Optional[DimensionEvaluation] = None
+    consistency: Optional[DimensionEvaluation] = None
+
+    # Backward compatibility fields (Deprecated)
+    structure_score: Optional[float] = Field(None, deprecated=True)
+    technical_score: Optional[float] = Field(None, deprecated=True)
+    reasoning_score: Optional[float] = Field(None, deprecated=True)
+    star_score: Optional[float] = Field(None, deprecated=True)
+    consistency_score: Optional[float] = Field(None, deprecated=True)
+    strengths: Optional[List[str]] = Field(None, deprecated=True)
+    weaknesses: Optional[List[str]] = Field(None, deprecated=True)
+    missing_concepts: Optional[List[str]] = Field(None, deprecated=True)
+    suggestions: Optional[List[str]] = Field(None, deprecated=True)
+
+
+# ---------------------------
+# Submit Answer Input
 # ---------------------------
 class AnswerInput(BaseModel):
     session_id: int

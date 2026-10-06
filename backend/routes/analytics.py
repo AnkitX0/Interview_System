@@ -7,6 +7,7 @@ import backend.models as models
 from backend.database import get_db
 from backend.schemas.schemas import ImproveAnswerRequest
 from backend.services.answer_improvement_service import improve_interview_answer
+from backend.services.scoring_engine import evaluate_rubric_for_answer
 
 router = APIRouter(tags=["Analytics & Reports"])
 
@@ -55,6 +56,16 @@ def get_session_report(session_id: int, db: Session = Depends(get_db)):
             except Exception:
                 pass
 
+        # Reconstruct structured dimensions
+        ev_eval = evaluate_rubric_for_answer(
+            transcript=ans.transcript or "",
+            question_text=ans.question_text or "",
+            category=session.mode or "Technical",
+            response_time=ans.response_time or 0.0,
+            wpm=ans.wpm or 0.0,
+            filler_count=ans.filler_count or 0
+        )
+
         answer_evals.append({
             "answer_id": ans.id,
             "question_id": ans.question_id,
@@ -69,6 +80,7 @@ def get_session_report(session_id: int, db: Session = Depends(get_db)):
             "reasoning_score": ev.reasoning_score if ev else 70.0,
             "star_score": ev.star_score if ev else 70.0,
             "consistency_score": ev.consistency_score if ev else 75.0,
+            "dimensions": ev_eval.get("dimensions", {}),
             "strengths": strengths,
             "weaknesses": weaknesses,
             "missing_concepts": missing_concepts,

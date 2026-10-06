@@ -127,3 +127,45 @@ def test_delivery_score_calculation():
     # Poor metrics: eye=20%, blink=40/min, pause=6s
     score_poor = calculate_behavioral_score(eye=20, blink=40, pause=6)
     assert score_poor < 60.0
+
+
+def test_dimension_evidence_contract(golden_answers):
+    """Every dimension must return {score, evidence, explanation, recommended_action}."""
+    res = evaluate_rubric_for_answer(
+        transcript=golden_answers["strong"],
+        category="Technical",
+        resume_skills=["FastAPI", "Redis"]
+    )
+
+    assert "dimensions" in res
+    required_dimensions = ["structure", "technical", "reasoning", "star", "consistency"]
+
+    for dim_name in required_dimensions:
+        dim = res["dimensions"][dim_name]
+        assert "score" in dim, f"Missing 'score' in {dim_name}"
+        assert isinstance(dim["score"], (int, float))
+        assert 0.0 <= dim["score"] <= 100.0
+
+        assert "evidence" in dim, f"Missing 'evidence' in {dim_name}"
+        assert isinstance(dim["evidence"], list)
+        assert len(dim["evidence"]) > 0
+        for ev in dim["evidence"]:
+            assert isinstance(ev, str) and len(ev) > 0
+
+        assert "explanation" in dim, f"Missing 'explanation' in {dim_name}"
+        assert isinstance(dim["explanation"], str) and len(dim["explanation"]) > 0
+
+        assert "recommended_action" in dim, f"Missing 'recommended_action' in {dim_name}"
+        assert isinstance(dim["recommended_action"], str) and len(dim["recommended_action"]) > 0
+
+
+def test_empty_answer_evidence_contract():
+    """Empty answer must also strictly satisfy the evidence contract."""
+    res = evaluate_rubric_for_answer(transcript="", category="Technical")
+    for dim_name in ["structure", "technical", "reasoning", "star", "consistency"]:
+        dim = res["dimensions"][dim_name]
+        assert "score" in dim
+        assert "evidence" in dim and len(dim["evidence"]) > 0
+        assert "explanation" in dim
+        assert "recommended_action" in dim
+

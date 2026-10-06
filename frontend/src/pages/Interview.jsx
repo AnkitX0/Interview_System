@@ -327,6 +327,32 @@ function Interview() {
         structure_score: 70.0,
         reasoning_score: 80.0,
         star_score: 70.0,
+        dimensions: {
+          structure: {
+            score: 70.0,
+            evidence: ["Structured across 3 sentences", "0 filler words"],
+            explanation: "Narrative flow is coherent.",
+            recommended_action: "Add explicit transitions."
+          },
+          technical: {
+            score: 75.0,
+            evidence: ["3 domain keywords found"],
+            explanation: "Demonstrated solid technical understanding.",
+            recommended_action: "Incorporate specific mechanisms and edge cases."
+          },
+          reasoning: {
+            score: 80.0,
+            evidence: ["trade-off terms: 1"],
+            explanation: "Articulated architectural trade-offs.",
+            recommended_action: "Contrast against alternative solutions."
+          },
+          star: {
+            score: 70.0,
+            evidence: ["3/4 STAR components identified", "1 quantified result found"],
+            explanation: "Followed the STAR method.",
+            recommended_action: "Quantify final outcomes with SLAs."
+          }
+        },
         strengths: ["Answer addresses the key concepts of the question."],
         weaknesses: ["Could include more specific architectural metrics and examples."],
         suggestions: ["Quantify your experience with specific engineering SLAs."],
@@ -591,11 +617,28 @@ function Interview() {
                 )}
 
                 {latestEvaluation.suggestions && latestEvaluation.suggestions.length > 0 && (
-                  <div>
+                  <div style={{ marginBottom: "10px" }}>
                     <span style={{ fontSize: "12px", fontWeight: "700", color: "#2563eb" }}>Quick Tip:</span>
                     <p style={{ margin: "2px 0 0", fontSize: "13px", color: "#1e40af" }}>
                       {latestEvaluation.suggestions[0]}
                     </p>
+                  </div>
+                )}
+
+                {/* OBSERVABLE EVIDENCE PER DIMENSION */}
+                {latestEvaluation.dimensions && Object.keys(latestEvaluation.dimensions).length > 0 && (
+                  <div style={{ marginTop: "10px", borderTop: "1px solid #e2e8f0", paddingTop: "8px" }}>
+                    <span style={{ fontSize: "11px", fontWeight: "700", color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                      Observable Evidence:
+                    </span>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "5px", marginTop: "6px" }}>
+                      {Object.entries(latestEvaluation.dimensions).map(([dimKey, dimVal]) => (
+                        <div key={dimKey} style={{ fontSize: "12px", color: "#334155", backgroundColor: "#f8fafc", padding: "5px 8px", borderRadius: "4px", border: "1px solid #e2e8f0" }}>
+                          <strong style={{ textTransform: "capitalize", color: "#1e293b" }}>{dimKey}: </strong>
+                          <span>{(dimVal.evidence || []).join(" • ")}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

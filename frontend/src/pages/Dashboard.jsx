@@ -365,6 +365,28 @@ function Dashboard() {
                   </div>
                 </div>
 
+                {/* OBSERVABLE EVIDENCE PER DIMENSION */}
+                {ans.dimensions && Object.keys(ans.dimensions).length > 0 && (
+                  <div style={{ marginTop: "16px", padding: "12px", backgroundColor: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
+                    <span style={{ fontSize: "11px", fontWeight: "700", color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                      Observable Evidence Derived from Response:
+                    </span>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "8px" }}>
+                      {Object.entries(ans.dimensions).map(([dimKey, dimData]) => (
+                        <div key={dimKey} style={{ fontSize: "12px", backgroundColor: "#ffffff", padding: "8px 10px", borderRadius: "6px", border: "1px solid #e2e8f0" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                            <strong style={{ textTransform: "capitalize", color: "#1e293b", fontSize: "12px" }}>{dimKey}</strong>
+                            <span style={{ fontWeight: "700", fontSize: "11px", color: getScoreColor(dimData.score) }}>{Math.round(dimData.score)}%</span>
+                          </div>
+                          <ul style={{ margin: "4px 0 0 14px", padding: 0, fontSize: "11px", color: "#475569", lineHeight: "1.4" }}>
+                            {dimData.evidence?.map((ev, evIdx) => <li key={evIdx}>{ev}</li>)}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* FIX THIS ANSWER CTA BUTTON */}
                 <div style={{ marginTop: "18px", display: "flex", justifyContent: "flex-end" }}>
                   <button
