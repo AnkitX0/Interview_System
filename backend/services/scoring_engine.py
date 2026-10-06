@@ -1,5 +1,6 @@
 import re
 from typing import Dict, Any, List, Optional
+from backend.config import DEFAULT_SESSION_WEIGHTS, WORD_COUNT_BANDS
 
 TECHNICAL_KEYWORDS = [
     "api", "rest", "database", "sql", "nosql", "index", "cache", "redis",
@@ -45,7 +46,7 @@ def evaluate_rubric_for_answer(
     word_count = len(words)
     lower_text = text.lower()
 
-    if word_count < 5:
+    if word_count < WORD_COUNT_BANDS["floor_min"]:
         return {
             "structure_score": 20.0,
             "clarity_score": 20.0,
@@ -65,7 +66,7 @@ def evaluate_rubric_for_answer(
     # Rewards appropriate length (60-250 words), sentence transitions, punctuation
     sentences = [s.strip() for s in re.split(r"[.!?]+", text) if s.strip()]
     sentence_count = len(sentences)
-    length_factor = min(1.0, word_count / 70.0)
+    length_factor = min(1.0, word_count / float(WORD_COUNT_BANDS["optimal_min"]))
     structure_bonus = 20.0 if sentence_count >= 3 else 10.0
     transitions = sum(1 for w in ["first", "second", "additionally", "furthermore", "finally", "specifically", "overall"] if w in lower_text)
     transition_bonus = min(20.0, transitions * 7.0)
@@ -134,7 +135,7 @@ def evaluate_rubric_for_answer(
         strengths.append("Answer was direct and addressed the core question prompt.")
 
     weaknesses = []
-    if word_count < 40:
+    if word_count < WORD_COUNT_BANDS["minimal_detail"]:
         weaknesses.append("Response was too brief; missed opportunity to expand on operational details.")
     if tech_score < 60 and category.lower() == "technical":
         weaknesses.append("Lacked specific architectural keywords or concrete protocol/database mechanisms.")
@@ -212,12 +213,17 @@ def calculate_session_score(
         else 75.0
     )
 
-    # Preferred transparent weighted formula
+    # Weighted formula using centralized weights
+    w_comm = DEFAULT_SESSION_WEIGHTS["communication"]
+    w_tech = DEFAULT_SESSION_WEIGHTS["technical"]
+    w_deliv = DEFAULT_SESSION_WEIGHTS["delivery"]
+    w_cons = DEFAULT_SESSION_WEIGHTS["resume_consistency"]
+
     final_readiness = round(
-        0.30 * comm_score +
-        0.30 * tech_score +
-        0.20 * beh_score +
-        0.20 * cons_score,
+        w_comm * comm_score +
+        w_tech * tech_score +
+        w_deliv * beh_score +
+        w_cons * cons_score,
         1
     )
 

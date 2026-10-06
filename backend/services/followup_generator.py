@@ -1,4 +1,5 @@
 import re
+from backend.config import WORD_COUNT_BANDS
 
 
 def generate_followup(question: str, answer: str) -> str:
@@ -9,7 +10,7 @@ def generate_followup(question: str, answer: str) -> str:
     lower_text = text.lower()
     words = text.split()
 
-    if len(words) < 25:
+    if len(words) < WORD_COUNT_BANDS["too_short"]:
         return "Can you elaborate further and walk me through the specific technical implementation details?"
 
     has_metrics = bool(re.search(r"\b\d+%(?!\w)|\b\d+([xXkKmM]|\s*(percent|users|requests|ms|seconds|million|times))\b", lower_text))
