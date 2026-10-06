@@ -492,6 +492,27 @@ def export_user_data(
             "created_at": r.created_at.isoformat() if r.created_at else None,
         })
 
+    practice_recs = db.query(models.PracticeRecommendation).filter(
+        models.PracticeRecommendation.user_id == user.id
+    ).all()
+    practice_recs_data = [
+        {
+            "id": pr.id,
+            "source_session_id": pr.source_session_id,
+            "weakness_type": pr.weakness_type,
+            "dimension": pr.dimension,
+            "priority": pr.priority,
+            "rationale": pr.rationale,
+            "practice_type": pr.practice_type,
+            "target_count": pr.target_count,
+            "difficulty": pr.difficulty,
+            "status": pr.status,
+            "created_at": pr.created_at.isoformat() if pr.created_at else None,
+            "completed_at": pr.completed_at.isoformat() if pr.completed_at else None,
+        }
+        for pr in practice_recs
+    ]
+
     prof_resp = _build_profile_response(profile)
     return {
         "user": {
@@ -514,6 +535,7 @@ def export_user_data(
         ],
         "resumes": resumes_data,
         "interview_sessions": sessions_data,
+        "practice_recommendations": practice_recs_data,
         "data_retention_policy": "Your data is kept until you delete it.",
     }
 
@@ -535,6 +557,9 @@ def delete_account(
         raise HTTPException(status_code=401, detail="Invalid password")
 
     user_id = user.id
+    db.query(models.PracticeRecommendation).filter(
+        models.PracticeRecommendation.user_id == user_id
+    ).delete(synchronize_session=False)
     db.delete(user)
     db.commit()
 

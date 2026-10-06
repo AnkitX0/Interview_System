@@ -873,6 +873,10 @@ def delete_session(
     if not session:
         raise HTTPException(status_code=404, detail="Interview session not found")
 
+    db.query(models.PracticeRecommendation).filter(
+        models.PracticeRecommendation.source_session_id == session_id
+    ).delete(synchronize_session=False)
+
     db.delete(session)
     db.commit()
     return {

@@ -56,6 +56,7 @@ def get_user_recommendations(
     return [
         {
             "id": r.id,
+            "user_id": r.user_id,
             "source_session_id": r.source_session_id,
             "weakness_type": r.weakness_type,
             "dimension": r.dimension,
