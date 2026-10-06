@@ -1,6 +1,7 @@
 import { useState, useContext, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ReportContext } from "../context/ReportContext";
+import { API_BASE_URL } from "../config";
 
 function InterviewSetup() {
   const navigate = useNavigate();
@@ -81,7 +82,7 @@ function InterviewSetup() {
         target_role: targetRole,
       };
 
-      const res = await fetch("http://127.0.0.1:8000/interview/start", {
+      const res = await fetch(`${API_BASE_URL}/interview/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

@@ -1,6 +1,7 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { ReportContext } from "../context/ReportContext";
+import { API_BASE_URL } from "../config";
 
 function ResumeUpload() {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ function ResumeUpload() {
         formData.append("raw_text", textInput);
       }
 
-      const res = await fetch("http://127.0.0.1:8000/resume/upload", {
+      const res = await fetch(`${API_BASE_URL}/resume/upload`, {
         method: "POST",
         body: formData,
       });

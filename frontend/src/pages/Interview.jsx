@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { FaceMesh } from "@mediapipe/face_mesh";
 import { Camera } from "@mediapipe/camera_utils";
 import { ReportContext } from "../context/ReportContext";
+import { API_BASE_URL } from "../config";
 
 function Interview() {
   const navigate = useNavigate();
@@ -42,8 +43,12 @@ function Interview() {
   const [blinkCount, setBlinkCount] = useState(0);
   const [eyeContactPercent, setEyeContactPercent] = useState(null);
 
-  // Speech-to-text recognition
+  // Speech-to-text recognition & input mode state
   const [speechRecognitionActive, setSpeechRecognitionActive] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(true);
+  const [inputMode, setInputMode] = useState("mic"); // "mic" | "text"
+  const [speechNotice, setSpeechNotice] = useState("");
+  const [inputWarning, setInputWarning] = useState("");
   const speechRecognizerRef = useRef(null);
 
   // Feedback & Follow-up state
@@ -88,6 +93,7 @@ function Interview() {
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
+      setSpeechSupported(true);
       const recognizer = new SpeechRecognition();
       recognizer.continuous = true;
       recognizer.interimResults = true;
@@ -102,11 +108,18 @@ function Interview() {
           const base = prev ? prev.trim() + " " : "";
           return base + transcriptText.trim();
         });
+        setInputWarning("");
       };
 
       recognizer.onerror = (e) => {
         console.warn("Speech recognition notice:", e.error);
         setSpeechRecognitionActive(false);
+        if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+          setSpeechNotice("Microphone permission was not granted for speech recognition. You can type your response directly below.");
+          setInputMode("text");
+        } else if (e.error !== "no-speech") {
+          setSpeechNotice(`Speech recognition notice: ${e.error}. You can type your response directly below.`);
+        }
       };
 
       recognizer.onend = () => {
@@ -114,6 +127,10 @@ function Interview() {
       };
 
       speechRecognizerRef.current = recognizer;
+    } else {
+      setSpeechSupported(false);
+      setInputMode("text");
+      setSpeechNotice("Speech recognition is not supported in this browser. You can type your response directly below.");
     }
 
     return () => {
@@ -125,7 +142,8 @@ function Interview() {
 
   const toggleSpeechRecognition = () => {
     if (!speechRecognizerRef.current) {
-      alert("Speech-to-text recognition is not supported in this browser. You can type your response directly.");
+      setSpeechNotice("Speech recognition is not supported in this browser. Please type your response directly below.");
+      setInputMode("text");
       return;
     }
 
@@ -138,8 +156,12 @@ function Interview() {
         speechRecognizerRef.current.start();
         setSpeechRecognitionActive(true);
         setIsRecording(true);
+        setInputMode("mic");
+        setSpeechNotice("");
       } catch (e) {
-        console.warn(e);
+        console.warn("Speech recognition start failed:", e);
+        setSpeechNotice("Could not start speech recognition. You can type your response directly below.");
+        setInputMode("text");
       }
     }
   };
@@ -281,9 +303,10 @@ function Interview() {
   // Submit Answer & Evaluate
   const handleSubmitAnswer = async () => {
     if (!answer.trim()) {
-      alert("Please enter or record an answer before submitting.");
+      setInputWarning("Please enter or record an answer before submitting.");
       return;
     }
+    setInputWarning("");
 
     if (speechRecognitionActive) {
       try {
@@ -307,7 +330,7 @@ function Interview() {
         filler_count: fillerCount,
       };
 
-      const res = await fetch(`http://127.0.0.1:8000/interview/${sessionId}/answer`, {
+      const res = await fetch(`${API_BASE_URL}/interview/${sessionId}/answer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -407,7 +430,7 @@ function Interview() {
         duration_seconds: durationSeconds,
       };
 
-      const res = await fetch(`http://127.0.0.1:8000/interview/${sessionId}/complete`, {
+      const res = await fetch(`${API_BASE_URL}/interview/${sessionId}/complete`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -537,12 +560,155 @@ function Interview() {
               </h3>
             </div>
 
+            {/* INLINE SPEECH / VALIDATION BANNERS */}
+            {speechNotice && (
+              <div
+                style={{
+                  backgroundColor: "#eff6ff",
+                  border: "1px solid #bfdbfe",
+                  color: "#1e40af",
+                  padding: "9px 12px",
+                  borderRadius: "6px",
+                  fontSize: "13px",
+                  marginBottom: "12px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <span>ℹ️ {speechNotice}</span>
+                <button
+                  type="button"
+                  onClick={() => setSpeechNotice("")}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "#1e40af",
+                    fontWeight: "bold",
+                    fontSize: "14px",
+                    marginLeft: "8px",
+                  }}
+                  title="Dismiss notice"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            {inputWarning && (
+              <div
+                style={{
+                  backgroundColor: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  color: "#991b1b",
+                  padding: "9px 12px",
+                  borderRadius: "6px",
+                  fontSize: "13px",
+                  marginBottom: "12px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <span>⚠️ {inputWarning}</span>
+                <button
+                  type="button"
+                  onClick={() => setInputWarning("")}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "#991b1b",
+                    fontWeight: "bold",
+                    fontSize: "14px",
+                    marginLeft: "8px",
+                  }}
+                  title="Dismiss warning"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            {/* INPUT MODE TOGGLE (MIC / TEXT) */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "10px",
+              }}
+            >
+              <div style={{ display: "flex", gap: "6px", backgroundColor: "#f1f5f9", padding: "3px", borderRadius: "6px" }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInputMode("mic");
+                    if (!speechRecognitionActive && speechRecognizerRef.current) {
+                      toggleSpeechRecognition();
+                    }
+                  }}
+                  style={{
+                    padding: "5px 12px",
+                    borderRadius: "4px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    border: "none",
+                    cursor: "pointer",
+                    backgroundColor: inputMode === "mic" ? "#2563eb" : "transparent",
+                    color: inputMode === "mic" ? "#ffffff" : "#475569",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  🎙️ Speak Answer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInputMode("text");
+                    if (speechRecognitionActive && speechRecognizerRef.current) {
+                      speechRecognizerRef.current.stop();
+                      setSpeechRecognitionActive(false);
+                    }
+                  }}
+                  style={{
+                    padding: "5px 12px",
+                    borderRadius: "4px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    border: "none",
+                    cursor: "pointer",
+                    backgroundColor: inputMode === "text" ? "#2563eb" : "transparent",
+                    color: inputMode === "text" ? "#ffffff" : "#475569",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  ⌨️ Type Answer
+                </button>
+              </div>
+              <span style={{ fontSize: "12px", color: speechRecognitionActive ? "#dc2626" : "#64748b", fontWeight: speechRecognitionActive ? "600" : "400" }}>
+                {speechRecognitionActive
+                  ? "🔴 Recording speech live..."
+                  : inputMode === "mic"
+                  ? (speechSupported ? "Mic ready (click to speak)" : "Speech unavailable — use text")
+                  : "Text mode active"}
+              </span>
+            </div>
+
             {/* ANSWER INPUT */}
             <div style={{ position: "relative" }}>
               <textarea
                 value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                placeholder="Type your answer, or click 'Start Speech-to-Text' to speak your answer naturally..."
+                onChange={(e) => {
+                  setAnswer(e.target.value);
+                  if (inputWarning) setInputWarning("");
+                }}
+                placeholder={
+                  inputMode === "mic"
+                    ? "Speak your answer or click 'Start Speech-to-Text' below, or type directly..."
+                    : "Type your detailed answer here..."
+                }
                 style={answerTextarea}
               />
             </div>

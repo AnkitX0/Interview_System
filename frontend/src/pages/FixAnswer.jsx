@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config";
 
 function FixAnswer() {
   const location = useLocation();
@@ -15,6 +16,7 @@ function FixAnswer() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [inputError, setInputError] = useState(null);
 
   // If navigated with initial state, automatically run improvement
   useEffect(() => {
@@ -25,15 +27,16 @@ function FixAnswer() {
 
   const handleImprove = async () => {
     if (!answer.trim()) {
-      alert("Please enter an answer to improve.");
+      setInputError("Please enter an answer to improve.");
       return;
     }
+    setInputError(null);
 
     setLoading(true);
     setCopied(false);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/answer/improve", {
+      const res = await fetch(`${API_BASE_URL}/answer/improve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
