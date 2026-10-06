@@ -294,6 +294,73 @@ function ResumeUpload() {
             </div>
           </div>
 
+          {/* ROLE FIT BREAKDOWN */}
+          {profile.role_fit_scores && Object.keys(profile.role_fit_scores).length > 0 && (
+            <div style={{ ...cardStyle, marginTop: "20px" }}>
+              <h4 style={sectionHeader}>Target Role Alignment</h4>
+              <p style={{ fontSize: "13px", color: "#64748b", marginTop: "4px" }}>
+                Role fit baseline calculated against core competency profiles.
+              </p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px", marginTop: "14px" }}>
+                {Object.entries(profile.role_fit_scores).map(([role, score]) => (
+                  <div key={role} style={{ padding: "12px", border: "1px solid #e2e8f0", borderRadius: "8px", background: "#f8fafc" }}>
+                    <div style={{ fontSize: "13px", fontWeight: "600", color: "#0f172a", textTransform: "capitalize" }}>
+                      {role.replace(/_/g, " ")}
+                    </div>
+                    <div style={{ fontSize: "18px", fontWeight: "700", color: score >= 75 ? "#16a34a" : score >= 50 ? "#d97706" : "#64748b", marginTop: "4px" }}>
+                      {score}% fit
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* INTERVIEW RISK AREAS */}
+          {profile.risk_areas && profile.risk_areas.length > 0 && (
+            <div style={{ ...cardStyle, marginTop: "20px" }}>
+              <h4 style={{ ...sectionHeader, color: "#92400e" }}>Interview Risk & Verification Priorities</h4>
+              <p style={{ fontSize: "13px", color: "#64748b", marginTop: "4px" }}>
+                Areas identified for deterministic follow-up probing during interview rounds.
+              </p>
+              <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                {profile.risk_areas.map((risk, idx) => (
+                  <div key={idx} style={{ padding: "12px", border: "1px solid #fed7aa", background: "#fffbeb", borderRadius: "8px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: "14px", fontWeight: "600", color: "#9a3412" }}>{risk.area}</span>
+                      <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "4px", background: "#ffedd5", color: "#c2410c" }}>
+                        Probe Priority: {(risk.probe_priority * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                    <p style={{ fontSize: "13px", color: "#78350f", marginTop: "4px" }}>{risk.reason}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* RESUME FLAGS */}
+          {profile.flags && profile.flags.length > 0 && (
+            <div style={{ ...cardStyle, marginTop: "20px" }}>
+              <h4 style={{ ...sectionHeader, color: "#b91c1c" }}>Audited Resume Flags</h4>
+              <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                {profile.flags.map((flag, idx) => (
+                  <div key={idx} style={{ padding: "12px", border: "1px solid #fecaca", background: "#fef2f2", borderRadius: "8px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: "13px", fontWeight: "700", color: "#991b1b", textTransform: "capitalize" }}>
+                        {flag.flag_type?.replace(/_/g, " ") || "Resume Flag"}
+                      </span>
+                      <span style={{ fontSize: "11px", fontWeight: "600", color: "#dc2626", textTransform: "uppercase" }}>
+                        {flag.severity}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: "13px", color: "#7f1d1d", marginTop: "4px" }}>{flag.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* FINAL BOTTOM CTA */}
           <div style={{ textAlign: "center", marginTop: "35px" }}>
             <button onClick={handleProceedToInterview} style={ctaButtonLarge}>

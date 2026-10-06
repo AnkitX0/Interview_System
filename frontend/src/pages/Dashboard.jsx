@@ -533,6 +533,37 @@ function Dashboard() {
                   </div>
                 )}
 
+                {/* VERIFICATION RISK INDICATOR */}
+                {ans.verification_risk && ans.verification_risk.level !== "not_computed" && (
+                  <div style={{ marginTop: "14px", padding: "12px", backgroundColor: "#fffbeb", borderRadius: "8px", border: "1px solid #fde68a" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                      <span style={{ fontSize: "11px", fontWeight: "700", color: "#92400e", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                        Verification Risk Indicator
+                      </span>
+                      <span style={{
+                        fontSize: "11px",
+                        fontWeight: "700",
+                        padding: "2px 8px",
+                        borderRadius: "4px",
+                        backgroundColor: ans.verification_risk.level === "elevated" ? "#fee2e2" : ans.verification_risk.level === "moderate" ? "#fef3c7" : "#dcfce7",
+                        color: ans.verification_risk.level === "elevated" ? "#991b1b" : ans.verification_risk.level === "moderate" ? "#92400e" : "#166534",
+                      }}>
+                        {ans.verification_risk.level ? `${ans.verification_risk.level.toUpperCase()} RISK` : "NOT COMPUTED"}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: "12px", color: "#78350f", margin: "4px 0 6px 0" }}>
+                      {ans.verification_risk.explanation || "Verification risk indicator evaluates observable specificity, metrics, and narrative ownership."}
+                    </p>
+                    {ans.verification_risk.evidence && ans.verification_risk.evidence.length > 0 && (
+                      <ul style={{ margin: "4px 0 0 16px", padding: 0, fontSize: "11px", color: "#92400e", lineHeight: "1.4" }}>
+                        {ans.verification_risk.evidence.map((evItem, evI) => (
+                          <li key={evI}>{evItem}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+
                 {/* FIX THIS ANSWER CTA BUTTON */}
                 <div style={{ marginTop: "18px", display: "flex", justifyContent: "flex-end" }}>
                   <button
@@ -555,6 +586,81 @@ function Dashboard() {
           ) : (
             <div style={cardStyle}>
               <p style={{ color: "#64748b" }}>No specific answer details recorded for this session.</p>
+            </div>
+          )}
+
+          {/* RESUME VERIFICATION TABLE */}
+          {report.claim_consistency && report.claim_consistency.length > 0 && (
+            <div style={{ ...cardStyle, marginTop: "20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                <h3 style={{ fontSize: "16px", color: "#0f172a", margin: 0 }}>
+                  Resume Claim Verification & Grounding
+                </h3>
+                <span style={{ fontSize: "11px", fontWeight: "700", color: "#64748b", backgroundColor: "#f1f5f9", padding: "2px 8px", borderRadius: "4px" }}>
+                  {report.claim_consistency.length} CLAIMS TRACKED
+                </span>
+              </div>
+              <div style={{ padding: "10px 14px", backgroundColor: "#fffbeb", border: "1px solid #fde68a", borderRadius: "6px", fontSize: "12px", color: "#92400e", marginBottom: "14px" }}>
+                ℹ️ Low consistency between this resume claim and the answers given; this is a verification-risk indicator, not a finding of dishonesty.
+              </div>
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+                  <thead>
+                    <tr style={{ borderBottom: "2px solid #e2e8f0", textAlign: "left", color: "#64748b" }}>
+                      <th style={{ padding: "10px" }}>Resume Claim</th>
+                      <th style={{ padding: "10px" }}>Type</th>
+                      <th style={{ padding: "10px" }}>Consistency Label</th>
+                      <th style={{ padding: "10px" }}>Answers Considered</th>
+                      <th style={{ padding: "10px" }}>Evidence Derived</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {report.claim_consistency.map((cc, ccIdx) => {
+                      const labelConfig = {
+                        consistent: { bg: "#dcfce7", color: "#166534", text: "Consistent" },
+                        weak_support: { bg: "#fef3c7", color: "#92400e", text: "Weak Support" },
+                        low_consistency: { bg: "#fee2e2", color: "#991b1b", text: "Low Consistency" },
+                        insufficient_evidence: { bg: "#f1f5f9", color: "#475569", text: "Insufficient Evidence" },
+                      }[cc.label] || { bg: "#f1f5f9", color: "#475569", text: cc.label || "Unverified" };
+
+                      return (
+                        <tr key={ccIdx} style={{ borderBottom: "1px solid #e2e8f0" }}>
+                          <td style={{ padding: "10px", fontWeight: "500", color: "#1e293b", maxWidth: "260px" }}>
+                            {cc.claim_text || `Claim #${cc.claim_id}`}
+                          </td>
+                          <td style={{ padding: "10px", color: "#64748b", textTransform: "capitalize" }}>
+                            {cc.claim_type || "General"}
+                          </td>
+                          <td style={{ padding: "10px" }}>
+                            <span style={{
+                              padding: "3px 8px",
+                              borderRadius: "4px",
+                              fontSize: "11px",
+                              fontWeight: "700",
+                              backgroundColor: labelConfig.bg,
+                              color: labelConfig.color,
+                            }}>
+                              {labelConfig.text}
+                            </span>
+                          </td>
+                          <td style={{ padding: "10px", color: "#475569" }}>
+                            {cc.answers_considered} turn(s)
+                          </td>
+                          <td style={{ padding: "10px", color: "#475569", fontSize: "12px", maxWidth: "280px" }}>
+                            {cc.evidence && cc.evidence.length > 0 ? (
+                              <ul style={{ margin: 0, paddingLeft: "14px" }}>
+                                {cc.evidence.map((ev, evI) => <li key={evI}>{ev}</li>)}
+                              </ul>
+                            ) : (
+                              <span style={{ color: "#94a3b8" }}>No evidence quotes recorded</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 

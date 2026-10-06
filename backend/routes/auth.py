@@ -317,6 +317,7 @@ def export_user_data(
         for a in answers:
             ev = db.query(models.AnswerEvaluation).filter(models.AnswerEvaluation.answer_id == a.id).first()
             vm = db.query(models.VoiceMetrics).filter(models.VoiceMetrics.answer_id == a.id).first()
+            avm = db.query(models.AnswerVisualMetrics).filter(models.AnswerVisualMetrics.answer_id == a.id).first()
             answers_data.append({
                 "answer_id": a.id,
                 "question_id": a.question_id,
@@ -335,6 +336,10 @@ def export_user_data(
                     "overall_score": ev.overall_score if ev else None,
                     "engine_used": ev.engine_used if ev else None,
                     "prompt_version": ev.prompt_version if ev else None,
+                    "verification_risk_score": ev.verification_risk_score if ev else None,
+                    "verification_risk_level": ev.verification_risk_level if ev else None,
+                    "verification_risk_evidence": ev.verification_risk_evidence if ev else None,
+                    "verification_risk_explanation": ev.verification_risk_explanation if ev else None,
                 } if ev else None,
                 "voice_metrics": {
                     "words_per_minute": vm.words_per_minute,
@@ -346,7 +351,51 @@ def export_user_data(
                     "vocabulary_diversity_score": vm.vocabulary_diversity_score,
                     "speech_source": vm.speech_source,
                 } if vm else None,
+                "visual_metrics": {
+                    "head_alignment_percent": avm.head_alignment_percent,
+                    "blink_rate": avm.blink_rate,
+                    "head_movement_variance": avm.head_movement_variance,
+                    "face_visibility_ratio": avm.face_visibility_ratio,
+                    "head_shift_count": avm.head_shift_count,
+                    "frames_sampled": avm.frames_sampled,
+                } if avm else None,
             })
+
+        # Fetch Phase 3 session-level intelligence tables
+        questions_data = [
+            {
+                "id": q.id,
+                "sequence_order": q.sequence_order,
+                "question_text": q.question_text,
+                "question_type": q.question_type,
+                "source": q.source,
+                "ladder_stage": q.ladder_stage,
+                "difficulty": q.difficulty,
+                "time_limit_seconds": q.time_limit_seconds,
+                "generated_reason": q.generated_reason,
+            }
+            for q in s.questions_list
+        ]
+
+        decisions_data = [
+            {
+                "turn": d.turn,
+                "decision": d.decision,
+                "reason": d.reason,
+                "inputs": d.inputs,
+            }
+            for d in s.decisions
+        ]
+
+        claim_consistencies_data = [
+            {
+                "claim_id": cc.claim_id,
+                "label": cc.label,
+                "evidence": cc.evidence,
+                "answers_considered": cc.answers_considered,
+            }
+            for cc in s.claim_consistencies
+        ]
 
         sessions_data.append({
             "session_id": s.id,
@@ -360,12 +409,17 @@ def export_user_data(
                 "delivery_score": score.behavioral_score,
                 "communication_score": score.communication_score,
                 "technical_score": score.technical_score,
+                "resume_consistency_score": score.resume_consistency_score,
+                "consistency_source": score.consistency_source,
             } if score else None,
             "behavioral_metrics": {
                 "eye_contact_percent": behavioral.eye_contact_percent,
                 "blink_rate": behavioral.blink_rate,
                 "pause_rate": behavioral.pause_rate,
             } if behavioral else None,
+            "questions": questions_data,
+            "decisions": decisions_data,
+            "claim_consistency": claim_consistencies_data,
             "answers": answers_data,
         })
 
@@ -377,6 +431,49 @@ def export_user_data(
                 skills_val = json.loads(r.skills)
             except Exception:
                 skills_val = [r.skills]
+
+        skills_detailed = [
+            {
+                "name": sk.name,
+                "category": sk.category,
+                "confidence": sk.confidence,
+                "evidenced": sk.evidenced,
+            }
+            for sk in r.skills_list
+        ]
+
+        projects_detailed = [
+            {
+                "title": p.title,
+                "description": p.description,
+                "technologies": p.technologies,
+                "bullets": p.bullets,
+            }
+            for p in r.projects
+        ]
+
+        claims_detailed = [
+            {
+                "id": c.id,
+                "claim_text": c.claim_text,
+                "claim_type": c.claim_type,
+                "technologies": c.technologies,
+                "has_metric": c.has_metric,
+                "probe_priority": c.probe_priority,
+                "reasons": c.reasons,
+            }
+            for c in r.claims
+        ]
+
+        flags_detailed = [
+            {
+                "flag_type": f.flag_type,
+                "description": f.description,
+                "severity": f.severity,
+            }
+            for f in r.flags
+        ]
+
         resumes_data.append({
             "id": r.id,
             "filename": r.filename,
@@ -385,7 +482,13 @@ def export_user_data(
             "experience": r.experience,
             "education": r.education,
             "resume_score": r.resume_score,
+            "role_fit_scores": r.role_fit_scores,
+            "risk_areas": r.risk_areas,
             "summary": r.summary,
+            "skills_list": skills_detailed,
+            "projects": projects_detailed,
+            "claims": claims_detailed,
+            "flags": flags_detailed,
             "created_at": r.created_at.isoformat() if r.created_at else None,
         })
 
