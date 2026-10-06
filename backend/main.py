@@ -131,7 +131,7 @@ async def csrf_protect_middleware(request: Request, call_next):
     return await call_next(request)
 
 import os
-from backend.routes import auth, resume, interview, analytics, practice
+from backend.routes import auth, resume, interview, analytics, practice, readiness
 
 # Register route modules
 app.include_router(auth.router)
@@ -139,6 +139,7 @@ app.include_router(resume.router)
 app.include_router(interview.router)
 app.include_router(analytics.router)
 app.include_router(practice.router)
+app.include_router(readiness.router)
 
 
 @app.get("/")
