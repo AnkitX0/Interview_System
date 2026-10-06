@@ -164,10 +164,10 @@ def select_next_practice(
                 "source": "baseline_mastery"
             }
         }
-        if save_to_db and target_session:
+        if save_to_db:
             rec_db = models.PracticeRecommendation(
                 user_id=user_id,
-                source_session_id=target_session.id,
+                source_session_id=target_session.id if target_session else None,
                 weakness_type=fallback_practice["weakness_type"],
                 dimension=fallback_practice["dimension"],
                 priority=1,
