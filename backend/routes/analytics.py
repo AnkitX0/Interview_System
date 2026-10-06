@@ -9,6 +9,7 @@ from backend.schemas.schemas import ImproveAnswerRequest
 from backend.services.auth_service import get_current_user
 from backend.services.answer_improvement_service import improve_interview_answer
 from backend.services.scoring_engine import evaluate_rubric_for_answer
+from backend.services.timeline_service import generate_session_timeline
 from backend.config import VERIFICATION_RISK_CONFIG
 
 router = APIRouter(tags=["Analytics & Reports"])
@@ -319,7 +320,8 @@ def get_session_report(
         "radar_data": radar_data,
         "answers": answer_evals,
         "decision_log": decision_log,
-        "claim_consistency": claim_records
+        "claim_consistency": claim_records,
+        "timeline": generate_session_timeline(session.id, db)
     }
 
 
