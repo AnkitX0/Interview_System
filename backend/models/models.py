@@ -21,6 +21,7 @@ class User(Base):
     resumes = relationship("Resume", back_populates="user", cascade="all, delete-orphan")
     sessions = relationship("InterviewSession", back_populates="user", cascade="all, delete-orphan")
     consents = relationship("ConsentRecord", back_populates="user", cascade="all, delete-orphan")
+    practice_recommendations = relationship("PracticeRecommendation", back_populates="user", cascade="all, delete-orphan")
 
 
 class UserProfile(Base):
@@ -398,3 +399,28 @@ class ConsentRecord(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="consents")
+
+
+# -------------------------
+# Practice Recommendations (Phase 4)
+# -------------------------
+class PracticeRecommendation(Base):
+    __tablename__ = "practice_recommendations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    source_session_id = Column(Integer, ForeignKey("interview_sessions.id", ondelete="SET NULL"), nullable=True, index=True)
+    weakness_type = Column(String, nullable=False)
+    dimension = Column(String, nullable=False)
+    priority = Column(Integer, default=1)  # 1 = primary, 2 = secondary
+    rationale = Column(Text, nullable=False)
+    practice_type = Column(String, nullable=False)  # STRUCTURED_ANSWER | TECHNICAL_DEPTH | PROJECT_DEFENSE | etc.
+    target_count = Column(Integer, default=5)
+    difficulty = Column(String, default="medium")
+    status = Column(String, default="pending")  # pending | in_progress | completed | dismissed
+    decision_metadata = Column(JSON, default=dict)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+
+    user = relationship("User", back_populates="practice_recommendations")
+    source_session = relationship("InterviewSession")
