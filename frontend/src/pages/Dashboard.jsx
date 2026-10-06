@@ -225,19 +225,37 @@ function Dashboard() {
             </div>
             <div style={{ fontSize: "20px", color: "#94a3b8" }}>/100</div>
           </div>
-          <div
-            style={{
-              display: "inline-block",
-              padding: "4px 12px",
-              borderRadius: "20px",
-              backgroundColor: report.readiness_score >= 80 ? "#dcfce7" : "#dbeafe",
-              color: report.readiness_score >= 80 ? "#15803d" : "#1d4ed8",
-              fontSize: "12px",
-              fontWeight: "700",
-              marginTop: "8px",
-            }}
-          >
-            {report.status_label || "Candidate Evaluation"}
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "8px" }}>
+            <span
+              style={{
+                display: "inline-block",
+                padding: "4px 12px",
+                borderRadius: "20px",
+                backgroundColor: report.readiness_score >= 80 ? "#dcfce7" : "#dbeafe",
+                color: report.readiness_score >= 80 ? "#15803d" : "#1d4ed8",
+                fontSize: "12px",
+                fontWeight: "700",
+              }}
+            >
+              {report.status_label || "Candidate Evaluation"}
+            </span>
+            <span
+              style={{
+                display: "inline-block",
+                padding: "4px 10px",
+                borderRadius: "20px",
+                backgroundColor: "#f1f5f9",
+                color: "#475569",
+                fontSize: "12px",
+                fontWeight: "600",
+              }}
+            >
+              {report.answers && report.answers.length >= 3
+                ? "Confidence: High (3+ responses)"
+                : report.answers && report.answers.length === 2
+                ? "Confidence: Moderate (2 responses)"
+                : "Confidence: Preliminary (1 response)"}
+            </span>
           </div>
           <p style={{ fontSize: "13px", color: "#64748b", marginTop: "14px", lineHeight: "1.5" }}>
             {isDeliveryMeasured ? (
@@ -340,33 +358,210 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* ACTIONABLE INSIGHTS */}
-      <div style={{ ...cardStyle, marginTop: "20px" }}>
-        <h3 style={sectionTitle}>Key Findings & Actionable Recommendations</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginTop: "12px" }}>
-          <div style={{ padding: "14px", backgroundColor: "#f0fdf4", borderRadius: "8px", border: "1px solid #bbf7d0" }}>
-            <span style={{ fontSize: "12px", fontWeight: "700", color: "#166534" }}>STRONGEST CATEGORY</span>
-            <h4 style={{ fontSize: "16px", color: "#14532d", marginTop: "4px" }}>{report.insights?.strongest_category}</h4>
-            <p style={{ fontSize: "13px", color: "#166534", marginTop: "6px" }}>
+      {/* WHAT WENT WELL & WHAT HELD YOU BACK */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginTop: "24px" }}>
+        {/* WHAT WENT WELL */}
+        <div style={{ ...cardStyle, borderLeft: "4px solid #16a34a" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+            <span style={{ fontSize: "16px" }}>✅</span>
+            <h3 style={{ ...sectionTitle, color: "#166534" }}>What Went Well</h3>
+          </div>
+          
+          <div style={{ padding: "12px", backgroundColor: "#f0fdf4", borderRadius: "8px", border: "1px solid #bbf7d0", marginBottom: "14px" }}>
+            <span style={{ fontSize: "11px", fontWeight: "700", color: "#166534", textTransform: "uppercase" }}>STRONGEST COMPETENCY</span>
+            <h4 style={{ fontSize: "15px", color: "#14532d", margin: "4px 0" }}>{report.insights?.strongest_category || "Technical Depth"}</h4>
+            <p style={{ fontSize: "13px", color: "#166534", margin: 0, lineHeight: "1.4" }}>
               {report.insights?.top_improvements?.[0] || "Demonstrated commendable performance in this competency."}
             </p>
           </div>
 
-          <div style={{ padding: "14px", backgroundColor: "#fef2f2", borderRadius: "8px", border: "1px solid #fecaca" }}>
-            <span style={{ fontSize: "12px", fontWeight: "700", color: "#991b1b" }}>PRIMARY GROWTH AREA</span>
-            <h4 style={{ fontSize: "16px", color: "#7f1d1d", marginTop: "4px" }}>{report.insights?.weakest_category}</h4>
-            <p style={{ fontSize: "13px", color: "#991b1b", marginTop: "6px" }}>
-              {report.insights?.top_improvements?.[1] || "Targeted practice in this dimension will significantly boost overall readiness."}
-            </p>
-          </div>
+          <span style={{ fontSize: "12px", fontWeight: "700", color: "#334155", textTransform: "uppercase" }}>Observed Strengths</span>
+          <ul style={{ margin: "8px 0 0 16px", padding: 0, fontSize: "13px", color: "#334155", lineHeight: "1.6" }}>
+            {report.answers && report.answers.flatMap(a => a.strengths || []).length > 0 ? (
+              Array.from(new Set(report.answers.flatMap(a => a.strengths || []))).slice(0, 4).map((str, sIdx) => (
+                <li key={sIdx}>{str}</li>
+              ))
+            ) : (
+              <li>Demonstrated steady response structure across evaluated interview questions.</li>
+            )}
+          </ul>
+
+          {report.claim_consistency && report.claim_consistency.filter(c => c.label === "consistent").length > 0 && (
+            <div style={{ marginTop: "14px", paddingTop: "12px", borderTop: "1px solid #e2e8f0" }}>
+              <span style={{ fontSize: "11px", fontWeight: "700", color: "#166534", textTransform: "uppercase" }}>Validated Resume Claims</span>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "6px" }}>
+                {report.claim_consistency.filter(c => c.label === "consistent").map((c, idx) => (
+                  <span key={idx} style={{ fontSize: "11px", backgroundColor: "#dcfce7", color: "#166534", padding: "2px 8px", borderRadius: "4px", fontWeight: "600" }}>
+                    ✓ {c.claim_text || `Claim #${c.claim_id}`}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {report.insights?.top_improvements?.[2] && (
-          <div style={{ marginTop: "14px", padding: "12px", backgroundColor: "#eff6ff", borderRadius: "8px", border: "1px solid #bfdbfe", fontSize: "13px", color: "#1e40af" }}>
-            💡 <strong>Next Step:</strong> {report.insights.top_improvements[2]}
+        {/* WHAT HELD YOU BACK */}
+        <div style={{ ...cardStyle, borderLeft: "4px solid #dc2626" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+            <span style={{ fontSize: "16px" }}>⚠️</span>
+            <h3 style={{ ...sectionTitle, color: "#991b1b" }}>What Held You Back</h3>
           </div>
-        )}
+
+          {report.session_weaknesses && report.session_weaknesses.length > 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {report.session_weaknesses.map((w, wIdx) => {
+                const sevColor = w.severity === "high" ? { bg: "#fee2e2", text: "#991b1b", border: "#fecaca" }
+                  : w.severity === "medium" ? { bg: "#fef3c7", text: "#92400e", border: "#fde68a" }
+                  : { bg: "#f1f5f9", text: "#475569", border: "#cbd5e1" };
+                return (
+                  <div key={wIdx} style={{ padding: "12px", backgroundColor: "#fff", borderRadius: "8px", border: `1px solid ${sevColor.border}` }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                      <strong style={{ fontSize: "13px", color: "#0f172a" }}>{w.weakness_type.replace(/_/g, " ").toUpperCase()}</strong>
+                      <div style={{ display: "flex", gap: "6px" }}>
+                        <span style={{ fontSize: "10px", fontWeight: "700", padding: "2px 6px", borderRadius: "4px", backgroundColor: sevColor.bg, color: sevColor.text, textTransform: "uppercase" }}>
+                          {w.severity} SEVERITY
+                        </span>
+                        <span style={{ fontSize: "10px", fontWeight: "600", padding: "2px 6px", borderRadius: "4px", backgroundColor: "#f8fafc", color: "#64748b", border: "1px solid #e2e8f0" }}>
+                          {w.frequency} turn{w.frequency > 1 ? "s" : ""}
+                        </span>
+                      </div>
+                    </div>
+                    <p style={{ fontSize: "12px", color: "#475569", margin: "4px 0 6px 0", lineHeight: "1.4" }}>
+                      {w.explanation}
+                    </p>
+                    {w.evidence_samples && w.evidence_samples.length > 0 && (
+                      <div style={{ fontSize: "11px", color: "#78350f", backgroundColor: "#fffbeb", padding: "6px 8px", borderRadius: "4px", fontStyle: "italic" }}>
+                        "{w.evidence_samples[0]}"
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div>
+              <div style={{ padding: "12px", backgroundColor: "#fef2f2", borderRadius: "8px", border: "1px solid #fecaca", marginBottom: "14px" }}>
+                <span style={{ fontSize: "11px", fontWeight: "700", color: "#991b1b", textTransform: "uppercase" }}>PRIMARY GROWTH AREA</span>
+                <h4 style={{ fontSize: "15px", color: "#7f1d1d", margin: "4px 0" }}>{report.insights?.weakest_category || "Resume Consistency"}</h4>
+                <p style={{ fontSize: "13px", color: "#991b1b", margin: 0, lineHeight: "1.4" }}>
+                  {report.insights?.top_improvements?.[1] || "Targeted practice in this dimension will significantly boost overall readiness."}
+                </p>
+              </div>
+              <span style={{ fontSize: "12px", fontWeight: "700", color: "#334155", textTransform: "uppercase" }}>Areas for Improvement</span>
+              <ul style={{ margin: "8px 0 0 16px", padding: 0, fontSize: "13px", color: "#7f1d1d", lineHeight: "1.6" }}>
+                {report.answers && report.answers.flatMap(a => a.weaknesses || []).length > 0 ? (
+                  Array.from(new Set(report.answers.flatMap(a => a.weaknesses || []))).slice(0, 3).map((w, wIdx) => (
+                    <li key={wIdx}>{w}</li>
+                  ))
+                ) : (
+                  <li>Practice framing experiences with quantified outcomes and specific technologies.</li>
+                )}
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* INTERVIEW TIMELINE */}
+      {report.timeline && report.timeline.length > 0 && (
+        <div style={{ ...cardStyle, marginTop: "24px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+            <h3 style={sectionTitle}>Interview Event Timeline</h3>
+            <span style={{ fontSize: "11px", fontWeight: "700", color: "#64748b", backgroundColor: "#f1f5f9", padding: "2px 8px", borderRadius: "4px" }}>
+              {report.timeline.length} CHRONOLOGICAL TURNS
+            </span>
+          </div>
+          <p style={{ fontSize: "12px", color: "#64748b", margin: "0 0 18px 0" }}>
+            Turn-by-turn chronological progression, detected events, and competency indicators.
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            {report.timeline.map((item, tIdx) => {
+              const mins = Math.floor((item.timestamp_offset_seconds || 0) / 60);
+              const secs = (item.timestamp_offset_seconds || 0) % 60;
+              const timeDisplay = `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+
+              return (
+                <div
+                  key={tIdx}
+                  style={{
+                    padding: "16px",
+                    backgroundColor: "#f8fafc",
+                    borderRadius: "8px",
+                    border: "1px solid #e2e8f0",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "8px", marginBottom: "8px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ fontSize: "11px", fontWeight: "800", backgroundColor: "#0f172a", color: "#ffffff", padding: "2px 8px", borderRadius: "4px" }}>
+                        Turn {item.turn} • +{timeDisplay}
+                      </span>
+                      <span style={{ fontSize: "11px", fontWeight: "700", color: "#2563eb", textTransform: "capitalize", backgroundColor: "#dbeafe", padding: "2px 6px", borderRadius: "4px" }}>
+                        {item.question_type || "General"}
+                      </span>
+                    </div>
+
+                    {/* Mini Dimension Scores */}
+                    {item.dimension_scores && (
+                      <div style={{ display: "flex", gap: "8px", fontSize: "11px" }}>
+                        <span style={{ color: "#475569" }}>
+                          Tech: <strong style={{ color: getScoreColor(item.dimension_scores.technical) }}>{Math.round(item.dimension_scores.technical)}%</strong>
+                        </span>
+                        <span style={{ color: "#475569" }}>
+                          Comm: <strong style={{ color: getScoreColor(item.dimension_scores.communication) }}>{Math.round(item.dimension_scores.communication)}%</strong>
+                        </span>
+                        {item.dimension_scores.delivery !== null && item.dimension_scores.delivery !== undefined && (
+                          <span style={{ color: "#475569" }}>
+                            Delivery: <strong style={{ color: getScoreColor(item.dimension_scores.delivery) }}>{Math.round(item.dimension_scores.delivery)}%</strong>
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <h4 style={{ fontSize: "15px", color: "#0f172a", margin: "0 0 6px 0", fontWeight: "600" }}>
+                    {item.question}
+                  </h4>
+
+                  {/* EVENTS BADGES */}
+                  {item.events && item.events.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", margin: "8px 0" }}>
+                      {item.events.map((ev, evIdx) => {
+                        const evStyle = ev.severity === "alert"
+                          ? { bg: "#fee2e2", text: "#991b1b", border: "#fecaca" }
+                          : ev.severity === "warning"
+                          ? { bg: "#fef3c7", text: "#92400e", border: "#fde68a" }
+                          : { bg: "#eff6ff", text: "#1e40af", border: "#bfdbfe" };
+                        return (
+                          <span
+                            key={evIdx}
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: "700",
+                              backgroundColor: evStyle.bg,
+                              color: evStyle.text,
+                              border: `1px solid ${evStyle.border}`,
+                              padding: "2px 8px",
+                              borderRadius: "4px",
+                            }}
+                            title={ev.description}
+                          >
+                            ● {ev.label}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  <p style={{ fontSize: "13px", color: "#475569", margin: "6px 0 0 0", fontStyle: "italic", lineHeight: "1.4" }}>
+                    "{item.transcript ? (item.transcript.length > 180 ? item.transcript.substring(0, 180) + "..." : item.transcript) : "No transcript recorded"}"
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* DETAILED ANSWER-BY-ANSWER REVIEW */}
       <div style={{ marginTop: "35px" }}>
