@@ -270,3 +270,23 @@ EXTENDED_VISUAL_QUALITY_GATE = {
     "min_face_visibility_ratio": 0.60,
     "min_frames_sampled": 30,
 }
+
+
+# ---------------------------
+# Weakness Diagnosis & Performance Intelligence (Phase 4)
+# ---------------------------
+WEAKNESS_CONFIG = {
+    "filler_word_threshold_per_answer": 5,
+    "filler_total_session_threshold": 8,
+    "long_pause_threshold_seconds": 3.5,
+    "min_pause_answers": 2,
+    "speaking_speed_high_wpm": 165.0,
+    "speaking_speed_low_wpm": 95.0,
+    "shallow_technical_score_threshold": 60.0,
+    "technical_drop_threshold": 15.0,
+    "min_visual_frames": 30,
+    "low_face_visibility_ratio": 0.60,
+    "unstable_head_alignment_threshold": 55.0,
+    "frequent_head_shifts_threshold": 8,
+}
+
