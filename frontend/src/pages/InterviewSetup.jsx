@@ -19,6 +19,25 @@ function InterviewSetup() {
   const [loadingStart, setLoadingStart] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
 
+  // Privacy consent tracking
+  const [consentStatus, setConsentStatus] = useState("loading"); // "loading" | "granted" | "declined" | "unspecified"
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null); // "check" | "start"
+
+  useEffect(() => {
+    apiFetch("/consent")
+      .then((res) => (res.ok ? res.json() : []))
+      .then((records) => {
+        const camMicRecord = records.find((r) => r.consent_type === "camera_mic_processing");
+        if (camMicRecord) {
+          setConsentStatus(camMicRecord.granted ? "granted" : "declined");
+        } else {
+          setConsentStatus("unspecified");
+        }
+      })
+      .catch(() => setConsentStatus("unspecified"));
+  }, []);
+
   // Pre-fill preferences from authenticated user profile
   useEffect(() => {
     if (user?.profile?.target_role) {
@@ -66,7 +85,7 @@ function InterviewSetup() {
 
   const difficulties = ["easy", "medium", "hard"];
 
-  const handleSystemCheck = async () => {
+  const runHardwareCheck = async () => {
     setIsCheckingMedia(true);
     setErrorMessage(null);
     try {
@@ -84,7 +103,71 @@ function InterviewSetup() {
     }
   };
 
+  const handleSystemCheck = async () => {
+    if (consentStatus === "unspecified") {
+      setPendingAction("check");
+      setShowConsentModal(true);
+      return;
+    }
+    if (consentStatus === "declined") {
+      setErrorMessage("Camera and microphone processing is disabled per your privacy preference. You can still proceed in text-only mode.");
+      return;
+    }
+    runHardwareCheck();
+  };
+
+  const handleGrantConsent = async () => {
+    try {
+      await apiFetch("/consent", {
+        method: "POST",
+        body: JSON.stringify({
+          consent_type: "camera_mic_processing",
+          granted: true,
+          policy_version: "v1.0",
+        }),
+      });
+    } catch (e) {
+      console.warn("Consent persist notice:", e);
+    }
+    setConsentStatus("granted");
+    setShowConsentModal(false);
+    if (pendingAction === "check") {
+      runHardwareCheck();
+    } else if (pendingAction === "start") {
+      executeStart(false);
+    }
+  };
+
+  const handleDeclineConsent = async () => {
+    try {
+      await apiFetch("/consent", {
+        method: "POST",
+        body: JSON.stringify({
+          consent_type: "camera_mic_processing",
+          granted: false,
+          policy_version: "v1.0",
+        }),
+      });
+    } catch (e) {
+      console.warn("Consent persist notice:", e);
+    }
+    setConsentStatus("declined");
+    setShowConsentModal(false);
+    if (pendingAction === "start") {
+      executeStart(true);
+    }
+  };
+
   const handleStart = async () => {
+    if (consentStatus === "unspecified") {
+      setPendingAction("start");
+      setShowConsentModal(true);
+      return;
+    }
+    executeStart(consentStatus === "declined");
+  };
+
+  const executeStart = async (isTextOnly = false) => {
     setLoadingStart(true);
     setErrorMessage(null);
 
@@ -118,6 +201,7 @@ function InterviewSetup() {
         targetRole,
         questions: session.questions,
         questionCount: session.questions.length,
+        textOnly: isTextOnly,
       }));
 
       navigate("/interview", {
@@ -128,6 +212,7 @@ function InterviewSetup() {
           targetRole,
           questions: session.questions,
           questionCount: session.questions.length,
+          textOnly: isTextOnly,
         },
       });
     } catch (err) {
@@ -149,6 +234,7 @@ function InterviewSetup() {
         targetRole,
         questions: fallbackQuestions,
         questionCount,
+        textOnly: isTextOnly,
       }));
 
       navigate("/interview", {
@@ -159,6 +245,7 @@ function InterviewSetup() {
           targetRole,
           questions: fallbackQuestions,
           questionCount,
+          textOnly: isTextOnly,
         },
       });
     } finally {
@@ -323,6 +410,94 @@ function InterviewSetup() {
           {loadingStart ? "Initializing AI Interview Room..." : "Begin Mock Interview →"}
         </button>
       </div>
+
+      {/* DATA RETENTION GUARANTEE */}
+      <div style={{ marginTop: "24px", textAlign: "center", fontSize: "12px", color: "#64748b" }}>
+        🔒 Data Privacy Guarantee: Video and audio are processed locally in your browser. Raw media is never recorded or uploaded. Your data is kept until you delete it.
+      </div>
+
+      {/* PRIVACY & SENSOR PROCESSING CONSENT MODAL */}
+      {showConsentModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(15, 23, 42, 0.65)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            padding: "20px",
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              borderRadius: "12px",
+              padding: "28px",
+              maxWidth: "540px",
+              width: "100%",
+              boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+              <span style={{ fontSize: "24px" }}>🛡️</span>
+              <h3 style={{ margin: 0, fontSize: "18px", color: "#0f172a" }}>Sensor Processing & Privacy Choice</h3>
+            </div>
+
+            <p style={{ fontSize: "13px", color: "#475569", lineHeight: "1.5", marginBottom: "14px" }}>
+              To provide delivery stability and cadence feedback, this system can analyze webcam alignment and microphone pacing.
+              Before continuing, please review how your data is handled:
+            </p>
+
+            <div style={{ backgroundColor: "#f8fafc", borderRadius: "8px", padding: "14px", border: "1px solid #e2e8f0", fontSize: "12px", color: "#334155", lineHeight: "1.6", marginBottom: "20px" }}>
+              <ul style={{ margin: 0, paddingLeft: "18px" }}>
+                <li><strong>Local-only video analysis:</strong> Head alignment and blink proxies are computed directly inside your browser via MediaPipe FaceMesh. <em>Raw video is never recorded, transmitted, or stored.</em></li>
+                <li><strong>Local-only speech cadence:</strong> Speech intervals and transcripts run via browser speech recognition. <em>Raw audio files are never recorded or uploaded.</em></li>
+                <li><strong>Transcripts & rubrics:</strong> Only text transcripts, numerical rubric scores, and action items are saved.</li>
+                <li><strong>Retention policy:</strong> <em>Your data is kept until you delete it.</em> You may delete individual sessions or your entire account at any time.</li>
+                <li><strong>Text-only fallback:</strong> If you decline, you can practice in text-only mode with zero sensor access.</li>
+              </ul>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
+              <button
+                onClick={handleDeclineConsent}
+                style={{
+                  padding: "10px 16px",
+                  backgroundColor: "#f1f5f9",
+                  color: "#475569",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: "6px",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                }}
+              >
+                Decline (Use Text-Only Mode)
+              </button>
+              <button
+                onClick={handleGrantConsent}
+                style={{
+                  padding: "10px 18px",
+                  backgroundColor: "#0f172a",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                }}
+              >
+                Agree & Enable Camera / Audio
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

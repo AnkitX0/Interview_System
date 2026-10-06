@@ -23,6 +23,7 @@ function Interview() {
   const mode = location.state?.mode || savedState.mode || "technical";
   const difficulty = location.state?.difficulty || savedState.difficulty || "medium";
   const targetRole = location.state?.targetRole || savedState.targetRole || "Software Engineer";
+  const textOnly = Boolean(location.state?.textOnly ?? savedState.textOnly ?? false);
 
   const initialQuestions = location.state?.questions || savedState.questions || [
     { id: 1, question: "Explain REST API architecture and how HTTP status codes are utilized." },
@@ -45,9 +46,9 @@ function Interview() {
 
   // Speech-to-text recognition & input mode state
   const [speechRecognitionActive, setSpeechRecognitionActive] = useState(false);
-  const [speechSupported, setSpeechSupported] = useState(true);
-  const [inputMode, setInputMode] = useState("mic"); // "mic" | "text"
-  const [speechNotice, setSpeechNotice] = useState("");
+  const [speechSupported, setSpeechSupported] = useState(!textOnly);
+  const [inputMode, setInputMode] = useState(textOnly ? "text" : "mic"); // "mic" | "text"
+  const [speechNotice, setSpeechNotice] = useState(textOnly ? "Text-only mode active. Camera and microphone processing are disabled per your privacy preference." : "");
   const [inputWarning, setInputWarning] = useState("");
   const speechRecognizerRef = useRef(null);
   const speechSegmentsRef = useRef([]);
@@ -95,6 +96,11 @@ function Interview() {
 
   // Initialize Speech Recognition (Web Speech API)
   useEffect(() => {
+    if (textOnly) {
+      setSpeechSupported(false);
+      setInputMode("text");
+      return;
+    }
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       setSpeechSupported(true);
@@ -212,6 +218,11 @@ function Interview() {
 
   // Initialize MediaPipe FaceMesh & Camera
   useEffect(() => {
+    if (textOnly) {
+      setIsCameraOn(false);
+      setIsMicOn(false);
+      return;
+    }
     if (meshInitialized.current) return;
     meshInitialized.current = true;
 
@@ -563,9 +574,13 @@ function Interview() {
               ) : (
                 <div style={webcamFallback}>
                   <div style={{ fontSize: "40px", marginBottom: "8px" }}>🎥</div>
-                  <p style={{ fontWeight: "600", fontSize: "14px" }}>Camera Inactive</p>
+                  <p style={{ fontWeight: "600", fontSize: "14px" }}>
+                    {textOnly ? "Privacy Mode (Sensors Off)" : "Camera Inactive"}
+                  </p>
                   <p style={{ fontSize: "12px", color: "#94a3b8", marginTop: "4px" }}>
-                    Delivery & Visual Stability marked "Not measured"
+                    {textOnly
+                      ? "Webcam and microphone disabled per your privacy choice."
+                      : "Delivery & Visual Stability marked \"Not measured\"."}
                   </p>
                 </div>
               )}

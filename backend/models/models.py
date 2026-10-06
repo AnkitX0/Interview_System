@@ -241,7 +241,7 @@ class ConsentRecord(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     consent_type = Column(String, nullable=False)  # camera | microphone | transcript_storage
-    policy_version = Column(String, nullable=False)
+    policy_version = Column(String, default="v1.0", server_default="v1.0", nullable=False)
     granted = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
