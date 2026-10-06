@@ -292,4 +292,13 @@ WEAKNESS_CONFIG = {
 
 MIN_SESSIONS_FOR_RECURRING: int = 2
 
+READINESS_CONFIDENCE_CONFIG = {
+    "min_sessions_for_low": 2,
+    "min_sessions_for_medium": 4,
+    "min_sessions_for_high": 7,
+    "max_score_variance_for_high": 12.0,
+    "trend_slope_threshold": 1.5,
+}
+
+
 
