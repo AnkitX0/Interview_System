@@ -76,6 +76,38 @@ def start_interview(data: StartInterviewRequest, db: Session = Depends(get_db)):
 
 
 # =========================
+# LATEST & ALL SESSIONS
+# =========================
+@router.get("/latest")
+def get_latest_session(db: Session = Depends(get_db)):
+    latest = db.query(models.SessionScore).order_by(
+        models.SessionScore.id.desc()
+    ).first()
+
+    if not latest:
+        return {"message": "No sessions yet"}
+
+    return {
+        "session_id": latest.session_id,
+        "behavioral_score": latest.behavioral_score,
+        "readiness_score": latest.readiness_score or latest.behavioral_score
+    }
+
+
+@router.get("/all")
+def get_all_sessions(db: Session = Depends(get_db)):
+    sessions = db.query(models.SessionScore).all()
+    result = []
+    for index, s in enumerate(sessions):
+        result.append({
+            "attempt": str(index + 1),
+            "behavioral_score": s.behavioral_score,
+            "readiness_score": s.readiness_score or s.behavioral_score
+        })
+    return result
+
+
+# =========================
 # GET SESSION STATUS / DETAILS
 # =========================
 @router.get("/{session_id}")
@@ -185,7 +217,9 @@ def submit_answer(data: AnswerInput, session_id: Optional[int] = None, db: Sessi
         strengths=json.dumps(evaluation["strengths"]),
         weaknesses=json.dumps(evaluation["weaknesses"]),
         missing_concepts=json.dumps(evaluation["missing_concepts"]),
-        suggestions=json.dumps(evaluation["suggestions"])
+        suggestions=json.dumps(evaluation["suggestions"]),
+        engine_used=evaluation.get("engine_used", "rubric"),
+        prompt_version=evaluation.get("prompt_version", "v1.0")
     )
 
     db.add(eval_record)
@@ -203,6 +237,8 @@ def submit_answer(data: AnswerInput, session_id: Optional[int] = None, db: Sessi
         "reasoning": evaluation.get("reasoning"),
         "star": evaluation.get("star"),
         "consistency": evaluation.get("consistency"),
+        "engine_used": evaluation.get("engine_used", "rubric"),
+        "prompt_version": evaluation.get("prompt_version", "v1.0"),
         "structure_score": evaluation["structure_score"],
         "technical_score": evaluation["technical_score"],
         "reasoning_score": evaluation["reasoning_score"],
@@ -447,35 +483,3 @@ def get_result(session_id: int, db: Session = Depends(get_db)):
         "behavioral_score": 75.0,
         "final_score": 75.0
     }
-
-
-# =========================
-# LATEST & ALL SESSIONS
-# =========================
-@router.get("/latest")
-def get_latest_session(db: Session = Depends(get_db)):
-    latest = db.query(models.SessionScore).order_by(
-        models.SessionScore.id.desc()
-    ).first()
-
-    if not latest:
-        return {"message": "No sessions yet"}
-
-    return {
-        "session_id": latest.session_id,
-        "behavioral_score": latest.behavioral_score,
-        "readiness_score": latest.readiness_score or latest.behavioral_score
-    }
-
-
-@router.get("/all")
-def get_all_sessions(db: Session = Depends(get_db)):
-    sessions = db.query(models.SessionScore).all()
-    result = []
-    for index, s in enumerate(sessions):
-        result.append({
-            "attempt": str(index + 1),
-            "behavioral_score": s.behavioral_score,
-            "readiness_score": s.readiness_score or s.behavioral_score
-        })
-    return result

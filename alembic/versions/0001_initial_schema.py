@@ -58,11 +58,10 @@ def upgrade() -> None:
     else:
         # Check for missing columns in existing table
         cols = [c['name'] for c in inspector.get_columns('interview_sessions')]
-        with op.batch_alter_table('interview_sessions') as batch_op:
-            if 'resume_id' not in cols:
-                batch_op.add_column(sa.Column('resume_id', sa.Integer(), sa.ForeignKey('resumes.id'), nullable=True))
-            if 'target_role' not in cols:
-                batch_op.add_column(sa.Column('target_role', sa.String(), nullable=True, server_default='Software Engineer'))
+        if 'resume_id' not in cols:
+            op.add_column('interview_sessions', sa.Column('resume_id', sa.Integer(), nullable=True))
+        if 'target_role' not in cols:
+            op.add_column('interview_sessions', sa.Column('target_role', sa.String(), nullable=True, server_default='Software Engineer'))
 
     # 3. Question Bank
     if 'question_bank' not in existing_tables:
@@ -92,15 +91,14 @@ def upgrade() -> None:
         )
     else:
         cols = [c['name'] for c in inspector.get_columns('interview_answers')]
-        with op.batch_alter_table('interview_answers') as batch_op:
-            if 'question_text' not in cols:
-                batch_op.add_column(sa.Column('question_text', sa.Text(), nullable=True))
-            if 'duration_seconds' not in cols:
-                batch_op.add_column(sa.Column('duration_seconds', sa.Float(), nullable=True, server_default='0.0'))
-            if 'wpm' not in cols:
-                batch_op.add_column(sa.Column('wpm', sa.Float(), nullable=True, server_default='0.0'))
-            if 'filler_count' not in cols:
-                batch_op.add_column(sa.Column('filler_count', sa.Integer(), nullable=True, server_default='0'))
+        if 'question_text' not in cols:
+            op.add_column('interview_answers', sa.Column('question_text', sa.Text(), nullable=True))
+        if 'duration_seconds' not in cols:
+            op.add_column('interview_answers', sa.Column('duration_seconds', sa.Float(), nullable=True, server_default='0.0'))
+        if 'wpm' not in cols:
+            op.add_column('interview_answers', sa.Column('wpm', sa.Float(), nullable=True, server_default='0.0'))
+        if 'filler_count' not in cols:
+            op.add_column('interview_answers', sa.Column('filler_count', sa.Integer(), nullable=True, server_default='0'))
 
     # 5. Answer Evaluations
     if 'answer_evaluations' not in existing_tables:
@@ -125,11 +123,10 @@ def upgrade() -> None:
         )
     else:
         cols = [c['name'] for c in inspector.get_columns('answer_evaluations')]
-        with op.batch_alter_table('answer_evaluations') as batch_op:
-            if 'engine_used' not in cols:
-                batch_op.add_column(sa.Column('engine_used', sa.String(), nullable=True, server_default='rubric'))
-            if 'prompt_version' not in cols:
-                batch_op.add_column(sa.Column('prompt_version', sa.String(), nullable=True, server_default='v1.0'))
+        if 'engine_used' not in cols:
+            op.add_column('answer_evaluations', sa.Column('engine_used', sa.String(), nullable=True, server_default='rubric'))
+        if 'prompt_version' not in cols:
+            op.add_column('answer_evaluations', sa.Column('prompt_version', sa.String(), nullable=True, server_default='v1.0'))
 
     # 6. Follow-up Questions
     if 'followup_questions' not in existing_tables:
@@ -158,7 +155,7 @@ def upgrade() -> None:
             'session_scores',
             sa.Column('id', sa.Integer(), primary_key=True, index=True),
             sa.Column('session_id', sa.Integer(), sa.ForeignKey('interview_sessions.id'), nullable=True),
-            sa.Column('behavioral_score', sa.Float(), nullable=True, server_default='0.0'),
+            sa.Column('behavioral_score', sa.Float(), nullable=True, default=None),
             sa.Column('communication_score', sa.Float(), nullable=True, server_default='0.0'),
             sa.Column('technical_score', sa.Float(), nullable=True, server_default='0.0'),
             sa.Column('resume_consistency_score', sa.Float(), nullable=True, server_default='0.0'),
@@ -171,10 +168,10 @@ def upgrade() -> None:
         )
     else:
         cols = [c['name'] for c in inspector.get_columns('session_scores')]
-        with op.batch_alter_table('session_scores') as batch_op:
-            if 'weights_used' not in cols:
-                batch_op.add_column(sa.Column('weights_used', sa.Text(), nullable=True, server_default='{}'))
+        if 'weights_used' not in cols:
+            op.add_column('session_scores', sa.Column('weights_used', sa.Text(), nullable=True, server_default='{}'))
 
 
 def downgrade() -> None:
     pass
+

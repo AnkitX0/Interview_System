@@ -410,6 +410,16 @@ function Dashboard() {
                   <RubricChip label="Resume Match" value={ans.consistency_score} />
                 </div>
 
+                {/* EVALUATION ENGINE METADATA */}
+                <div style={{ marginTop: "10px", fontSize: "11px", color: "#64748b" }}>
+                  Evaluated by:{" "}
+                  <strong style={{ color: "#334155" }}>
+                    {ans.engine_used && ans.engine_used.startsWith("llm_")
+                      ? `${ans.engine_used.replace("llm_", "LLM (").toUpperCase()}) [prompt ${ans.prompt_version || "v1.0"}]`
+                      : `Deterministic Rubric Engine [prompt ${ans.prompt_version || "v1.0"}]`}
+                  </strong>
+                </div>
+
                 {/* STRENGTHS & WEAKNESSES GRID */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "16px" }}>
                   <div>

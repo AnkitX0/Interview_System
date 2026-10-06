@@ -73,3 +73,4 @@ def test_pdf_extraction_fallback_when_pdftotext_missing():
         assert isinstance(extracted, str)
         assert len(extracted) > 0
         assert "Jane Doe" in extracted or "Software Engineer" in extracted
+

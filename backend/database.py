@@ -22,8 +22,24 @@ def init_db():
     if os.path.exists(ini_path):
         from alembic.config import Config
         from alembic import command
+        from alembic.script import ScriptDirectory
+        from alembic.migration import MigrationContext
+
         alembic_cfg = Config(ini_path)
         alembic_cfg.set_main_option("sqlalchemy.url", DATABASE_URL)
+
+        # Fast idempotent check: if DB is already at head, skip upgrade
+        try:
+            with engine.connect() as conn:
+                ctx = MigrationContext.configure(conn)
+                current_rev = ctx.get_current_revision()
+                script = ScriptDirectory.from_config(alembic_cfg)
+                head_rev = script.get_current_head()
+                if current_rev and current_rev == head_rev:
+                    return
+        except Exception:
+            pass
+
         command.upgrade(alembic_cfg, "head")
     else:
         Base.metadata.create_all(bind=engine)

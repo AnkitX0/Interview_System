@@ -139,7 +139,7 @@ class SessionScore(Base):
     id = Column(Integer, primary_key=True, index=True)
     session_id = Column(Integer, ForeignKey("interview_sessions.id"))
 
-    behavioral_score = Column(Float, nullable=True, default=0.0)
+    behavioral_score = Column(Float, nullable=True, default=None)
     communication_score = Column(Float, default=0.0)
     technical_score = Column(Float, default=0.0)
     resume_consistency_score = Column(Float, default=0.0)

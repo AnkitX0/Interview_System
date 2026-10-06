@@ -168,3 +168,148 @@ def test_empty_transcript_safe_handling(client):
     assert data["score"] <= 35.0
     assert "dimensions" in data
 
+
+def test_resume_analyze_endpoint(client):
+    """Test POST /resume/analyze with direct text payload."""
+    res = client.post(
+        "/resume/analyze",
+        json={"text": "Dev Jane\nSkills: Python, Django, Docker, PostgreSQL\nExperience: Senior Backend Developer"}
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["candidate_name"] == "Dev Jane"
+    assert "Python" in data["skills"]
+    assert "resume_score" in data
+
+
+def test_interview_legacy_routes_and_lookups(client, golden_answers):
+    """
+    Test legacy aliases and lookup routes:
+    - POST /interview/answer
+    - POST /interview/submit
+    - GET /interview/result/{session_id}
+    - GET /interview/latest
+    - GET /interview/all
+    - POST /answer/{answer_id}/improve
+    """
+    # 1. Start a session
+    start_res = client.post("/interview/start", json={"mode": "technical", "number_of_questions": 1})
+    assert start_res.status_code == 200
+    session_id = start_res.json()["session_id"]
+    q_id = start_res.json()["questions"][0]["id"]
+    q_text = start_res.json()["questions"][0]["question"]
+
+    # 2. Test legacy POST /interview/answer alias
+    ans_res = client.post(
+        "/interview/answer",
+        json={
+            "session_id": session_id,
+            "question_id": q_id,
+            "question_text": q_text,
+            "transcript": golden_answers["average"],
+            "response_time": 20.0,
+            "wpm": 120.0,
+            "filler_count": 1
+        }
+    )
+    assert ans_res.status_code == 200
+    answer_id = ans_res.json()["answer_id"]
+    assert "engine_used" in ans_res.json()
+
+    # 3. Test POST /answer/{answer_id}/improve
+    improve_res = client.post(f"/answer/{answer_id}/improve", json={})
+    assert improve_res.status_code == 200
+    assert "improved_answer" in improve_res.json()
+
+    # 4. Test legacy POST /interview/submit alias
+    sub_res = client.post(
+        "/interview/submit",
+        json={
+            "session_id": session_id,
+            "eye_contact_percent": 85.0,
+            "blink_rate": 19.0,
+            "pause_rate": 2.0
+        }
+    )
+    assert sub_res.status_code == 200
+
+    # 5. Test GET /interview/result/{session_id}
+    res_res = client.get(f"/interview/result/{session_id}")
+    assert res_res.status_code == 200
+    assert "final_score" in res_res.json()
+
+    # 6. Test GET /interview/latest
+    latest_res = client.get("/interview/latest")
+    assert latest_res.status_code == 200
+    assert latest_res.json()["session_id"] == session_id
+
+    # 7. Test GET /interview/all
+    all_res = client.get("/interview/all")
+    assert all_res.status_code == 200
+    assert isinstance(all_res.json(), list)
+    assert len(all_res.json()) >= 1
+
+
+def test_camera_off_session_complete_and_report(client, golden_answers):
+    """
+    Test complete camera-off path:
+    - eye_contact_percent and blink_rate sent as None
+    - weights re-normalized to 0.375, 0.375, 0.25, 0.0
+    - report shows delivery_measured: false, delivery_score: None
+    - answers in report include engine_used and prompt_version
+    """
+    # 1. Start session
+    start_res = client.post("/interview/start", json={"mode": "technical", "number_of_questions": 1})
+    session_id = start_res.json()["session_id"]
+    q_id = start_res.json()["questions"][0]["id"]
+    q_text = start_res.json()["questions"][0]["question"]
+
+    # 2. Submit answer
+    ans_res = client.post(
+        f"/interview/{session_id}/answer",
+        json={
+            "session_id": session_id,
+            "question_id": q_id,
+            "question_text": q_text,
+            "transcript": golden_answers["strong"],
+            "response_time": 30.0,
+            "wpm": 130.0,
+            "filler_count": 0
+        }
+    )
+    assert ans_res.status_code == 200
+
+    # 3. Complete session with camera off (null sensors)
+    comp_res = client.post(
+        f"/interview/{session_id}/complete",
+        json={
+            "eye_contact_percent": None,
+            "blink_rate": None,
+            "pause_rate": 2.0
+        }
+    )
+    assert comp_res.status_code == 200
+    comp_data = comp_res.json()
+    assert comp_data["delivery_measured"] is False
+    assert comp_data["subscores"]["delivery"] is None
+    assert comp_data["weights_used"] == {
+        "communication": 0.375,
+        "technical": 0.375,
+        "delivery": 0.0,
+        "resume_consistency": 0.25
+    }
+
+    # 4. Fetch report
+    rep_res = client.get(f"/report/{session_id}")
+    assert rep_res.status_code == 200
+    rep_data = rep_res.json()
+    assert rep_data["delivery_measured"] is False
+    assert rep_data["subscores"]["delivery"] is None
+    top_improvs = rep_data["insights"]["top_improvements"] if isinstance(rep_data["insights"], dict) else rep_data["insights"]
+    assert any("not measured" in ins.lower() for ins in top_improvs)
+    assert len(rep_data["answers"]) == 1
+    first_ans = rep_data["answers"][0]
+    assert first_ans["engine_used"] == "rubric"
+    assert first_ans["prompt_version"] == "v1.0"
+
+

@@ -36,6 +36,8 @@ class AnswerEvaluationResponse(BaseModel):
     reasoning: Optional[DimensionEvaluation] = None
     star: Optional[DimensionEvaluation] = None
     consistency: Optional[DimensionEvaluation] = None
+    engine_used: Optional[str] = "rubric"
+    prompt_version: Optional[str] = "v1.0"
 
     # Backward compatibility fields (Deprecated)
     structure_score: Optional[float] = Field(None, deprecated=True)

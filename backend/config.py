@@ -78,3 +78,4 @@ LLM_CONFIG = {
 
 # Follow-up constraints
 MAX_FOLLOWUPS_PER_QUESTION: int = 2
+

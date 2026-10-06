@@ -313,6 +313,9 @@ Interview_System/
 2. **Copywriting Audit**:
    - Review all text to eliminate any overclaims or pseudo-scientific emotion labels.
 
+### Deferred / Technical Debt
+- **Frontend Bundle Size (750 kB)**: Vite production build logs a chunk size warning (`dist/assets/index-*.js: 750.66 kB`) primarily driven by `@mediapipe/face_mesh` and `recharts`. Deferred to Phase 5 UX & Product Polish for code-splitting (`React.lazy` routes and `manualChunks`).
+
 ---
 
 ## 6. Phase 1 Sign-Off & Phase 2 Gate

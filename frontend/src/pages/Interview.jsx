@@ -661,7 +661,7 @@ function Interview() {
                     transition: "all 0.15s ease",
                   }}
                 >
-                  🎙️ Speak Answer
+                  Speak Answer
                 </button>
                 <button
                   type="button"
@@ -684,7 +684,7 @@ function Interview() {
                     transition: "all 0.15s ease",
                   }}
                 >
-                  ⌨️ Type Answer
+                  Type Answer
                 </button>
               </div>
               <span style={{ fontSize: "12px", color: speechRecognitionActive ? "#dc2626" : "#64748b", fontWeight: speechRecognitionActive ? "600" : "400" }}>
@@ -723,7 +723,7 @@ function Interview() {
                   color: speechRecognitionActive ? "white" : "#0f172a",
                 }}
               >
-                {speechRecognitionActive ? "⏹ Stop Speaking" : "🎙 Start Speech-to-Text"}
+                {speechRecognitionActive ? "Stop Speaking" : "Start Speech-to-Text"}
               </button>
 
               {!latestEvaluation ? (

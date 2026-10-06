@@ -233,3 +233,4 @@ def test_hallucinated_llm_quotes_trigger_rubric_fallback(monkeypatch):
 
         # Grounding check must fail and fall back to rubric
         assert res["engine_used"] == "rubric"
+

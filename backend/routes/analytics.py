@@ -84,7 +84,9 @@ def get_session_report(session_id: int, db: Session = Depends(get_db)):
             "strengths": strengths,
             "weaknesses": weaknesses,
             "missing_concepts": missing_concepts,
-            "suggestions": suggestions
+            "suggestions": suggestions,
+            "engine_used": (ev.engine_used if ev and hasattr(ev, 'engine_used') and ev.engine_used else "rubric"),
+            "prompt_version": (ev.prompt_version if ev and hasattr(ev, 'prompt_version') and ev.prompt_version else "v1.0")
         })
 
     # Session scoring values
@@ -92,7 +94,6 @@ def get_session_report(session_id: int, db: Session = Depends(get_db)):
     comm = score_record.communication_score if score_record else 75.0
     tech = score_record.technical_score if score_record else 70.0
     deliv = score_record.behavioral_score if score_record else None
-    delivery_measured = deliv is not None
     cons = score_record.resume_consistency_score if score_record else 75.0
     strongest = score_record.strongest_category if score_record else "Communication"
     weakest = score_record.weakest_category if score_record else "Technical"
@@ -103,6 +104,15 @@ def get_session_report(session_id: int, db: Session = Depends(get_db)):
             weights_used = json.loads(score_record.weights_used)
         except Exception:
             pass
+
+    if weights_used:
+        delivery_measured = weights_used.get("delivery", 0.0) > 0.0
+    else:
+        delivery_measured = deliv is not None
+
+    if not delivery_measured:
+        deliv = None
+
     if not weights_used:
         weights_used = (
             {"communication": 0.30, "technical": 0.30, "delivery": 0.20, "resume_consistency": 0.20}
