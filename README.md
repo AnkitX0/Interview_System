@@ -143,6 +143,13 @@ FastAPI Backend (Port 8000)
   │     └── /progress   (Cross-session metrics & trajectory)
   ├── Services:
   │     ├── auth_service.py (Argon2, JWT, rate limiting)
+  │     ├── timeline_service.py (Normalized timeline representation & event stream)
+  │     ├── weakness_diagnosis_engine.py (Taxonomy, evidence extraction & severity)
+  │     ├── recurring_weakness_service.py (Longitudinal recurring pattern tracking)
+  │     ├── velocity_service.py (Longitudinal improvement velocity computation)
+  │     ├── comparability_service.py (Strict session comparability criteria)
+  │     ├── practice_recommendation_engine.py (Targeted drill recommendations)
+  │     ├── readiness_engine.py (Longitudinal readiness & baseline projection)
   │     ├── adaptive_engine.py (4-stage probe ladder & rolling difficulty)
   │     ├── verification_risk.py (Observable evidence signals & risk scoring)
   │     ├── claim_consistency_service.py (Claim consistency & derived scoring)
@@ -154,7 +161,7 @@ FastAPI Backend (Port 8000)
   │     ├── question_selector.py (Question bank selection)
   │     └── answer_improvement_service.py (STAR engine)
   └── Database & Migrations:
-        ├── Alembic Migrations (0001 initial, 0002 auth, 0003 intelligence layer)
+        ├── Alembic Migrations (0001 initial, 0002 auth, 0003 intelligence, 0004 practice recommendations)
         └── SQLite (interview.db / PostgreSQL-ready SQLAlchemy models with cascading deletion)
 ```
 
@@ -215,7 +222,7 @@ Run the complete backend test suite:
 ```bash
 ./venv/bin/pytest tests/
 ```
-All **107 automated unit, scoring, auth, user isolation, voice metrics, consent, migration, probe ladder, verification risk, safe pressure, and visual metrics tests** execute completely offline with zero API keys.
+All **159 automated unit, scoring, auth, user isolation, voice metrics, consent, migration, probe ladder, verification risk, safe pressure, visual metrics, timeline, weakness diagnosis, velocity, practice recommendations, and readiness engine tests** execute completely offline with zero API keys.
 
 Run the frontend production build check:
 ```bash
@@ -258,7 +265,7 @@ VITE_API_URL=http://127.0.0.1:8000
 | `GET`  | `/auth/me` | Current authenticated user and profile | Yes |
 | `GET/PUT` | `/profile` | Get or update user profile preferences | Yes |
 | `GET/POST`| `/consent` | Retrieve or record privacy consent logs | Yes |
-| `GET`  | `/auth/export` | Complete GDPR/CCPA data export including all intelligence tables (JSON) | Yes |
+| `GET`  | `/auth/export` | Complete GDPR/CCPA data export including all intelligence & practice tables (JSON) | Yes |
 | `DELETE`| `/auth/account` | Permanently delete account with password re-check | Yes |
 | `POST` | `/resume/upload` | Upload PDF/text, extract claims & projects, audit resume | Yes |
 | `POST` | `/resume/analyze` | Analyze provided resume text or fetch profile | Yes |
@@ -272,9 +279,15 @@ VITE_API_URL=http://127.0.0.1:8000
 | `POST` | `/interview/followup` | Generate contextual follow-up question | Yes |
 | `POST` | `/interview/{session_id}/complete`| Finalize interview & compute normalized scores | Yes |
 | `DELETE`| `/interview/{session_id}`| Delete interview and cascade child rows | Yes |
-| `GET`  | `/report/{session_id}` | Retrieve report with observable rubric evidence & claim verification | Yes |
+| `GET`  | `/report/{session_id}` | Retrieve report with timeline events, diagnosed weaknesses, and next drill | Yes |
 | `POST` | `/answer/improve` | Refactor weak answer into STAR framework | Yes |
-| `GET`  | `/progress` | Fetch cross-session score trajectories | Yes |
+| `GET`  | `/progress` | Fetch longitudinal readiness profile, recurring weaknesses, and velocity | Yes |
+| `GET`  | `/practice/recommendations` | Fetch active prioritized practice drills | Yes |
+| `POST` | `/practice/start` | Start targeted practice drill mapped to interview engine | Yes |
+| `POST` | `/practice/{session_id}/complete` | Complete practice drill & compute comparability delta | Yes |
+| `GET`  | `/readiness/current` | Retrieve current smoothed readiness & confidence tier | Yes |
+| `GET`  | `/readiness/history` | Chronological session readiness history | Yes |
+| `GET`  | `/readiness/forecast` | Target gap analysis and linear trajectory projection | Yes |
 
 ---
 

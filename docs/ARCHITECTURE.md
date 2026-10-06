@@ -339,8 +339,18 @@ The interview intelligence layer enforces a deterministic 4-stage probe ladder g
 - `DELETE /interview/{session_id}`: Deletes interview session and cascades child answers, evaluations, and voice/visual metrics.
 
 ### Analytics & Reports (User-Scoped)
-- `GET /report/{session_id}`: Returns full performance report payload including radar chart points, voice metrics, verification risk evidence, claim consistency table, and adaptive decision log.
-- `GET /progress`: Returns aggregated interview counts, averages, and multi-session trend history.
+- `GET /report/{session_id}`: Returns full performance report payload including radar chart points, voice metrics, verification risk evidence, claim consistency table, adaptive decision log, chronological timeline events, diagnosed weaknesses, and next practice drill.
+- `GET /progress`: Returns longitudinal readiness profile, recurring weaknesses table, improvement velocity, next practice drill, and multi-session trend history.
+
+### Targeted Practice & Learning Loop (Phase 4, User-Scoped)
+- `GET /practice/recommendations`: Returns active, prioritized practice drill recommendations for the candidate.
+- `POST /practice/start`: Initializes targeted practice session mapping directly to existing interview infrastructure (technical, behavioral, or pressure timer).
+- `POST /practice/{session_id}/complete`: Finalizes targeted practice drill, marks recommendation completed, and computes before-and-after comparability delta.
+
+### Longitudinal Readiness Engine (Phase 4, User-Scoped)
+- `GET /readiness/current`: Returns current smoothed readiness score, data-sufficiency confidence tier, trend, strongest/weakest dimensions, target gap, and linear baseline projection.
+- `GET /readiness/history`: Chronological history of completed session readiness scores with dimension breakdowns.
+- `GET /readiness/forecast`: Returns target gap analysis and linear trajectory projection after repeated practice drills.
 
 ### Fix My Answer
 - `POST /answer/improve`: Refactors weak answer into STAR framework with vocabulary upgrade suggestions.
@@ -374,11 +384,11 @@ npm run dev
 
 ## 8. Verification & Test Suite
 
-The system includes a **57-test automated test suite** across unit, rubric scoring, LLM provider caching/fallback, authentication, user isolation, voice metrics, consent, and cascading deletion:
+The system includes a **159-test automated test suite** across unit, rubric scoring, LLM provider caching/fallback, authentication, user isolation, voice metrics, consent, claim consistency, probe ladder, verification risk, safe pressure mode, extended visual metrics, session timeline, weakness diagnosis, recurring weaknesses, improvement velocity, comparability engine, practice recommendation engine, targeted practice mode, readiness engine, export, and cascading deletion:
 ```bash
 ./venv/bin/pytest tests/
 ```
-All 57 tests pass completely offline without external credentials in < 5 seconds.
+All 159 tests pass completely offline without external credentials or network access.
 
 To run a production frontend build check:
 ```bash
@@ -389,7 +399,49 @@ npm run build
 
 ---
 
-## 9. Privacy Architecture & Sensor Disclosure
+## 9. Phase 4 Performance Intelligence & Learning Loop
+
+Phase 4 makes the entire system adaptive across **TIME** through a 6-stage continuous improvement loop:
+```
+MEASURE ──> DIAGNOSE ──> RECOMMEND ──> PRACTICE ──> RE-MEASURE ──> COMPARE ──> UPDATE READINESS
+```
+
+### 1. Normalized Timeline Representation (`timeline_service.py`)
+Reconstructs an immutable, turn-by-turn chronological progression of the interview session. Emits discrete, observable timeline event tags (`high_specificity`, `low_specificity`, `fast_pacing`, `slow_pacing`, `filler_words`, `safe_pressure_turn`, `claim_probed`, `verification_risk`) paired with turn rubric sub-scores and time offsets.
+
+### 2. Weakness Diagnosis Engine (`weakness_diagnosis_engine.py`)
+Applies deterministic pattern-detection rules over multi-turn session answers:
+- **Communication Taxonomy**: Excessive fillers (`>= 5/answer` or `>= 8/session`), extended pauses (`>= 3.5s`), speed extremes (`< 95 WPM` or `> 165 WPM`).
+- **Technical Depth Taxonomy**: Shallow technical scores (`< 60%` on `>= 2` turns), follow-up score degradation (`>= 15 pt drop` on probe turns).
+- **Resume & Verification Taxonomy**: Elevated verification risk on `>= 2` turns (`resume_unsupported_claims`).
+- **Safe Pressure Taxonomy**: Performance degradation under 45s timer constraint.
+- **Delivery Stability Taxonomy**: Head alignment proxy dropping below 55% across valid sampled frames.
+
+### 3. Longitudinal Recurring Weakness Engine (`recurring_weakness_service.py`)
+Tracks candidate weaknesses across historical sessions. Distinguishes single-session anomalies from persistent patterns by requiring at least 2 sessions (`MIN_SESSIONS_FOR_RECURRING = 2`). Categorizes recurrence severity (`low`, `moderate`, `high`, `critical`) and monitors whether subsequent practice drills resolve the pattern.
+
+### 4. Improvement Velocity & Session Comparability Engine (`velocity_service.py`, `comparability_service.py`)
+Computes longitudinal slope ($\Delta \text{ points} / \text{session}$) strictly over **comparable** sessions:
+- Both sessions completed.
+- Matching target role domain (normalized).
+- Matching interview mode (`technical`, `behavioral`, `pressure`).
+- Minimum answer count ($\ge 2$ answers per session).
+- Difficulty gap $\le 1$ level (e.g. medium $\leftrightarrow$ hard, but not easy $\leftrightarrow$ hard).
+
+### 5. Practice Recommendation Engine & Targeted Practice Mode (`practice_recommendation_engine.py`, `practice.py`)
+Selects and persists prioritized practice drills (`TECHNICAL_DEPTH`, `COMMUNICATION`, `STRUCTURED_ANSWER`, `FOLLOWUP_DEFENSE`, `RESUME_CLAIM_DEFENSE`, `PRESSURE_RESPONSE`) linked to diagnosed weaknesses. Reuses core interview infrastructure for drills, updating drill status (`pending` $\to$ `in_progress` $\to$ `completed`) and evaluating before-and-after comparability deltas upon completion.
+
+### 6. Longitudinal Readiness Engine (`readiness_engine.py`, `readiness.py`)
+Computes smoothed longitudinal readiness ($0-100$) weighted toward recent sessions. Computes data-sufficiency confidence levels:
+- `insufficient_data`: $< 2$ comparable sessions.
+- `low`: $2-3$ comparable sessions.
+- `medium`: $4-6$ comparable sessions (or $\ge 7$ with high variance).
+- `high`: $\ge 7$ comparable sessions with low score variance ($\sigma \le 6.0$) and measured delivery ($\ge 50\%$).
+Provides transparent, bounded **Baseline Projections** based on linear extrapolation (never labeled as "AI predictions").
+
+---
+
+## 10. Privacy Architecture & Sensor Disclosure
 
 The platform enforces strict privacy principles and clear disclosures regarding client-side and cloud-assisted processing:
 
