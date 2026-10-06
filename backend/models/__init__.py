@@ -1,4 +1,6 @@
 from .models import (
+    User,
+    UserProfile,
     Resume,
     InterviewSession,
     QuestionBank,
@@ -6,10 +8,14 @@ from .models import (
     AnswerEvaluation,
     FollowUpQuestion,
     BehavioralMetrics,
-    SessionScore
+    SessionScore,
+    VoiceMetrics,
+    ConsentRecord,
 )
 
 __all__ = [
+    "User",
+    "UserProfile",
     "Resume",
     "InterviewSession",
     "QuestionBank",
@@ -18,4 +24,6 @@ __all__ = [
     "FollowUpQuestion",
     "BehavioralMetrics",
     "SessionScore",
+    "VoiceMetrics",
+    "ConsentRecord",
 ]

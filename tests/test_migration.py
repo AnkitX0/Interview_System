@@ -139,7 +139,24 @@ def test_legacy_pre_alembic_db_upgrades_without_data_loss():
         cur.execute("SELECT version_num FROM alembic_version")
         version_row = cur.fetchone()
         assert version_row is not None
-        assert version_row[0] == '0001_initial_schema'
+        assert version_row[0] == '0002_auth_and_user_scoping'
+
+        # Verify new Phase 2 tables and columns created
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        tables = [r[0] for r in cur.fetchall()]
+        assert "users" in tables
+        assert "user_profile" in tables
+        assert "voice_metrics" in tables
+        assert "consent_records" in tables
+
+        # Verify user_id added to resumes and interview_sessions
+        cur.execute("PRAGMA table_info(resumes)")
+        resume_cols = [r[1] for r in cur.fetchall()]
+        assert "user_id" in resume_cols
+
+        cur.execute("PRAGMA table_info(interview_sessions)")
+        session_cols = [r[1] for r in cur.fetchall()]
+        assert "user_id" in session_cols
 
         conn.close()
 
