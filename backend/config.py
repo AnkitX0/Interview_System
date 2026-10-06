@@ -118,3 +118,66 @@ TTR_MOVING_WINDOW = 50  # Moving-average TTR window
 PRIVACY_POLICY_VERSION = "2.0"
 DATA_RETENTION_STATEMENT = "Your data is kept until you delete it. You can export or delete your data at any time."
 
+
+# ---------------------------
+# Role Profiles Configuration (Phase 3 Intelligence)
+# ---------------------------
+ROLE_PROFILES = {
+    "Backend Engineer": {
+        "core_skills": [
+            "python", "java", "go", "golang", "c++", "c#", "rust",
+            "fastapi", "django", "flask", "spring", "spring boot", "node.js", "express",
+            "postgresql", "postgres", "mysql", "mongodb", "redis", "cassandra", "dynamodb",
+            "rest api", "restful", "graphql", "microservices", "docker", "kubernetes", "k8s",
+            "distributed systems", "concurrency", "kafka", "rabbitmq", "grpc", "sql"
+        ],
+        "keywords": ["api", "database", "query", "cache", "latency", "throughput", "concurrency", "distributed", "server", "endpoint"]
+    },
+    "Frontend Engineer": {
+        "core_skills": [
+            "javascript", "typescript", "react", "react.js", "vue", "vue.js", "angular",
+            "next.js", "html", "css", "redux", "tailwind", "webpack", "vite", "responsive design",
+            "accessibility", "browser apis", "state management", "ui", "ux", "jest", "cypress"
+        ],
+        "keywords": ["component", "interface", "dom", "rendering", "styling", "state", "user", "frontend", "client"]
+    },
+    "Full-Stack Engineer": {
+        "core_skills": [
+            "javascript", "typescript", "react", "node.js", "python", "fastapi", "django",
+            "sql", "postgresql", "mongodb", "rest api", "html", "css", "docker", "git", "ci/cd"
+        ],
+        "keywords": ["full-stack", "frontend", "backend", "database", "deployment", "end-to-end"]
+    },
+    "ML Engineer": {
+        "core_skills": [
+            "python", "pytorch", "tensorflow", "keras", "scikit-learn", "numpy", "pandas",
+            "transformers", "nlp", "computer vision", "mlops", "llm", "huggingface", "deep learning",
+            "machine learning", "feature engineering", "model training", "fine-tuning", "onnx"
+        ],
+        "keywords": ["model", "training", "inference", "accuracy", "dataset", "neural", "weights", "loss", "pipeline", "prediction"]
+    },
+    "Data Scientist": {
+        "core_skills": [
+            "python", "sql", "r", "pandas", "numpy", "scikit-learn", "statistics",
+            "tableau", "power bi", "data visualization", "a/b testing", "etl", "machine learning",
+            "data analysis", "big data", "spark", "hadoop", "eda"
+        ],
+        "keywords": ["analysis", "dataset", "hypothesis", "metrics", "statistical", "regression", "insights", "dashboard"]
+    },
+    "DevOps Engineer": {
+        "core_skills": [
+            "linux", "docker", "kubernetes", "k8s", "terraform", "ansible", "ci/cd",
+            "aws", "gcp", "azure", "prometheus", "grafana", "git", "bash", "shell",
+            "nginx", "helm", "networking", "infrastructure", "security"
+        ],
+        "keywords": ["pipeline", "cluster", "deploy", "monitoring", "alerting", "infrastructure", "container", "automation"]
+    },
+    "Software Engineer": {
+        "core_skills": [
+            "python", "java", "c++", "javascript", "sql", "git", "data structures",
+            "algorithms", "oop", "system design", "rest api", "docker", "testing", "linux"
+        ],
+        "keywords": ["software", "development", "code", "design", "refactor", "test", "implementation"]
+    },
+}
+
