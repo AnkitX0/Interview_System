@@ -11,6 +11,7 @@ import {
   Legend,
 } from "recharts";
 import { apiFetch } from "../utils/api";
+import NextPracticeBanner from "../components/NextPracticeBanner";
 
 function Progress() {
   const navigate = useNavigate();
@@ -29,7 +30,6 @@ function Progress() {
       })
       .catch((err) => {
         console.warn("Progress fetch fallback:", err);
-        // Fallback empty state
         setData({
           total_interviews: 0,
           average_readiness_score: 0,
@@ -39,6 +39,10 @@ function Progress() {
           weakest_category: "N/A",
           sessions: [],
           trend: [],
+          longitudinal_readiness: null,
+          recurring_weaknesses: [],
+          improvement_velocity: null,
+          next_practice: [],
         });
         setLoading(false);
       });
@@ -47,31 +51,47 @@ function Progress() {
   if (loading) {
     return (
       <div style={{ textAlign: "center", padding: "80px 0" }}>
-        <h3 style={{ fontSize: "20px", color: "#0f172a" }}>Loading Candidate Progress History...</h3>
+        <h3 style={{ fontSize: "20px", color: "#0f172a" }}>Loading Candidate Performance Intelligence...</h3>
+        <p style={{ color: "#64748b", marginTop: "8px" }}>Evaluating longitudinal trajectory and recurring weaknesses.</p>
       </div>
     );
   }
 
   const hasData = data && data.total_interviews > 0;
+  const longi = data?.longitudinal_readiness;
+  const velocity = data?.improvement_velocity;
+  const recurring = data?.recurring_weaknesses || [];
+
+  const getConfidenceBadgeColor = (conf) => {
+    if (conf === "high") return { bg: "#dcfce7", color: "#166534" };
+    if (conf === "medium") return { bg: "#dbeafe", color: "#1e40af" };
+    if (conf === "low") return { bg: "#fef3c7", color: "#92400e" };
+    return { bg: "#f1f5f9", color: "#475569" };
+  };
+
+  const getTrendBadgeColor = (trend) => {
+    if (trend === "improving") return { bg: "#dcfce7", color: "#166534" };
+    if (trend === "declining") return { bg: "#fee2e2", color: "#991b1b" };
+    return { bg: "#f1f5f9", color: "#334155" };
+  };
 
   return (
     <div style={{ maxWidth: "1100px", margin: "0 auto", paddingBottom: "70px" }}>
       {/* HEADER */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "25px" }}>
         <div>
-          <h1 style={{ fontSize: "28px", color: "#0f172a" }}>Interview Performance & Growth History</h1>
+          <h1 style={{ fontSize: "28px", color: "#0f172a" }}>Performance Intelligence & Learning Loop</h1>
           <p style={{ color: "#64748b", marginTop: "4px" }}>
-            Track readiness score trajectories and competency development across sessions.
+            Longitudinal readiness estimation, recurring weakness diagnosis, and targeted practice prescribing.
           </p>
         </div>
 
         <button onClick={() => navigate("/setup")} style={primaryBtn}>
-          Start New Interview →
+          Start Full Interview →
         </button>
       </div>
 
       {!hasData ? (
-        /* SENSIBLE EMPTY STATE */
         <div style={{ ...cardStyle, textAlign: "center", padding: "60px 20px" }}>
           <div style={{ fontSize: "44px", marginBottom: "12px" }}>📊</div>
           <h3 style={{ fontSize: "20px", color: "#0f172a" }}>No Interview Sessions Recorded Yet</h3>
@@ -84,6 +104,112 @@ function Progress() {
         </div>
       ) : (
         <>
+          {/* NEXT BEST PRACTICE BANNER */}
+          {data.next_practice && data.next_practice.length > 0 && (
+            <NextPracticeBanner
+              recommendations={data.next_practice}
+              targetRole={data.sessions?.[0]?.target_role}
+            />
+          )}
+
+          {/* LONGITUDINAL READINESS & VELOCITY PROFILE */}
+          {longi && (
+            <div
+              style={{
+                ...cardStyle,
+                marginBottom: "25px",
+                borderLeft: "4px solid #2563eb",
+                backgroundColor: "#f8fafc",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
+                    <span style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", color: "#64748b" }}>
+                      Longitudinal Readiness Engine
+                    </span>
+                    {longi.confidence && (
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: "700",
+                          textTransform: "uppercase",
+                          padding: "2px 8px",
+                          borderRadius: "4px",
+                          backgroundColor: getConfidenceBadgeColor(longi.confidence).bg,
+                          color: getConfidenceBadgeColor(longi.confidence).color,
+                        }}
+                      >
+                        Confidence: {longi.confidence.replace("_", " ")}
+                      </span>
+                    )}
+                    {longi.trend && (
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: "700",
+                          textTransform: "uppercase",
+                          padding: "2px 8px",
+                          borderRadius: "4px",
+                          backgroundColor: getTrendBadgeColor(longi.trend).bg,
+                          color: getTrendBadgeColor(longi.trend).color,
+                        }}
+                      >
+                        Trend: {longi.trend}
+                      </span>
+                    )}
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "12px" }}>
+                    <div style={{ fontSize: "36px", fontWeight: "800", color: "#0f172a" }}>
+                      {longi.current_readiness ?? data.latest_score}
+                    </div>
+                    <div style={{ fontSize: "16px", color: "#64748b" }}>/100 readiness estimate</div>
+                    {velocity && velocity.status === "computed" && (
+                      <div style={{ fontSize: "13px", color: velocity.readiness_delta >= 0 ? "#16a34a" : "#dc2626", fontWeight: "600" }}>
+                        ({velocity.readiness_delta >= 0 ? "+" : ""}{velocity.readiness_delta} pts across {velocity.sessions_count} comparable sessions)
+                      </div>
+                    )}
+                  </div>
+
+                  <p style={{ fontSize: "13px", color: "#475569", marginTop: "6px" }}>
+                    {longi.trend_description}
+                  </p>
+                </div>
+
+                {longi.target && (
+                  <div
+                    style={{
+                      backgroundColor: "#ffffff",
+                      padding: "14px 18px",
+                      borderRadius: "8px",
+                      border: "1px solid #e2e8f0",
+                      minWidth: "260px",
+                    }}
+                  >
+                    <div style={{ fontSize: "11px", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>
+                      Target Readiness: {longi.target.threshold}%
+                    </div>
+                    <div style={{ fontSize: "18px", fontWeight: "700", color: longi.target.gap <= 0 ? "#16a34a" : "#0f172a", marginTop: "4px" }}>
+                      {longi.target.gap <= 0 ? "Target Achieved" : `${longi.target.gap} points away`}
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#64748b", marginTop: "4px", lineHeight: "1.4" }}>
+                      {longi.target.message}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Baseline Projection notice */}
+              {longi.projection && longi.projection.is_meaningful && (
+                <div style={{ marginTop: "14px", paddingTop: "12px", borderTop: "1px solid #e2e8f0", fontSize: "12px", color: "#475569" }}>
+                  <strong style={{ color: "#0f172a" }}>{longi.projection.type}: </strong>
+                  {longi.projection.description}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* STAT CARDS ROW */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "14px", marginBottom: "25px" }}>
             <MetricCard title="Total Sessions" value={data.total_interviews} subtitle="Attempts logged" />
@@ -98,7 +224,101 @@ function Progress() {
             />
           </div>
 
-          {/* TREND CHART */}
+          {/* RECURRING WEAKNESS HISTORY TABLE */}
+          {recurring.length > 0 && (
+            <div style={{ ...cardStyle, marginBottom: "25px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                <div>
+                  <h3 style={sectionTitle}>Recurring Weakness Diagnosis & Trajectory</h3>
+                  <p style={{ fontSize: "12px", color: "#64748b", marginTop: "2px" }}>
+                    Longitudinal patterns tracked across consecutive comparable sessions
+                  </p>
+                </div>
+                <span style={{ fontSize: "12px", color: "#64748b" }}>
+                  {recurring.filter((w) => w.recurring).length} Recurring • {recurring.length} Total Tracked
+                </span>
+              </div>
+
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid #e2e8f0", textAlign: "left", color: "#64748b" }}>
+                      <th style={{ padding: "10px 14px" }}>Weakness & Root Diagnosis</th>
+                      <th style={{ padding: "10px 14px" }}>Dimension</th>
+                      <th style={{ padding: "10px 14px" }}>Occurrences</th>
+                      <th style={{ padding: "10px 14px" }}>Severity</th>
+                      <th style={{ padding: "10px 14px" }}>Trend</th>
+                      <th style={{ padding: "10px 14px" }}>Recommended Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recurring.map((w) => (
+                      <tr key={w.weakness_id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                        <td style={{ padding: "12px 14px" }}>
+                          <div style={{ fontWeight: "600", color: "#0f172a" }}>
+                            {w.root_weakness || w.weakness_id}
+                          </div>
+                          <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
+                            {w.symptom}
+                          </div>
+                        </td>
+                        <td style={{ padding: "12px 14px", textTransform: "capitalize", color: "#475569" }}>
+                          {w.dimension}
+                        </td>
+                        <td style={{ padding: "12px 14px" }}>
+                          <span
+                            style={{
+                              fontSize: "12px",
+                              fontWeight: "700",
+                              padding: "2px 8px",
+                              borderRadius: "4px",
+                              backgroundColor: w.recurring ? "#fee2e2" : "#f1f5f9",
+                              color: w.recurring ? "#991b1b" : "#475569",
+                            }}
+                          >
+                            {w.occurrence_count} / {w.total_sessions_analyzed || data.total_interviews} sessions
+                            {w.recurring ? " (Recurring)" : ""}
+                          </span>
+                        </td>
+                        <td style={{ padding: "12px 14px" }}>
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: "700",
+                              textTransform: "uppercase",
+                              padding: "2px 6px",
+                              borderRadius: "4px",
+                              backgroundColor: w.latest_severity === "high" ? "#fee2e2" : "#fef3c7",
+                              color: w.latest_severity === "high" ? "#991b1b" : "#92400e",
+                            }}
+                          >
+                            {w.latest_severity}
+                          </span>
+                        </td>
+                        <td style={{ padding: "12px 14px" }}>
+                          <span
+                            style={{
+                              fontSize: "12px",
+                              fontWeight: "600",
+                              color: w.trend === "improving" ? "#16a34a" : w.trend === "worsening" ? "#dc2626" : "#64748b",
+                            }}
+                          >
+                            {w.trend}
+                          </span>
+                          <div style={{ fontSize: "11px", color: "#94a3b8" }}>{w.trend_explanation}</div>
+                        </td>
+                        <td style={{ padding: "12px 14px", color: "#2563eb", fontWeight: "500", fontSize: "12px" }}>
+                          {w.recommended_action?.practice_type?.replace(/_/g, " ") || "Targeted Drill"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* MULTI-SESSION SCORE TRAJECTORY CHART */}
           <div style={{ ...cardStyle, marginBottom: "25px" }}>
             <h3 style={sectionTitle}>Multi-Session Score Trajectory</h3>
             <p style={{ fontSize: "12px", color: "#64748b", marginBottom: "16px" }}>
@@ -155,28 +375,27 @@ function Progress() {
                         </span>
                       </td>
                       <td style={{ padding: "12px 14px" }}>
-                        <span style={statusTag}>
-                          {s.status}
-                        </span>
+                        <span style={statusTag}>{s.status}</span>
                       </td>
                       <td style={{ padding: "12px 14px", textAlign: "right" }}>
                         <div style={{ display: "inline-flex", gap: "8px" }}>
                           <button
-                            onClick={() => navigate(`/dashboard?sessionId=${s.session_id}`)}
+                            onClick={() => navigate(`/report?sessionId=${s.session_id}`, { state: { sessionId: s.session_id } })}
                             style={viewBtn}
                           >
-                            View Report →
+                            View Report
                           </button>
                           <button
                             onClick={async () => {
-                              if (window.confirm(`Delete Interview Session #${s.session_id}?`)) {
+                              if (window.confirm(`Permanently delete interview session #${s.session_id}?`)) {
                                 try {
                                   const res = await apiFetch(`/interview/${s.session_id}`, { method: "DELETE" });
                                   if (res.ok) {
                                     setData((prev) => ({
                                       ...prev,
-                                      total_interviews: Math.max(0, prev.total_interviews - 1),
+                                      total_interviews: prev.total_interviews - 1,
                                       sessions: prev.sessions.filter((item) => item.session_id !== s.session_id),
+                                      trend: prev.trend.filter((item) => item.session_id !== s.session_id),
                                     }));
                                   }
                                 } catch (err) {

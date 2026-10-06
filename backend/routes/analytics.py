@@ -10,6 +10,11 @@ from backend.services.auth_service import get_current_user
 from backend.services.answer_improvement_service import improve_interview_answer
 from backend.services.scoring_engine import evaluate_rubric_for_answer
 from backend.services.timeline_service import generate_session_timeline
+from backend.services.weakness_diagnosis_engine import diagnose_session_weaknesses, get_performance_dimension_model
+from backend.services.recurring_weakness_service import aggregate_user_weaknesses, get_recurring_weaknesses
+from backend.services.velocity_service import calculate_improvement_velocity
+from backend.services.practice_recommendation_engine import select_next_practice
+from backend.services.readiness_engine import compute_longitudinal_readiness
 from backend.config import VERIFICATION_RISK_CONFIG
 
 router = APIRouter(tags=["Analytics & Reports"])
@@ -321,7 +326,11 @@ def get_session_report(
         "answers": answer_evals,
         "decision_log": decision_log,
         "claim_consistency": claim_records,
-        "timeline": generate_session_timeline(session.id, db)
+        "timeline": generate_session_timeline(session.id, db),
+        "performance_dimensions": get_performance_dimension_model(session.id, db),
+        "session_weaknesses": diagnose_session_weaknesses(session.id, db),
+        "recurring_weaknesses": get_recurring_weaknesses(user.id, db),
+        "next_practice": select_next_practice(user.id, db, source_session_id=session.id, save_to_db=False)
     }
 
 
@@ -391,6 +400,10 @@ def get_progress_data(
     latest_score = round(scores[-1], 1) if scores else 0
     first_score = scores[0] if scores else 0
     improvement = round(((latest_score - first_score) / max(first_score, 1)) * 100, 1) if len(scores) > 1 else 0.0
+    longitudinal = compute_longitudinal_readiness(user.id, db)
+    user_weaknesses = aggregate_user_weaknesses(user.id, db)
+    velocity = calculate_improvement_velocity(user.id, db)
+    next_practice = select_next_practice(user.id, db, save_to_db=False)
 
     return {
         "total_interviews": len(sessions),
@@ -398,9 +411,14 @@ def get_progress_data(
         "best_score": best_score,
         "latest_score": latest_score,
         "improvement_percentage": improvement,
-        "weakest_category": "Technical Depth",
+        "weakest_category": longitudinal.get("weakest_dimension", "Technical Depth"),
+        "strongest_category": longitudinal.get("strongest_dimension", "Communication"),
         "sessions": list(reversed(session_list)),
-        "trend": trend_data
+        "trend": trend_data,
+        "longitudinal_readiness": longitudinal,
+        "recurring_weaknesses": user_weaknesses,
+        "improvement_velocity": velocity,
+        "next_practice": next_practice
     }
 
 

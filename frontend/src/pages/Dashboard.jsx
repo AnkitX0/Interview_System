@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import { ReportContext } from "../context/ReportContext";
 import { apiFetch } from "../utils/api";
+import NextPracticeBanner from "../components/NextPracticeBanner";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -203,6 +204,13 @@ function Dashboard() {
           </button>
         </div>
       </div>
+
+      {/* NEXT BEST PRACTICE BANNER */}
+      <NextPracticeBanner
+        recommendations={report.next_practice}
+        targetRole={report.target_role}
+        difficulty={report.difficulty}
+      />
 
       {/* TOP SUMMARY CARDS */}
       <div style={{ display: "grid", gridTemplateColumns: "1.3fr 2fr", gap: "20px" }}>
