@@ -160,12 +160,45 @@ function Progress() {
                         </span>
                       </td>
                       <td style={{ padding: "12px 14px", textAlign: "right" }}>
-                        <button
-                          onClick={() => navigate(`/dashboard?sessionId=${s.session_id}`)}
-                          style={viewBtn}
-                        >
-                          View Report →
-                        </button>
+                        <div style={{ display: "inline-flex", gap: "8px" }}>
+                          <button
+                            onClick={() => navigate(`/dashboard?sessionId=${s.session_id}`)}
+                            style={viewBtn}
+                          >
+                            View Report →
+                          </button>
+                          <button
+                            onClick={async () => {
+                              if (window.confirm(`Delete Interview Session #${s.session_id}?`)) {
+                                try {
+                                  const res = await apiFetch(`/interview/${s.session_id}`, { method: "DELETE" });
+                                  if (res.ok) {
+                                    setData((prev) => ({
+                                      ...prev,
+                                      total_interviews: Math.max(0, prev.total_interviews - 1),
+                                      sessions: prev.sessions.filter((item) => item.session_id !== s.session_id),
+                                    }));
+                                  }
+                                } catch (err) {
+                                  alert(`Could not delete session: ${err.message}`);
+                                }
+                              }
+                            }}
+                            style={{
+                              padding: "6px 10px",
+                              backgroundColor: "rgba(239, 68, 68, 0.08)",
+                              color: "#dc2626",
+                              border: "1px solid rgba(239, 68, 68, 0.2)",
+                              borderRadius: "6px",
+                              fontSize: "12px",
+                              fontWeight: "600",
+                              cursor: "pointer",
+                            }}
+                            title="Delete session"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

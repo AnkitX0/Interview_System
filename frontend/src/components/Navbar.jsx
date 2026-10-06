@@ -17,6 +17,7 @@ function Navbar() {
     { to: "/dashboard", label: "Report" },
     { to: "/fix-answer", label: "Fix My Answer" },
     { to: "/progress", label: "Progress" },
+    { to: "/history", label: "History" },
   ];
 
   return (

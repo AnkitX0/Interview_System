@@ -11,6 +11,7 @@ import Interview from "./pages/Interview";
 import Dashboard from "./pages/Dashboard";
 import FixAnswer from "./pages/FixAnswer";
 import Progress from "./pages/Progress";
+import History from "./pages/History";
 import InterviewSetup from "./pages/InterviewSetup";
 
 function App() {
@@ -78,6 +79,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Progress />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/history"
+              element={
+                <ProtectedRoute>
+                  <History />
                 </ProtectedRoute>
               }
             />

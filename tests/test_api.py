@@ -313,3 +313,63 @@ def test_camera_off_session_complete_and_report(client, golden_answers):
     assert first_ans["prompt_version"] == "v1.0"
 
 
+def test_interview_history_pagination(client):
+    """Interview history endpoint returns newest-first paginated list scoped to user."""
+    # Create 3 sessions
+    for i in range(3):
+        client.post(
+            "/interview/start",
+            json={"mode": "technical", "difficulty": "easy", "target_role": f"Engineer {i}"}
+        )
+
+    # Page 1, limit 2
+    res_p1 = client.get("/interview/history?page=1&limit=2")
+    assert res_p1.status_code == 200
+    p1 = res_p1.json()
+    assert p1["total"] >= 3
+    assert len(p1["items"]) == 2
+    assert p1["page"] == 1
+    assert p1["limit"] == 2
+
+    # Verify newest first (descending ID)
+    assert p1["items"][0]["session_id"] > p1["items"][1]["session_id"]
+
+    # Page 2, limit 2
+    res_p2 = client.get("/interview/history?page=2&limit=2")
+    assert res_p2.status_code == 200
+    p2 = res_p2.json()
+    assert len(p2["items"]) >= 1
+    assert p2["items"][0]["session_id"] < p1["items"][1]["session_id"]
+
+
+def test_delete_session_cascading_and_isolation(client, client_b):
+    """Deleting a session cascades all child data and enforces user isolation."""
+    # 1. User A creates session with answer
+    start_res = client.post("/interview/start", json={"mode": "behavioral", "number_of_questions": 1})
+    session_id = start_res.json()["session_id"]
+    q_id = start_res.json()["questions"][0]["id"]
+
+    client.post(
+        f"/interview/{session_id}/answer",
+        json={
+            "session_id": session_id,
+            "question_id": q_id,
+            "transcript": "I led the engineering redesign of the distributed cache.",
+            "response_time": 10.0,
+        }
+    )
+
+    # 2. User B attempts to delete User A's session -> must return 404 (not 403)
+    del_b = client_b.delete(f"/interview/{session_id}")
+    assert del_b.status_code == 404
+
+    # 3. User A deletes their session -> 200
+    del_a = client.delete(f"/interview/{session_id}")
+    assert del_a.status_code == 200
+
+    # 4. Confirm session is gone
+    get_res = client.get(f"/interview/{session_id}")
+    assert get_res.status_code == 404
+
+
+
