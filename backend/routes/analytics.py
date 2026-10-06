@@ -260,6 +260,34 @@ def get_session_report(
             "timestamp": d.created_at.isoformat() if d.created_at else None,
         })
 
+    # Query per-claim consistency records
+    claim_cons_list = db.query(models.ClaimConsistency).filter(
+        models.ClaimConsistency.session_id == session_id
+    ).all()
+    claim_records = []
+    for cc in claim_cons_list:
+        claim_obj = db.query(models.ResumeClaim).filter(models.ResumeClaim.id == cc.claim_id).first()
+        evidence_list = []
+        if cc.evidence:
+            try:
+                evidence_list = json.loads(cc.evidence) if isinstance(cc.evidence, str) else cc.evidence
+            except Exception:
+                pass
+        claim_records.append({
+            "claim_id": cc.claim_id,
+            "claim_text": claim_obj.claim_text if claim_obj else "Resume claim",
+            "claim_type": claim_obj.claim_type if claim_obj else "general",
+            "label": cc.label,
+            "evidence": evidence_list,
+            "answers_considered": cc.answers_considered,
+        })
+
+    consistency_source = (
+        score_record.consistency_source
+        if score_record and hasattr(score_record, "consistency_source") and score_record.consistency_source
+        else "legacy"
+    )
+
     return {
         "session_id": session.id,
         "mode": session.mode,
@@ -270,6 +298,7 @@ def get_session_report(
         "status_label": status_label,
         "delivery_measured": delivery_measured,
         "weights_used": weights_used,
+        "consistency_source": consistency_source,
         "subscores": {
             "communication": comm,
             "technical": tech,
@@ -277,6 +306,7 @@ def get_session_report(
             "delivery_measured": delivery_measured,
             "behavioral": deliv,
             "resume_consistency": cons,
+            "consistency_source": consistency_source,
             "weights_used": weights_used
         },
         "insights": {
@@ -288,8 +318,10 @@ def get_session_report(
         "behavioral_metrics": delivery_metrics_dict,
         "radar_data": radar_data,
         "answers": answer_evals,
-        "decision_log": decision_log
+        "decision_log": decision_log,
+        "claim_consistency": claim_records
     }
+
 
 
 

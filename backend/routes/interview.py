@@ -21,8 +21,10 @@ from backend.services.question_selector import select_questions
 from backend.services.voice_service import compute_voice_metrics
 from backend.services.adaptive_engine import decide_next_question
 from backend.services.verification_risk import compute_verification_risk
+from backend.services.claim_consistency_service import evaluate_session_claim_consistency
 
 router = APIRouter(prefix="/interview", tags=["Interview"])
+
 
 
 
@@ -616,6 +618,12 @@ def complete_interview(
     comm_scores = [e.structure_score for e in evaluations if e.structure_score is not None]
     cons_scores = [e.consistency_score for e in evaluations if e.consistency_score is not None]
 
+    # Evaluate per-claim consistency and derive session consistency score if sufficient turns
+    claim_consistency_res = evaluate_session_claim_consistency(session_id=session.id, db=db)
+    consistency_source = claim_consistency_res["consistency_source"]
+    if consistency_source == "claim_level" and claim_consistency_res["derived_score"] is not None:
+        cons_scores = [claim_consistency_res["derived_score"]]
+
     session_score_data = calculate_session_score(
         answer_scores=overall_scores,
         delivery_score=calculated_deliv_score,
@@ -624,13 +632,14 @@ def complete_interview(
         consistency_scores=cons_scores
     )
 
-    # Persist session score with weights_used
+    # Persist session score with weights_used and consistency_source
     score_record = models.SessionScore(
         session_id=session.id,
         behavioral_score=session_score_data["delivery_score"],
         communication_score=session_score_data["communication_score"],
         technical_score=session_score_data["technical_score"],
         resume_consistency_score=session_score_data["resume_consistency_score"],
+        consistency_source=consistency_source,
         readiness_score=session_score_data["final_readiness_score"],
         weights_used=json.dumps(session_score_data["weights_used"]),
         strongest_category=session_score_data["strongest_category"],
@@ -649,18 +658,22 @@ def complete_interview(
         "readiness_score": session_score_data["final_readiness_score"],
         "delivery_measured": session_score_data["delivery_measured"],
         "weights_used": session_score_data["weights_used"],
+        "consistency_source": consistency_source,
+        "claim_consistency": claim_consistency_res["claim_records"],
         "subscores": {
             "communication": session_score_data["communication_score"],
             "technical": session_score_data["technical_score"],
             "delivery": session_score_data["delivery_score"],
             "delivery_measured": session_score_data["delivery_measured"],
             "behavioral": session_score_data["behavioral_score"],
-            "resume_consistency": session_score_data["resume_consistency_score"]
+            "resume_consistency": session_score_data["resume_consistency_score"],
+            "consistency_source": consistency_source
         },
         "strongest_category": session_score_data["strongest_category"],
         "weakest_category": session_score_data["weakest_category"],
         "insights": session_score_data["insights"]
     }
+
 
 
 # =========================
