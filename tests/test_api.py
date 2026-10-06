@@ -118,3 +118,53 @@ def test_fix_my_answer_endpoint(client):
     assert "star_breakdown" in data
     assert "vocabulary_suggestions" in data
     assert len(data["weaknesses"]) > 0
+
+
+def test_validation_error_consistent_shape(client):
+    """Validation errors must return uniform structure with error code and details."""
+    # Send empty payload to endpoint expecting mandatory fields
+    res = client.post("/interview/followup", json={})
+    assert res.status_code == 422
+    data = res.json()
+    assert "error" in data
+    assert data["error"]["code"] == "VALIDATION_ERROR"
+    assert "message" in data["error"]
+    assert "details" in data["error"]
+    assert len(data["error"]["details"]) > 0
+
+
+def test_not_found_error_consistent_shape(client):
+    """404 errors must return uniform structure."""
+    res = client.get("/interview/999999")
+    assert res.status_code == 404
+    data = res.json()
+    assert "error" in data
+    assert data["error"]["code"] == "NOT_FOUND"
+    assert "message" in data["error"]
+
+
+def test_empty_transcript_safe_handling(client):
+    """Empty or whitespace-only transcript must not cause 500 error or division by zero."""
+    # 1. Start session
+    start_res = client.post("/interview/start", json={"mode": "technical", "number_of_questions": 1})
+    session_id = start_res.json()["session_id"]
+    q_id = start_res.json()["questions"][0]["id"]
+
+    # 2. Submit completely empty transcript with 0 duration
+    ans_res = client.post(
+        f"/interview/{session_id}/answer",
+        json={
+            "session_id": session_id,
+            "question_id": q_id,
+            "transcript": "   ",
+            "response_time": 0.0,
+            "duration_seconds": 0.0,
+            "wpm": 0.0,
+            "filler_count": 0
+        }
+    )
+    assert ans_res.status_code == 200
+    data = ans_res.json()
+    assert data["score"] <= 35.0
+    assert "dimensions" in data
+

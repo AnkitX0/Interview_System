@@ -131,15 +131,29 @@ def submit_answer(data: AnswerInput, session_id: Optional[int] = None, db: Sessi
         if q_record:
             question_text = q_record.question_text
 
+    raw_transcript = (data.transcript or "").strip()
+    resp_time = max(0.0, data.response_time or 0.0)
+    dur_seconds = max(0.0, data.duration_seconds or resp_time)
+
+    # Safe WPM calculation guarded against zero/negative duration
+    if data.wpm is not None and data.wpm > 0.0:
+        safe_wpm = data.wpm
+    elif dur_seconds > 0.0:
+        words_count = len(raw_transcript.split())
+        dur_minutes = dur_seconds / 60.0
+        safe_wpm = round(words_count / dur_minutes, 1) if dur_minutes > 0.0 else 0.0
+    else:
+        safe_wpm = 0.0
+
     answer = models.InterviewAnswer(
         session_id=target_session_id,
         question_id=data.question_id,
         question_text=question_text or "Interview Question",
-        transcript=data.transcript,
-        response_time=data.response_time or 0.0,
-        duration_seconds=data.duration_seconds or data.response_time or 0.0,
-        wpm=data.wpm or 0.0,
-        filler_count=data.filler_count or 0
+        transcript=raw_transcript,
+        response_time=resp_time,
+        duration_seconds=dur_seconds,
+        wpm=safe_wpm,
+        filler_count=max(0, data.filler_count or 0)
     )
 
     db.add(answer)
@@ -149,13 +163,13 @@ def submit_answer(data: AnswerInput, session_id: Optional[int] = None, db: Sessi
     # Evaluate answer using structured rubric
     category = session.mode if session.mode in ["Technical", "HR", "Behavioral", "Pressure"] else "Technical"
     evaluation = evaluate_answer(
-        transcript=data.transcript,
+        transcript=raw_transcript,
         question_text=question_text or "",
         category=category,
         resume_skills=resume_skills,
-        response_time=data.response_time or 0.0,
-        wpm=data.wpm or 0.0,
-        filler_count=data.filler_count or 0
+        response_time=resp_time,
+        wpm=safe_wpm,
+        filler_count=max(0, data.filler_count or 0)
     )
 
     eval_record = models.AnswerEvaluation(

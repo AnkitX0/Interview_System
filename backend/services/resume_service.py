@@ -1,9 +1,12 @@
 import os
 import re
 import json
+import logging
 import subprocess
 import tempfile
 from typing import Dict, Any, List
+
+logger = logging.getLogger(__name__)
 
 KNOWN_SKILLS = {
     "Languages": [
@@ -61,7 +64,7 @@ def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> str:
         if result.returncode == 0 and result.stdout.strip():
             extracted_text = result.stdout
     except Exception as e:
-        print(f"pdftotext error: {e}")
+        logger.warning("pdftotext execution error: %s", e)
     finally:
         if os.path.exists(tmp_path):
             try:
