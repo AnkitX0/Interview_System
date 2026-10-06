@@ -19,6 +19,7 @@ from backend.services.followup_generator import generate_followup
 from backend.services.scoring_engine import calculate_session_score
 from backend.services.question_selector import select_questions
 from backend.services.voice_service import compute_voice_metrics
+from backend.services.adaptive_engine import decide_next_question
 
 router = APIRouter(prefix="/interview", tags=["Interview"])
 
@@ -76,6 +77,16 @@ def start_interview(
         resume_skills=resume_skills,
         target_role=target_role
     )
+
+    init_decision = models.InterviewDecision(
+        session_id=session.id,
+        turn=1,
+        decision="START_SESSION",
+        reason=f"Interview started in {mode} mode ({difficulty}) for role '{target_role}'.",
+        inputs={"mode": mode, "difficulty": difficulty, "target_role": target_role}
+    )
+    db.add(init_decision)
+    db.commit()
 
     return {
         "session_id": session.id,
@@ -396,6 +407,120 @@ def followup(
     return {
         "followup_question": followup_question,
         "followup_count": session.followup_count
+    }
+
+
+# =========================
+# NEXT ADAPTIVE QUESTION & PROBE LADDER
+# =========================
+@router.post("/{session_id}/next")
+def get_next_question(
+    session_id: int,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Evaluates pure deterministic policy to decide the next interview step:
+    advancing a claim-probe ladder (T1->T2->T3->T4), probing a new claim,
+    triggering a challenge scenario, presenting an adjusted bank question,
+    or completing the session.
+    Logs every decision in interview_decisions table.
+    """
+    session = db.query(models.InterviewSession).filter(
+        models.InterviewSession.id == session_id,
+        models.InterviewSession.user_id == user.id
+    ).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+
+    answers = db.query(models.InterviewAnswer).filter(
+        models.InterviewAnswer.session_id == session_id
+    ).order_by(models.InterviewAnswer.id.asc()).all()
+
+    evaluations = []
+    for a in answers:
+        ev = db.query(models.AnswerEvaluation).filter(
+            models.AnswerEvaluation.answer_id == a.id
+        ).first()
+        if ev:
+            evaluations.append(ev)
+
+    claims = []
+    if session.resume_id:
+        claims = db.query(models.ResumeClaim).filter(
+            models.ResumeClaim.resume_id == session.resume_id
+        ).order_by(models.ResumeClaim.probe_priority.desc()).all()
+
+    questions_asked = db.query(models.InterviewQuestion).filter(
+        models.InterviewQuestion.session_id == session_id
+    ).order_by(models.InterviewQuestion.sequence_order.asc()).all()
+
+    decision_res = decide_next_question(
+        session=session,
+        answers=answers,
+        evaluations=evaluations,
+        claims=claims,
+        questions_asked=questions_asked,
+        db=db,
+    )
+
+    decision_record = models.InterviewDecision(
+        session_id=session.id,
+        turn=len(questions_asked) + 1,
+        decision=decision_res.decision,
+        reason=decision_res.reason,
+        inputs=decision_res.inputs,
+    )
+    db.add(decision_record)
+    db.flush()
+
+    if decision_res.decision == "COMPLETE_SESSION":
+        session.status = "completed"
+        db.commit()
+        return {
+            "done": True,
+            "message": "Interview session completed",
+            "decision": {
+                "decision": decision_res.decision,
+                "reason": decision_res.reason,
+            }
+        }
+
+    q_rec = models.InterviewQuestion(
+        session_id=session.id,
+        sequence_order=len(questions_asked) + 1,
+        question_text=decision_res.question_text,
+        question_type=decision_res.question_type,
+        source=decision_res.source,
+        claim_id=decision_res.claim_id,
+        ladder_stage=decision_res.ladder_stage,
+        difficulty=decision_res.difficulty,
+        time_limit_seconds=decision_res.time_limit_seconds,
+        generated_reason=decision_res.reason,
+    )
+    db.add(q_rec)
+    session.current_question_index = len(questions_asked) + 1
+    db.commit()
+    db.refresh(q_rec)
+
+    return {
+        "done": False,
+        "question": {
+            "id": q_rec.id,
+            "question": q_rec.question_text,
+            "question_type": q_rec.question_type,
+            "source": q_rec.source,
+            "ladder_stage": q_rec.ladder_stage,
+            "claim_id": q_rec.claim_id,
+            "difficulty": q_rec.difficulty,
+            "time_limit_seconds": q_rec.time_limit_seconds,
+            "sequence_order": q_rec.sequence_order,
+            "generated_reason": q_rec.generated_reason,
+        },
+        "decision": {
+            "decision": decision_record.decision,
+            "reason": decision_record.reason,
+        }
     }
 
 

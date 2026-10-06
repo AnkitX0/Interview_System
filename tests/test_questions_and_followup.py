@@ -60,3 +60,141 @@ def test_followup_generator_rules():
         answer="In our team, we evaluated architectural tradeoffs between PostgreSQL and MongoDB for 500k daily users. I disagreed with my team lead regarding document nesting, and we resolved the conflict through benchmarking."
     )
     assert "communication" in fu_conflict.lower() or "stakeholder" in fu_conflict.lower()
+
+
+# ===========================================================================
+# PHASE 3: ADAPTIVE PROBE LADDER & DECISION POLICY TESTS
+# ===========================================================================
+
+def test_adaptive_probe_ladder_and_next_flow(client, golden_answers):
+    """
+    Test adaptive /interview/{session_id}/next flow:
+    1. Upload resume with high-priority claim.
+    2. Start interview linked to resume.
+    3. Call /next -> policy initiates PROBE_CLAIM on T1_FOUNDATION.
+    4. Submit strong answer.
+    5. Call /next -> policy advances to T2_TRADE_OFFS.
+    6. Verify interview_decisions rows logged with reasons and inputs.
+    """
+    # 1. Upload resume
+    res = client.post(
+        "/resume/upload",
+        data={
+            "raw_text": """
+            Alex Turner
+            EXPERIENCE
+            - Architected distributed event stream processing with Kafka and Redis serving 40,000 requests per second.
+            - Reduced database p99 latency by 50% using PostgreSQL connection pooling.
+            SKILLS
+            Python, Kafka, Redis, PostgreSQL, Docker
+            """
+        }
+    )
+    assert res.status_code == 200
+    resume_id = res.json()["id"]
+
+    # 2. Start session with resume
+    start_res = client.post(
+        "/interview/start",
+        json={
+            "mode": "technical",
+            "difficulty": "medium",
+            "number_of_questions": 3,
+            "resume_id": resume_id,
+            "target_role": "Backend Engineer"
+        }
+    )
+    assert start_res.status_code == 200
+    session_id = start_res.json()["session_id"]
+
+    # 3. Call /next for dynamic question
+    next_res_1 = client.post(f"/interview/{session_id}/next")
+    assert next_res_1.status_code == 200
+    n1 = next_res_1.json()
+    assert n1["done"] is False
+    assert n1["question"]["source"] == "resume_claim"
+    assert n1["question"]["ladder_stage"] == "T1_FOUNDATION"
+    assert "PROBE_CLAIM" in n1["decision"]["decision"]
+
+    # 4. Submit answer to T1
+    client.post(
+        f"/interview/{session_id}/answer",
+        json={
+            "session_id": session_id,
+            "question_id": n1["question"]["id"],
+            "question_text": n1["question"]["question"],
+            "transcript": golden_answers["strong"],
+            "response_time": 25.0,
+        }
+    )
+
+    # 5. Call /next again -> advances to T2_TRADE_OFFS
+    next_res_2 = client.post(f"/interview/{session_id}/next")
+    assert next_res_2.status_code == 200
+    n2 = next_res_2.json()
+    assert n2["done"] is False
+    assert n2["question"]["ladder_stage"] == "T2_TRADE_OFFS"
+    assert n2["decision"]["decision"] == "ADVANCE_LADDER"
+    assert "T2_TRADE_OFFS" in n2["decision"]["reason"]
+
+    # 6. Submit answer to T2
+    client.post(
+        f"/interview/{session_id}/answer",
+        json={
+            "session_id": session_id,
+            "question_id": n2["question"]["id"],
+            "question_text": n2["question"]["question"],
+            "transcript": golden_answers["strong"],
+            "response_time": 30.0,
+        }
+    )
+
+    # 7. Call /next -> advances to T3_INCIDENT
+    next_res_3 = client.post(f"/interview/{session_id}/next")
+    assert next_res_3.status_code == 200
+    n3 = next_res_3.json()
+    assert n3["done"] is False
+    assert n3["question"]["ladder_stage"] == "T3_INCIDENT"
+    assert n3["decision"]["decision"] == "ADVANCE_LADDER"
+
+    # 8. Submit 3rd answer (reaching total_questions = 3)
+    client.post(
+        f"/interview/{session_id}/answer",
+        json={
+            "session_id": session_id,
+            "question_id": n3["question"]["id"],
+            "question_text": n3["question"]["question"],
+            "transcript": golden_answers["strong"],
+            "response_time": 20.0,
+        }
+    )
+
+    # 9. Calling /next when total questions answered -> returns done: True
+    next_res_final = client.post(f"/interview/{session_id}/next")
+    assert next_res_final.status_code == 200
+    assert next_res_final.json()["done"] is True
+    assert next_res_final.json()["decision"]["decision"] == "COMPLETE_SESSION"
+
+
+def test_difficulty_stepping_logic():
+    """Verify calculate_adjusted_difficulty steps up on strong scores and steps down on weak."""
+    from backend.services.adaptive_engine import calculate_adjusted_difficulty
+    import backend.models as models
+
+    # 1. High scores >= 80 -> step up
+    ev_strong = [
+        models.AnswerEvaluation(overall_score=85.0),
+        models.AnswerEvaluation(overall_score=88.0),
+    ]
+    assert calculate_adjusted_difficulty(ev_strong, "easy") == "medium"
+    assert calculate_adjusted_difficulty(ev_strong, "medium") == "hard"
+    assert calculate_adjusted_difficulty(ev_strong, "hard") == "hard"  # ceiling
+
+    # 2. Low scores < 60 -> step down
+    ev_weak = [
+        models.AnswerEvaluation(overall_score=50.0),
+        models.AnswerEvaluation(overall_score=45.0),
+    ]
+    assert calculate_adjusted_difficulty(ev_weak, "hard") == "medium"
+    assert calculate_adjusted_difficulty(ev_weak, "medium") == "easy"
+    assert calculate_adjusted_difficulty(ev_weak, "easy") == "easy"  # floor
