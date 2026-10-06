@@ -65,6 +65,13 @@ class AnswerInput(BaseModel):
     filler_count: Optional[int] = 0
     speech_segments: Optional[List[Dict[str, float]]] = None
     speech_source: Optional[str] = "speech"
+    visual_metrics: Optional[Dict[str, Any]] = None
+    head_alignment_percent: Optional[float] = None
+    blink_rate: Optional[float] = None
+    head_movement_variance: Optional[float] = None
+    face_visibility_ratio: Optional[float] = None
+    head_shift_count: Optional[int] = None
+    frames_sampled: Optional[int] = None
 
 
 # ---------------------------

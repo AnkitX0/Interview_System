@@ -69,6 +69,15 @@ function Interview() {
   const eyeContactFramesRef = useRef(0);
   const interviewStartRef = useRef(Date.now());
   const questionStartTimeRef = useRef(Date.now());
+  const answerVisualFramesRef = useRef({
+    totalSampled: 0,
+    faceDetected: 0,
+    alignedCount: 0,
+    blinks: 0,
+    positions: [],
+    lastPosition: null,
+    shifts: 0,
+  });
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -95,6 +104,15 @@ function Interview() {
     questionStartTimeRef.current = Date.now();
     speechSegmentsRef.current = [];
     currentSpeechStartRef.current = null;
+    answerVisualFramesRef.current = {
+      totalSampled: 0,
+      faceDetected: 0,
+      alignedCount: 0,
+      blinks: 0,
+      positions: [],
+      lastPosition: null,
+      shifts: 0,
+    };
   }, [currentIndex, isFollowUp]);
 
   // Initialize Speech Recognition (Web Speech API)
@@ -268,7 +286,11 @@ function Interview() {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+          const vt = answerVisualFramesRef.current;
+          vt.totalSampled++;
+
           if (results.multiFaceLandmarks?.length > 0) {
+            vt.faceDetected++;
             const landmarks = results.multiFaceLandmarks[0];
 
             // Eye Contact calculation
@@ -279,10 +301,22 @@ function Interview() {
             totalFramesRef.current++;
             if (Math.abs(noseX - centerX) < 65) {
               eyeContactFramesRef.current++;
+              vt.alignedCount++;
               setEyeContact(true);
             } else {
               setEyeContact(false);
             }
+
+            // Head movement variance and abrupt shift tracking
+            vt.positions.push({ x: nose.x, y: nose.y });
+            if (vt.lastPosition) {
+              const dx = nose.x - vt.lastPosition.x;
+              const dy = nose.y - vt.lastPosition.y;
+              if (Math.sqrt(dx * dx + dy * dy) > 0.08) {
+                vt.shifts++;
+              }
+            }
+            vt.lastPosition = { x: nose.x, y: nose.y };
 
             // Blink Detection
             const leftEyeTop = landmarks[159];
@@ -297,6 +331,7 @@ function Interview() {
             if (eyeRatio < 0.20) {
               if (!blinkRef.current) {
                 setBlinkCount((prev) => prev + 1);
+                vt.blinks++;
                 blinkRef.current = true;
               }
             } else {
@@ -385,6 +420,33 @@ function Interview() {
     const responseDuration = (Date.now() - questionStartTimeRef.current) / 1000;
     const isTyped = inputMode === "text";
 
+    // Compute client-side FaceMesh aggregates for this turn
+    const vt = answerVisualFramesRef.current;
+    let visualPayload = null;
+    if (isCameraOn && vt.totalSampled > 0) {
+      const durMinutes = Math.max(0.01, responseDuration / 60);
+      const faceVisRatio = Number((vt.faceDetected / vt.totalSampled).toFixed(3));
+      const headAlignPercent = vt.faceDetected > 0 ? Number(((vt.alignedCount / vt.faceDetected) * 100).toFixed(1)) : 0.0;
+      const calculatedBlinkRate = Number((vt.blinks / durMinutes).toFixed(1));
+
+      let moveVariance = 0.0;
+      if (vt.positions.length > 1) {
+        const meanX = vt.positions.reduce((s, p) => s + p.x, 0) / vt.positions.length;
+        const meanY = vt.positions.reduce((s, p) => s + p.y, 0) / vt.positions.length;
+        const sumSq = vt.positions.reduce((s, p) => s + Math.pow(p.x - meanX, 2) + Math.pow(p.y - meanY, 2), 0);
+        moveVariance = Number((sumSq / vt.positions.length).toFixed(6));
+      }
+
+      visualPayload = {
+        head_alignment_percent: headAlignPercent,
+        blink_rate: calculatedBlinkRate,
+        head_movement_variance: moveVariance,
+        face_visibility_ratio: faceVisRatio,
+        head_shift_count: vt.shifts,
+        frames_sampled: vt.totalSampled,
+      };
+    }
+
     try {
       const payload = {
         session_id: Number(sessionId),
@@ -397,6 +459,7 @@ function Interview() {
         filler_count: fillerCount,
         speech_segments: isTyped ? null : (speechSegmentsRef.current.length > 0 ? speechSegmentsRef.current : null),
         speech_source: isTyped ? "typed" : "speech",
+        visual_metrics: visualPayload,
       };
 
       const res = await apiFetch(`/interview/${sessionId}/answer`, {

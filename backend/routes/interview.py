@@ -22,6 +22,10 @@ from backend.services.voice_service import compute_voice_metrics
 from backend.services.adaptive_engine import decide_next_question
 from backend.services.verification_risk import compute_verification_risk
 from backend.services.claim_consistency_service import evaluate_session_claim_consistency
+from backend.services.visual_metrics_service import (
+    store_answer_visual_metrics,
+    evaluate_visual_quality_gate,
+)
 
 router = APIRouter(prefix="/interview", tags=["Interview"])
 
@@ -404,6 +408,26 @@ def submit_answer(
     )
     db.add(vm_record)
 
+    # Persist extended visual metrics if provided
+    visual_record = store_answer_visual_metrics(answer.id, data, db)
+    visual_info = None
+    if visual_record:
+        v_dict = {
+            "head_alignment_percent": visual_record.head_alignment_percent,
+            "blink_rate": visual_record.blink_rate,
+            "head_movement_variance": visual_record.head_movement_variance,
+            "face_visibility_ratio": visual_record.face_visibility_ratio,
+            "head_shift_count": visual_record.head_shift_count,
+            "frames_sampled": visual_record.frames_sampled,
+        }
+        gate_res = evaluate_visual_quality_gate(v_dict)
+        visual_info = {
+            **v_dict,
+            "quality_status": gate_res["quality_status"],
+            "is_usable": gate_res["is_usable"],
+            "quality_reason": gate_res["reason"],
+        }
+
     session.current_question_index += 1
     session.followup_count = 0
     db.commit()
@@ -421,6 +445,7 @@ def submit_answer(
         "engine_used": evaluation.get("engine_used", "rubric"),
         "prompt_version": evaluation.get("prompt_version", "v1.0"),
         "voice_metrics": voice_metrics,
+        "visual_metrics": visual_info,
         "verification_risk": v_risk,
         "structure_score": evaluation["structure_score"],
         "technical_score": evaluation["technical_score"],

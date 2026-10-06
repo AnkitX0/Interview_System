@@ -263,4 +263,10 @@ PRESSURE_MODE_CONFIG = {
 }
 
 
+# Extended Visual Metrics (client-side FaceMesh aggregates)
+USE_EXTENDED_VISUAL_METRICS_IN_SCORE: bool = False
 
+EXTENDED_VISUAL_QUALITY_GATE = {
+    "min_face_visibility_ratio": 0.60,
+    "min_frames_sampled": 30,
+}
