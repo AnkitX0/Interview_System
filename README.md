@@ -68,6 +68,37 @@ The **AI Interview Intelligence System** bridges the gap between passive intervi
   - Cascading session and resume deletion (`DELETE /interview/{session_id}`, `DELETE /resume/{resume_id}`).
   - Account deletion with password confirmation (`DELETE /auth/account`) permanently removing all user data and child rows.
   - Complete data portability export (`GET /auth/export`) per GDPR/CCPA principles.
+- **Intelligence Layer: Claim-Probe Ladder, Verification Risk & Safe Pressure Mode (Phase 3)**:
+  - **Resume Intelligence Upgrade**:
+    - Normalized entity tables (`resume_skills`, `resume_projects`, `resume_claims`, `resume_flags`).
+    - Evaluates role fit against 4 engineering profiles (`Backend`, `Frontend`, `Fullstack`, `DevOps`).
+    - Computes claim probe priorities (0.0 to 1.0) and highlights interview risk areas.
+    - Explicit re-analysis endpoint: `POST /resume/{id}/reanalyze`.
+  - **Deterministic Claim-Probe Ladder & Adaptive Engine**:
+    - 4-stage technical verification ladder: `T1_FOUNDATION` → `T2_TRADE_OFFS` → `T3_INCIDENT` → `T4_EDGE_CASE`.
+    - `POST /interview/{session_id}/next` dynamically selects next question based on performance and claim priorities.
+    - Rolling difficulty adjustments (`easy`, `medium`, `hard`) based on 3-turn moving average score.
+    - Full decision transparency logged in `interview_decisions` and shown on the dashboard.
+  - **Per-Answer Verification Risk Engine**:
+    - Computes verification risk level (`low`, `moderate`, `elevated`, `not_computed` for answers < 20 words).
+    - Observable indicators: buzzword-to-specifics ratio, lack of technical mechanisms, excessive repetition across answers, and ownership vagueness.
+    - Strict non-accusatory language contract without banned terms.
+  - **Claim Consistency & Dynamic Session Consistency Scoring**:
+    - Evaluates candidate answers against declared resume claims (`consistent`, `weak_support`, `low_consistency`, `insufficient_evidence`).
+    - Sets `session_scores.consistency_source = "claim_level"` when claim evidence is available.
+  - **Safe Pressure Mode**:
+    - Shorter response countdown (default 45s vs 90s) with fast-cadence technical incident challenges.
+    - Setup notice with mandatory candidate acknowledgement.
+    - Always-visible "Switch to practice mode" button (`POST /interview/{session_id}/switch-mode`) relaxing timer to 90s without penalty.
+    - Strict rubric invariance: identical answers receive identical grading across all modes.
+  - **Extended Visual Metrics & Quality Gating**:
+    - Captures per-answer client-side FaceMesh aggregates (`head_alignment_percent`, `blink_rate`, `head_movement_variance`, `face_visibility_ratio`, `head_shift_count`, `frames_sampled`).
+    - Persisted in `answer_visual_metrics`.
+    - Quality gate: `face_visibility_ratio < 0.60` or `frames_sampled < 30` marks metrics as low confidence / unmeasured.
+    - Display-only contract (`USE_EXTENDED_VISUAL_METRICS_IN_SCORE = False`).
+  - **Optional LLM Probe Phrasing**:
+    - LLM used strictly for phrasing probe questions more naturally, never for decision flow or policy.
+    - Strict claim grounding, timeout guards, and deterministic template fallback.
 - **Progress & Session History Tracking**:
   - Historical session audit log (`/history` and `/progress`) with date, mode, difficulty, readiness scores, deep-link report views, and session deletion.
   - Multi-line trend chart tracking Readiness, Technical Depth, Communication, and Behavioral signals across consecutive mock interviews.
@@ -79,7 +110,7 @@ The **AI Interview Intelligence System** bridges the gap between passive intervi
 
 - **Backend**: Python 3.12+ / 3.14, FastAPI, SQLAlchemy 2, Alembic, SQLite (`interview.db`), Pydantic v2, Argon2-cffi, PyJWT, Poppler `pdftotext`, Uvicorn.
 - **Frontend**: React 19, Vite 7, React Router 7, Recharts, MediaPipe FaceMesh & Camera Utils, Web Speech API.
-- **Architecture**: Modular Monolith Service Layer (`auth_service`, `voice_service`, `resume_service`, `scoring_engine`, `question_selector`, `answer_improvement_service`, `evaluation_engine`, `followup_generator`).
+- **Architecture**: Modular Monolith Service Layer (`auth_service`, `voice_service`, `resume_service`, `adaptive_engine`, `verification_risk`, `claim_consistency_service`, `visual_metrics_service`, `probe_rephraser`, `scoring_engine`, `question_selector`, `answer_improvement_service`, `evaluation_engine`, `followup_generator`).
 
 ---
 
@@ -89,10 +120,10 @@ The **AI Interview Intelligence System** bridges the gap between passive intervi
 Frontend (React 19 / Vite)
   ├── Public Routes: Landing (/), Login (/login), Register (/register)
   ├── Protected Routes (ProtectedRoute):
-  │     ├── Resume Intelligence (/resume)
-  │     ├── Interview Setup (/setup) [Privacy Consent Modal]
-  │     ├── Live Mock Interview (/interview) [FaceMesh & Web Speech / Text-Only Mode]
-  │     ├── Performance Report (/dashboard & /report) [Rubric Evidence & Voice Cadence]
+  │     ├── Resume Intelligence (/resume) [Role Fit & Risk Areas]
+  │     ├── Interview Setup (/setup) [Consent Modal & Safe Pressure Notice]
+  │     ├── Live Mock Interview (/interview) [FaceMesh, Web Speech / Text-Only Mode, Adaptive /next]
+  │     ├── Performance Report (/dashboard & /report) [Rubric Evidence, Verification Risk & Claim Audit]
   │     ├── Fix My Answer (/fix-answer)
   │     ├── Session History (/history)
   │     └── Progress Growth (/progress)
@@ -105,21 +136,26 @@ FastAPI Backend (Port 8000)
   │     ├── /auth       (Register, login, logout, me, export, delete account)
   │     ├── /profile    (Get, update candidate profile)
   │     ├── /consent    (Get, record privacy consent logs)
-  │     ├── /resume     (Upload, parse, audit, score, delete)
-  │     ├── /interview  (Start, history, answer, followup, complete, delete)
-  │     ├── /report     (Detailed session analytics, voice metrics, rubric evidence)
+  │     ├── /resume     (Upload, parse, audit, score, reanalyze, delete)
+  │     ├── /interview  (Start, next, switch-mode, answer, followup, complete, delete)
+  │     ├── /report     (Detailed session analytics, voice metrics, rubric evidence, claim verification)
   │     ├── /answer     (STAR refactoring & vocabulary upgrade)
   │     └── /progress   (Cross-session metrics & trajectory)
   ├── Services:
   │     ├── auth_service.py (Argon2, JWT, rate limiting)
+  │     ├── adaptive_engine.py (4-stage probe ladder & rolling difficulty)
+  │     ├── verification_risk.py (Observable evidence signals & risk scoring)
+  │     ├── claim_consistency_service.py (Claim consistency & derived scoring)
+  │     ├── visual_metrics_service.py (Quality gating & per-answer storage)
+  │     ├── probe_rephraser.py (Optional grounded LLM probe phrasing)
   │     ├── voice_service.py (Cadence, pauses, MATTR diversity)
-  │     ├── resume_service.py
+  │     ├── resume_service.py (Role profiles, claim & flag extraction)
   │     ├── scoring_engine.py (Rubric formulas & re-normalization)
-  │     ├── question_selector.py (Resume skill matching)
+  │     ├── question_selector.py (Question bank selection)
   │     └── answer_improvement_service.py (STAR engine)
   └── Database & Migrations:
-        ├── Alembic Migrations (0001 initial, 0002 auth & user scoping)
-        └── SQLite (interview.db / PostgreSQL-ready SQLAlchemy models)
+        ├── Alembic Migrations (0001 initial, 0002 auth, 0003 intelligence layer)
+        └── SQLite (interview.db / PostgreSQL-ready SQLAlchemy models with cascading deletion)
 ```
 
 ---
@@ -179,7 +215,7 @@ Run the complete backend test suite:
 ```bash
 ./venv/bin/pytest tests/
 ```
-All **57 automated unit, scoring, auth, user isolation, voice metrics, consent, migration, and LLM evaluation tests** execute completely offline with zero API keys.
+All **107 automated unit, scoring, auth, user isolation, voice metrics, consent, migration, probe ladder, verification risk, safe pressure, and visual metrics tests** execute completely offline with zero API keys.
 
 Run the frontend production build check:
 ```bash
@@ -222,18 +258,21 @@ VITE_API_URL=http://127.0.0.1:8000
 | `GET`  | `/auth/me` | Current authenticated user and profile | Yes |
 | `GET/PUT` | `/profile` | Get or update user profile preferences | Yes |
 | `GET/POST`| `/consent` | Retrieve or record privacy consent logs | Yes |
-| `GET`  | `/auth/export` | Complete GDPR/CCPA data export (JSON) | Yes |
+| `GET`  | `/auth/export` | Complete GDPR/CCPA data export including all intelligence tables (JSON) | Yes |
 | `DELETE`| `/auth/account` | Permanently delete account with password re-check | Yes |
-| `POST` | `/resume/upload` | Upload PDF/text, parse competencies, audit resume | Yes |
+| `POST` | `/resume/upload` | Upload PDF/text, extract claims & projects, audit resume | Yes |
 | `POST` | `/resume/analyze` | Analyze provided resume text or fetch profile | Yes |
-| `DELETE`| `/resume/{id}` | Permanently delete stored resume | Yes |
-| `POST` | `/interview/start` | Initialize session with resume-aware questions | Yes |
+| `POST` | `/resume/{id}/reanalyze` | Re-run full entity, role fit, and probe priority extraction | Yes |
+| `DELETE`| `/resume/{id}` | Permanently delete stored resume and intelligence rows | Yes |
+| `POST` | `/interview/start` | Initialize session with resume-aware questions & timer | Yes |
+| `POST` | `/interview/{session_id}/next` | Deterministic adaptive next-question policy & ladder advancement | Yes |
+| `POST` | `/interview/{session_id}/switch-mode` | Switch from Safe Pressure Mode to Practice Mode (relaxes to 90s) | Yes |
 | `GET`  | `/interview/history`| Paginated list of past interviews (newest first) | Yes |
-| `POST` | `/interview/{session_id}/answer` | Submit answer with speech segments for evaluation | Yes |
+| `POST` | `/interview/{session_id}/answer` | Submit answer with voice and extended visual metrics | Yes |
 | `POST` | `/interview/followup` | Generate contextual follow-up question | Yes |
 | `POST` | `/interview/{session_id}/complete`| Finalize interview & compute normalized scores | Yes |
 | `DELETE`| `/interview/{session_id}`| Delete interview and cascade child rows | Yes |
-| `GET`  | `/report/{session_id}` | Retrieve report with observable rubric evidence | Yes |
+| `GET`  | `/report/{session_id}` | Retrieve report with observable rubric evidence & claim verification | Yes |
 | `POST` | `/answer/improve` | Refactor weak answer into STAR framework | Yes |
 | `GET`  | `/progress` | Fetch cross-session score trajectories | Yes |
 

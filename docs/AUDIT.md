@@ -332,7 +332,7 @@ All Phase 2 requirements have been fully implemented, tested, and verified on br
    - Added Data Retention Statement across UI and README: *"Your data is kept until you delete it."*
    - Added `tests/test_consent_and_deletion.py` (3 passing tests).
 
-9. **Documentation & Phase 2 Audit Log** (`Current Commit`):
+9. **Documentation & Phase 2 Audit Log** (`fccc79c`):
    - Updated `README.md`, `docs/ARCHITECTURE.md`, and `docs/AUDIT.md`.
 
 ---
@@ -346,4 +346,133 @@ All Phase 2 requirements have been fully implemented, tested, and verified on br
    - All 8 sub-step commits recorded to `phase-2-auth-privacy` git branch.
 2. **Phase 3 Gate**:
    - Stop and wait for user review and approval before proceeding to Phase 3 (Intelligence Layer: Claim-Probe Ladder, Verification Risk, Safe Pressure Mode).
+
+---
+
+### Phase 3: Complete Implementation — Intelligence Layer, Claim-Probe Ladder, Verification Risk, Safe Pressure Mode (FIXED)
+
+All Phase 3 requirements have been fully implemented, tested, and verified on branch `phase-3-intelligence`:
+
+1. **Phase 2 Closeout** (`686d8d7`):
+   - Addressed all security and disclosure items: explicit CSRF double-submit token protection, rate limiting tests, startup guard requiring `SECRET_KEY` in production, explicit CORS origins with credentials, cookie flags (`httpOnly`, `SameSite=Lax`, `Secure` in production), `scripts/claim_legacy_data.py`, and log-hygiene policy.
+   - Privacy copy honesty: Rewrote consent modal, README, and ARCHITECTURE to explicitly disclose that Web Speech API audio processing is delegated to the browser vendor's cloud service and does not stay solely on device; local video frames never leave the browser; server receives only derived text and metrics; text-only mode completely disables both. Bumped `policy_version` to "2.0".
+   - MediaPipe FaceMesh assets: Bundled locally under `frontend/public/mediapipe/face_mesh/` (`face_mesh.binarypb`, `face_mesh_solution_packed_assets_loader.js`, `face_mesh_solution_simd_wasm_bin.js`, `face_mesh_solution_simd_wasm_bin.wasm`, `face_mesh_solution_wasm_bin.js`, `face_mesh_solution_wasm_bin.wasm`), removing third-party CDN fetch during runtime for air-gapped operation.
+   - Route ordering verification: Confirmed static routes (`/interview/history`, `/interview/latest`, `/report/latest`) are declared before parameterized route `/{session_id}` in FastAPI router, preventing shadowing.
+   - Missing evidence tests: Added tests for pause computation fixtures, zero-duration guards, MATTR vocabulary length guards, legacy DB fixture upgrade, and zero-orphan row checks on cascading deletion.
+   - Documented unverifiable manual hardware items (real camera, real mic, cross-browser Safari/Firefox, live LLM keys).
+
+2. **Alembic Database Migration 0003** (`5da4343`):
+   - Created `alembic/versions/0003_intelligence_layer.py`.
+   - Added tables: `resume_skills`, `resume_projects`, `resume_claims`, `resume_flags`, `interview_questions`, `interview_decisions`, `claim_consistency`, `answer_visual_metrics`.
+   - Added columns to `resumes`: `role_fit_scores` (JSON), `seniority_signal` (String).
+   - Added columns to `answer_evaluations`: `verification_risk` (JSON), `probe_ladder_step` (String), `probe_intent` (String).
+   - Fully backward-compatible upgrade with non-destructive downgrade.
+
+3. **Resume Intelligence & Claim Extraction** (`57513fa`):
+   - Upgraded `backend/services/resume_service.py` with deterministic regex/NER extraction of skills (categorized by languages, frameworks, databases, cloud/devops, core), projects, and concrete claims (action, metric, impact, technology).
+   - Rule-based risk flags: generic claims, metricless claims, missing tenure dates, technology soup.
+   - Deterministic role-fit scoring against 4 standard profiles: Frontend, Backend, Fullstack, ML / Applied AI (matching skills, project relevance, and seniority signal).
+   - Probe priorities calculation identifying top claims and risk areas to prioritize during interview question generation.
+   - Added `POST /resume/{resume_id}/reanalyze` endpoint.
+   - Added `tests/test_resume.py` coverage.
+
+4. **Deterministic Claim-Probe Ladder & Adaptive Question Engine** (`e4693ef`):
+   - Created `backend/services/adaptive_engine.py` implementing the 4-stage probe ladder:
+     - `T1_FOUNDATION`: Concept and role in resume claim.
+     - `T2_TRADE_OFFS`: Alternatives considered and design decisions.
+     - `T3_INCIDENT`: Production failure, debugging, or bottleneck scenario.
+     - `T4_EDGE_CASE`: Scale stress-test, failure mode, or resource constraint.
+   - Implemented rolling difficulty adjustment: 2 consecutive high scores ($\ge 80$) increase difficulty; 2 consecutive low scores ($< 50$) decrease difficulty.
+   - Dynamic question bank and resume-anchored fallback probe templates.
+   - Decision logging in `interview_decisions` table recording target claim, probe ladder step, difficulty adjustment, and human-readable rationale.
+   - Added `POST /interview/{session_id}/next` endpoint.
+
+5. **Adaptive Next-Question UI Integration & Decision Log Rationale** (`25830fb`):
+   - Refactored `frontend/src/pages/Interview.jsx` to fetch subsequent questions adaptively via `POST /interview/{session_id}/next` on answer submission.
+   - Synchronized question timers, reset speech recognition, and handled seamless interview completion.
+   - Updated `frontend/src/pages/Dashboard.jsx` to display probe ladder step badge (`T1`–`T4`) and adaptive decision rationale accordion for interviewer transparency.
+
+6. **Per-Answer Verification Risk Scoring with Observable Evidence Contract** (`1869f28`):
+   - Created `backend/services/verification_risk.py` evaluating 5 observable answer indicators:
+     - Generic filler phrases ("industry best practices", "leveraged scalable solutions").
+     - Buzzword-to-content density ratio.
+     - Absence of concrete specifics (quantifiable numbers, technical parameters, explicit tooling).
+     - Repetition across answer sentences.
+     - Ownership vagueness ("we worked on", "it was done" vs "I built", "I designed").
+   - Output structured contract: `level` (`low`, `moderate`, `elevated`), `risk_score` (0–100), `signals`, and `observable_evidence` list.
+   - Strictly enforced non-accusatory language: no banned terms ("bluff", "lie", "fake").
+   - Added comprehensive tests in `tests/test_verification_risk.py` (12 passing tests).
+
+7. **Claim Consistency Tracking & Dynamic Session Consistency Scoring** (`04930e8`):
+   - Implemented `backend/services/claim_consistency_service.py` linking answer transcripts to targeted resume claims.
+   - Status classifications: `consistent` (matches claim details and metrics), `weak_support` (claim mentioned but missing details), `low_consistency` (contradictory metrics or conflicting stack), `insufficient_evidence` (unanswered or non-responsive).
+   - Dynamic session consistency calculation: replaces static score when $\ge 1$ claim-probed answer exists, setting `consistency_source = "claim_level"`.
+   - Included non-accusatory disclaimer across all consistency reports.
+   - Added `tests/test_claim_consistency.py` (4 passing tests).
+
+8. **Safe Pressure Mode with Time Limits & Challenge Triggers** (`7771b84`):
+   - Implemented Safe Pressure Mode with 45-second timer constraints per question.
+   - Dynamic follow-up challenge triggers: metric justification ("You mentioned 10k RPS, what was the bottleneck?"), counterexample/failure probing ("What if that database failed?"), and vague assertion challenges.
+   - Safe de-escalation: added `POST /interview/{session_id}/switch-mode` allowing candidate to transition to Standard mode at any point (extending timer to 90s).
+   - Ethical safeguards: Pre-interview pressure mode notice and mandatory acknowledgment checkbox in `InterviewSetup.jsx`.
+   - Added `tests/test_pressure_mode.py` (6 passing tests).
+
+9. **Client-Side Extended Visual Metrics with Quality Gating** (`4f9a817`):
+   - Added `backend/services/visual_metrics_service.py` and updated client FaceMesh pipeline.
+   - Client measures: `head_alignment_percent`, `blink_rate`, `head_movement_variance`, `face_visibility_ratio`, `head_shift_count`, and `frames_sampled`.
+   - Quality gating: if `face_visibility_ratio < 0.60` or `frames_sampled < 30`, visual metrics are marked `quality_gate_passed = False` with `confidence_level = "low"` or `"unmeasured"`.
+   - Ethical score invariance: `USE_EXTENDED_VISUAL_METRICS_IN_SCORE = False` ensures visual metrics are purely diagnostic and NEVER alter readiness scores.
+   - Observable language contract: banned pseudo-scientific labels ("nervousness", "stress spike", "posture check").
+   - Added `tests/test_visual_metrics.py` (8 passing tests).
+
+10. **Optional LLM Probe Phrasing with Strict Claim Grounding** (`b4ac1d6`):
+    - Added `backend/services/probe_rephraser.py` using Gemini/OpenAI to generate natural, conversational probe phrasing grounded in candidate claims.
+    - Safety guards:
+      - 2.5s strict timeout with immediate deterministic fallback.
+      - SHA-256 in-memory caching to eliminate duplicate LLM calls.
+      - Banned word filter rejecting adversarial or hostile phrasing.
+      - Strict domain token grounding (`verify_probe_grounding`) verifying that claim keywords exist in the probe output.
+      - 100% offline fallback when API keys are absent.
+    - Added `tests/test_probe_rephraser.py` (7 passing tests).
+
+11. **Intelligence Report UI, Full Data Export & Cascading Deletion** (`7558b24`):
+    - Frontend UI upgrades:
+      - `ResumeUpload.jsx`: Role Fit card (scores across 4 profiles), Seniority Signal badge, Top Risk Areas, Extraction Flags.
+      - `Dashboard.jsx`: Verification Risk signal badge with observable evidence breakdown; Resume Claim Verification table displaying claim text, probe status, consistency rating, and non-accusatory disclaimer.
+    - Data portability: `GET /auth/export` includes all 8 intelligence tables (`resume_skills`, `resume_projects`, `resume_claims`, `resume_flags`, `interview_questions`, `interview_decisions`, `claim_consistency`, `answer_visual_metrics`).
+    - Cascading deletion: `DELETE /auth/account` and `DELETE /interview/{session_id}` cascade across all 8 intelligence tables with zero orphan rows left in SQLite.
+    - Added `tests/test_intelligence_export_and_cascade.py`.
+
+12. **Documentation & Phase 3 Audit Log** (`Current Commit`):
+    - Updated `README.md`, `docs/ARCHITECTURE.md`, and `docs/AUDIT.md` reflecting all Phase 3 capabilities, API schemas, testing metrics, and privacy contracts.
+
+---
+
+## 7. Phase 3 Verification & Sign-Off Gate
+
+1. **Phase 3 Deliverables Summary**:
+   - All Phase 3 intelligence layer, claim-probe ladder, verification risk, safe pressure mode, and visual gating requirements implemented and verified.
+   - **107 automated tests** in `tests/` pass with zero failures:
+     - `test_api.py` (13 tests)
+     - `test_auth.py` (11 tests)
+     - `test_claim_consistency.py` (4 tests)
+     - `test_consent_and_deletion.py` (3 tests)
+     - `test_evaluation_llm.py` (6 tests)
+     - `test_intelligence_export_and_cascade.py` (1 test)
+     - `test_migration.py` (1 test)
+     - `test_pressure_mode.py` (6 tests)
+     - `test_probe_rephraser.py` (7 tests)
+     - `test_questions_and_followup.py` (5 tests)
+     - `test_resume.py` (9 tests)
+     - `test_scoring.py` (11 tests)
+     - `test_user_isolation.py` (3 tests)
+     - `test_verification_risk.py` (12 tests)
+     - `test_visual_metrics.py` (8 tests)
+     - `test_voice_metrics.py` (7 tests)
+   - Vite production build succeeds with 0 errors.
+   - Clean, reproducible git history on `phase-3-intelligence` branch with one commit per sub-step.
+   - Full air-gapped / offline capability preserved with zero external network dependencies.
+2. **Phase 4 Gate**:
+   - Stop and wait for user review and approval before proceeding to Phase 4 (Feedback Quality & Answer Improvement, Drill-down practice, Enterprise multi-role rubrics).
+
 

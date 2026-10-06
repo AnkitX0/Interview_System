@@ -202,44 +202,106 @@ Managed via Alembic migrations (`alembic/versions/`):
 The database (`interview.db`) is managed via Alembic migrations (with automated upgrade to `head` on application startup):
 - `0001_initial_schema.py`: Baseline 7 tables.
 - `0002_auth_and_user_scoping.py`: Multi-tenancy, voice metrics, and privacy tables.
+- `0003_intelligence_layer.py`: 8 tables for claim-probe ladder, resume intelligence, decisions, claim consistency, and extended visual metrics.
 
 #### Table Definitions:
 1. **`users`**:
    - `id` (PK), `email` (unique index), `password_hash` (Argon2), `full_name`, `is_active`, `created_at`.
 2. **`user_profile`**:
-   - `id` (PK), `user_id` (FK $\rightarrow$ users.id, CASCADE), `target_role`, `domain`, `experience_level`, `university`, `graduation_year`, `current_status`, `target_companies` (JSON), `interview_goal`, `weekly_practice_goal`, `created_at`, `updated_at`.
+   - `id` (PK), `user_id` (FK → users.id, CASCADE), `target_role`, `domain`, `experience_level`, `university`, `graduation_year`, `current_status`, `target_companies` (JSON), `interview_goal`, `weekly_practice_goal`, `created_at`, `updated_at`.
 3. **`consent_records`**:
-   - `id` (PK), `user_id` (FK $\rightarrow$ users.id, CASCADE), `consent_type` (`camera_mic_processing`), `policy_version`, `granted` (Boolean), `created_at`.
+   - `id` (PK), `user_id` (FK → users.id, CASCADE), `consent_type` (`camera`, `microphone`, `transcript_storage`), `policy_version`, `granted` (Boolean), `created_at`.
 4. **`resumes`**:
-   - `id` (PK), `user_id` (FK $\rightarrow$ users.id, CASCADE), `filename`, `candidate_name`, `raw_text`, `skills` (JSON), `experience`, `education`, `resume_score`, `strengths` (JSON), `weak_areas` (JSON), `suggested_improvements` (JSON), `summary`, `created_at`.
-5. **`interview_sessions`**:
-   - `id` (PK), `user_id` (FK $\rightarrow$ users.id, CASCADE), `resume_id` (FK), `mode`, `difficulty`, `target_role`, `total_questions`, `current_question_index`, `followup_count`, `status`, `created_at`.
-6. **`question_bank`**:
-   - `id` (PK), `question_text`, `category`, `difficulty`, `role`.
-7. **`interview_answers`**:
-   - `id` (PK), `session_id` (FK $\rightarrow$ interview_sessions.id, CASCADE), `question_id`, `question_text`, `transcript`, `response_time`, `duration_seconds`, `wpm`, `filler_count`, `created_at`.
-8. **`answer_evaluations`**:
-   - `id` (PK), `answer_id` (FK $\rightarrow$ interview_answers.id, CASCADE), `structure_score`, `clarity_score`, `depth_score`, `technical_score`, `reasoning_score`, `star_score`, `consistency_score`, `overall_score`, `strengths` (JSON), `weaknesses` (JSON), `missing_concepts` (JSON), `suggestions` (JSON), `engine_used`, `prompt_version`.
-9. **`voice_metrics`**:
-   - `id` (PK), `answer_id` (FK $\rightarrow$ interview_answers.id, CASCADE, unique), `words_per_minute` (nullable), `filler_word_count`, `avg_pause_duration` (nullable), `longest_pause` (nullable), `pause_count` (nullable), `silence_ratio` (nullable), `vocabulary_diversity_score` (nullable), `speech_source` (`speech` | `typed`), `created_at`.
-10. **`behavioral_metrics`**:
-    - `id` (PK), `session_id` (FK $\rightarrow$ interview_sessions.id, CASCADE), `eye_contact_percent` (nullable Float), `blink_rate` (nullable Float), `pause_rate` (Float).
-11. **`session_scores`**:
-    - `id` (PK), `session_id` (FK $\rightarrow$ interview_sessions.id, CASCADE), `behavioral_score` (nullable Float), `communication_score`, `technical_score`, `resume_consistency_score`, `readiness_score`, `strongest_category`, `weakest_category`, `insights` (JSON), `weights_used` (JSON), `created_at`.
+   - `id` (PK), `user_id` (FK → users.id, CASCADE), `filename`, `candidate_name`, `raw_text`, `skills` (JSON), `experience`, `education`, `resume_score`, `strengths` (JSON), `weak_areas` (JSON), `suggested_improvements` (JSON), `role_fit_scores` (JSON), `risk_areas` (JSON), `summary`, `created_at`.
+5. **`resume_skills`**:
+   - `id` (PK), `resume_id` (FK → resumes.id, CASCADE), `name`, `category`, `confidence`, `evidenced`, `created_at`.
+6. **`resume_projects`**:
+   - `id` (PK), `resume_id` (FK → resumes.id, CASCADE), `title`, `description`, `technologies` (JSON), `bullets` (JSON), `created_at`.
+7. **`resume_claims`**:
+   - `id` (PK), `resume_id` (FK → resumes.id, CASCADE), `project_id` (FK → resume_projects.id, SET NULL), `claim_text`, `claim_type`, `technologies` (JSON), `has_metric`, `probe_priority` (Float), `reasons` (JSON), `created_at`.
+8. **`resume_flags`**:
+   - `id` (PK), `resume_id` (FK → resumes.id, CASCADE), `claim_id` (FK → resume_claims.id, CASCADE), `flag_type`, `description`, `severity`, `created_at`.
+9. **`interview_sessions`**:
+   - `id` (PK), `user_id` (FK → users.id, CASCADE), `resume_id` (FK), `mode`, `difficulty`, `target_role`, `total_questions`, `current_question_index`, `followup_count`, `status`, `created_at`.
+10. **`interview_questions`**:
+    - `id` (PK), `session_id` (FK → interview_sessions.id, CASCADE), `sequence_order`, `question_text`, `question_type` (`bank`, `probe`, `challenge`), `source` (`bank`, `resume_claim`, `pressure`), `claim_id` (FK → resume_claims.id, SET NULL), `ladder_stage`, `difficulty`, `time_limit_seconds`, `generated_reason`, `created_at`.
+11. **`interview_decisions`**:
+    - `id` (PK), `session_id` (FK → interview_sessions.id, CASCADE), `turn`, `decision`, `reason`, `inputs` (JSON), `created_at`.
+12. **`claim_consistency`**:
+    - `id` (PK), `session_id` (FK → interview_sessions.id, CASCADE), `claim_id` (FK → resume_claims.id, CASCADE), `label` (`consistent`, `weak_support`, `low_consistency`, `insufficient_evidence`), `evidence` (JSON), `answers_considered`, `created_at`.
+13. **`question_bank`**:
+    - `id` (PK), `question_text`, `category`, `difficulty`, `role`.
+14. **`interview_answers`**:
+    - `id` (PK), `session_id` (FK → interview_sessions.id, CASCADE), `question_id`, `question_text`, `transcript`, `response_time`, `duration_seconds`, `wpm`, `filler_count`, `created_at`.
+15. **`answer_evaluations`**:
+    - `id` (PK), `answer_id` (FK → interview_answers.id, CASCADE), `structure_score`, `clarity_score`, `depth_score`, `technical_score`, `reasoning_score`, `star_score`, `consistency_score`, `overall_score`, `strengths` (JSON), `weaknesses` (JSON), `missing_concepts` (JSON), `suggestions` (JSON), `engine_used`, `prompt_version`, `verification_risk_score`, `verification_risk_level`, `verification_risk_evidence` (JSON), `verification_risk_explanation`.
+16. **`voice_metrics`**:
+    - `id` (PK), `answer_id` (FK → interview_answers.id, CASCADE, unique), `words_per_minute` (nullable), `filler_word_count`, `avg_pause_duration` (nullable), `longest_pause` (nullable), `pause_count` (nullable), `silence_ratio` (nullable), `vocabulary_diversity_score` (nullable), `speech_source` (`speech` | `typed`), `created_at`.
+17. **`answer_visual_metrics`**:
+    - `id` (PK), `answer_id` (FK → interview_answers.id, CASCADE, unique), `head_alignment_percent`, `blink_rate`, `head_movement_variance`, `face_visibility_ratio`, `head_shift_count`, `frames_sampled`, `created_at`.
+18. **`behavioral_metrics`**:
+    - `id` (PK), `session_id` (FK → interview_sessions.id, CASCADE), `eye_contact_percent` (nullable Float), `blink_rate` (nullable Float), `pause_rate` (Float).
+19. **`session_scores`**:
+    - `id` (PK), `session_id` (FK → interview_sessions.id, CASCADE), `behavioral_score` (nullable Float), `communication_score`, `technical_score`, `resume_consistency_score`, `consistency_source` (`claim_level` | `heuristic` | `legacy`), `readiness_score`, `strongest_category`, `weakest_category`, `insights` (JSON), `weights_used` (JSON), `created_at`.
 
 ---
 
-### 5.3 Frontend Pages (`frontend/src/pages/`)
+## 5.3 Claim-Probe Ladder & Adaptive Question Engine
+
+The interview intelligence layer enforces a deterministic 4-stage probe ladder grounded strictly in candidate resume claims:
+
+```
++-----------------------------------------------------------------------------------+
+|                            4-STAGE CLAIM PROBE LADDER                             |
++-----------------------------------------------------------------------------------+
+
+     [ T1: FOUNDATION ]   ──(Score >= 70)──>   [ T2: TRADE-OFFS ]
+      Architectural setup,                       Alternatives evaluated,
+      stack selection & core mechanics           why this design was chosen
+              |                                            |
+         (Score < 60)                                 (Score < 60)
+              v                                            v
+     [ Consolidate / Retest ]                     [ Consolidate / Retest ]
+              |                                            |
+              +────────────────────────────────────────────+
+                                   |
+                             (Score >= 70)
+                                   v
+                         [ T3: INCIDENT ]
+                          Production failure scenario,
+                          rollback, data recovery
+                                   |
+                             (Score >= 70)
+                                   v
+                         [ T4: EDGE CASE ]
+                          Cascading partition, silent
+                          corruption, extreme load
+```
+
+### Adaptive Policy Decision Table
+
+| State Trigger | Decision | Action / Output |
+|---|---|---|
+| `total_answers >= total_questions` | `COMPLETE_SESSION` | Terminates interview, triggers final score calculation |
+| `mode == "pressure"` & trigger conditions met | `TRIGGER_CHALLENGE` | 45s timer, numeric validation or counterexample challenge |
+| Previous question was probe & `score >= 70` | `ADVANCE_LADDER` | Advances claim to next ladder stage (T1 → T2 → T3 → T4) |
+| Previous question was probe & `score < 60` | `PROBE_CLAIM` | Re-probes current ladder stage with targeted mechanism inquiry |
+| Unprobed high-priority claim (`priority >= 0.55`) | `PROBE_CLAIM` | Initiates T1 probe on candidate's top-ranked resume claim |
+| No claims pending | `NEXT_BANK_QUESTION` | Selects from QuestionBank matching candidate skills & adjusted difficulty |
+
+---
+
+### 5.4 Frontend Pages (`frontend/src/pages/`)
 
 | Page | Route | Access | Description |
 |---|---|:---:|---|
 | **Landing** | `/` | Public | Hero section, value propositions, and 4-step workflow walkthrough. |
 | **Sign In** | `/login` | Public | Email and password login with error boundary and redirect. |
 | **Register** | `/register` | Public | Account registration enforcing password strength guidelines. |
-| **Resume Upload** | `/resume` | Protected | PDF/text uploader, competency badges, clarity audit, and one-click launch. |
-| **Interview Setup** | `/setup` | Protected | Mode selector, difficulty, role input, and Privacy Consent Modal. |
-| **Live Interview** | `/interview` | Protected | FaceMesh feed, speech recognition, live stats, rubric feedback, or Text-Only mode. |
-| **Dashboard / Report**| `/dashboard` & `/report` | Protected | Main readiness gauge, subscore bars, voice cadence card, and answer reviews. |
+| **Resume Upload** | `/resume` | Protected | PDF/text uploader, competency badges, role fit breakdown, risk areas, and flags. |
+| **Interview Setup** | `/setup` | Protected | Mode selector, difficulty, role input, Privacy Consent Modal, and Safe Pressure Notice. |
+| **Live Interview** | `/interview` | Protected | FaceMesh feed, speech recognition, live stats, adaptive `/next` question flow, mode switch button. |
+| **Dashboard / Report**| `/dashboard` & `/report` | Protected | Main readiness gauge, subscore bars, voice cadence card, resume verification table, and decision log. |
 | **Fix My Answer** | `/fix-answer` | Protected | Interactive AI response coach with STAR breakdown and vocabulary upgrade table. |
 | **Session History** | `/history` | Protected | Paginated historical sessions log with report reopening and session deletion. |
 | **Progress History** | `/progress` | Protected | Multi-session score trajectory line chart, aggregate averages, and session deletion. |
@@ -254,27 +316,30 @@ The database (`interview.db`) is managed via Alembic migrations (with automated 
 - `POST /auth/logout`: Clears authentication cookie.
 - `GET /auth/me`: Returns current user identity and profile.
 - `GET/PUT /profile`: Returns or updates user profile preferences.
-- `GET/POST /consent`: Retrieves or records privacy consent logs (`camera_mic_processing`).
-- `GET /auth/export`: Full JSON export of user profile, consent records, resumes, and interview evaluations.
+- `GET/POST /consent`: Retrieves or records privacy consent logs.
+- `GET /auth/export`: Full JSON export of user profile, consent records, resumes, sessions, and all 8 intelligence tables.
 - `DELETE /auth/account`: Permanently cascades deletion of user and all personal data after password re-verification.
 
 ### Resume Endpoints (User-Scoped)
-- `POST /resume/upload`: Accepts `multipart/form-data` with `file` (PDF/TXT) or `raw_text`. Parses and saves candidate profile.
+- `POST /resume/upload`: Accepts `multipart/form-data` with `file` (PDF/TXT) or `raw_text`. Parses claims, projects, flags, role fit.
 - `POST /resume/analyze`: Analyzes JSON payload containing `text` or existing `resume_id`.
-- `GET /resume/{resume_id}`: Fetches stored resume profile by ID.
-- `DELETE /resume/{resume_id}`: Permanently deletes resume profile.
+- `POST /resume/{resume_id}/reanalyze`: Re-evaluates claims, projects, flags, role fit, and probe priorities.
+- `GET /resume/{resume_id}`: Fetches stored resume profile by ID with extracted intelligence entities.
+- `DELETE /resume/{resume_id}`: Permanently deletes resume and cascades intelligence rows.
 
 ### Interview Session Endpoints (User-Scoped)
-- `POST /interview/start`: Initializes session with resume-aware question selection.
+- `POST /interview/start`: Initializes session with resume-aware question selection and mode time limits.
+- `POST /interview/{session_id}/next`: Evaluates adaptive policy and generates next probe, challenge, or bank question.
+- `POST /interview/{session_id}/switch-mode`: Relaxes session from Safe Pressure Mode to Practice Mode (90s limit).
 - `GET /interview/history`: Paginated list of user's past interviews (newest first).
 - `GET /interview/{session_id}`: Returns status, question count, and progress of session.
-- `POST /interview/{session_id}/answer`: Submits answer with speech segment intervals; evaluates rubric and persists voice cadence metrics.
+- `POST /interview/{session_id}/answer`: Submits answer with voice and extended visual metrics; evaluates rubric and verification risk.
 - `POST /interview/followup`: Generates contextual follow-up question.
-- `POST /interview/{session_id}/complete`: Finalizes interview, computes normalized scores, saves behavioral metrics.
-- `DELETE /interview/{session_id}`: Deletes interview session and cascades child answers, evaluations, and voice metrics.
+- `POST /interview/{session_id}/complete`: Finalizes interview, computes normalized scores, evaluates claim consistency.
+- `DELETE /interview/{session_id}`: Deletes interview session and cascades child answers, evaluations, and voice/visual metrics.
 
 ### Analytics & Reports (User-Scoped)
-- `GET /report/{session_id}`: Returns full performance report payload including radar chart points, voice metrics, and observable evidence.
+- `GET /report/{session_id}`: Returns full performance report payload including radar chart points, voice metrics, verification risk evidence, claim consistency table, and adaptive decision log.
 - `GET /progress`: Returns aggregated interview counts, averages, and multi-session trend history.
 
 ### Fix My Answer
