@@ -46,59 +46,121 @@ def evaluate_rubric_for_answer(
     word_count = len(words)
     lower_text = text.lower()
 
-    if word_count < WORD_COUNT_BANDS["floor_min"]:
+    TRIVIAL_NON_ANSWERS = {
+        "idk", "i don't know", "idk.", "no", "yes", "skip", "none", "pass", "na", "n/a",
+        "dsjnd", "test", "asdf", "hello", "hi", "bye", "ok", "okay"
+    }
+
+    if word_count == 0:
         empty_dimensions = {
             "structure": {
-                "score": 20.0,
-                "evidence": [f"{word_count} words submitted (minimum expected: {WORD_COUNT_BANDS['floor_min']})", "0 sentence transitions"],
-                "explanation": "Answer is too brief or empty to assess narrative flow.",
-                "recommended_action": "Provide a complete verbal or written response of at least 70 words."
+                "score": 0.0,
+                "evidence": ["0 words submitted (empty answer)"],
+                "explanation": "No response text was submitted.",
+                "recommended_action": "Provide a complete verbal or written technical explanation."
             },
             "technical": {
-                "score": 15.0,
-                "evidence": ["0 domain keywords found", f"Evaluated category: {category}"],
+                "score": 0.0,
+                "evidence": ["0 domain keywords found"],
                 "explanation": "No technical concepts or mechanisms were provided.",
                 "recommended_action": "Describe specific tools, frameworks, protocols, and architectural patterns."
             },
             "reasoning": {
-                "score": 15.0,
-                "evidence": ["trade-off terms: 0", "No causal justification markers found"],
-                "explanation": "No rationale or comparative trade-offs were detected.",
+                "score": 0.0,
+                "evidence": ["No trade-offs or rationale provided"],
+                "explanation": "No reasoning or comparative evaluation detected.",
                 "recommended_action": "Articulate why an engineering decision was made and compare against alternatives."
             },
             "star": {
-                "score": 10.0,
-                "evidence": ["0/4 STAR components identified", "0 quantified results found"],
-                "explanation": "No STAR elements (Situation, Task, Action, Result) detected in response.",
-                "recommended_action": "Use the STAR method: Situation, Task, Action, and measurable Result."
+                "score": 0.0,
+                "evidence": ["0 STAR components identified"],
+                "explanation": "No STAR elements detected in empty response.",
+                "recommended_action": "Use the STAR method: Situation, Task, Action, and Result."
             },
             "consistency": {
-                "score": 50.0,
-                "evidence": ["Insufficient text to cross-reference against resume skills"],
-                "explanation": "Could not verify background claims from an empty or single-word answer.",
+                "score": 0.0,
+                "evidence": ["No evidence to compare against resume"],
+                "explanation": "Could not verify background claims from an empty answer.",
                 "recommended_action": "Reference specific project experiences from your background."
             }
         }
         return {
-            "score": 20.0,
-            "overall_score": 20.0,
-            "structure_score": 20.0,
-            "clarity_score": 20.0,
-            "depth_score": 15.0,
-            "technical_score": 15.0,
-            "reasoning_score": 15.0,
-            "star_score": 10.0,
-            "consistency_score": 50.0,
+            "score": 0.0,
+            "overall_score": 0.0,
+            "structure_score": 0.0,
+            "clarity_score": 0.0,
+            "depth_score": 0.0,
+            "technical_score": 0.0,
+            "reasoning_score": 0.0,
+            "star_score": 0.0,
+            "consistency_score": 0.0,
+            "answer_status": "EMPTY",
             "dimensions": empty_dimensions,
             "structure": empty_dimensions["structure"],
             "technical": empty_dimensions["technical"],
             "reasoning": empty_dimensions["reasoning"],
             "star": empty_dimensions["star"],
             "consistency": empty_dimensions["consistency"],
-            "strengths": ["Answer was submitted."],
-            "weaknesses": ["Answer is too brief or empty to assess meaningfully."],
-            "missing_concepts": ["Detailed explanation", "Concrete examples"],
-            "suggestions": ["Elaborate on your thought process with specific technical mechanisms and personal experience."]
+            "strengths": [],
+            "weaknesses": ["Empty answer submitted; no evidence collected."],
+            "missing_concepts": ["Complete technical explanation", "Architectural mechanisms", "Trade-offs"],
+            "suggestions": ["Provide a detailed verbal or written answer addressing the question directly."]
+        }
+
+    if word_count < 4 or lower_text in TRIVIAL_NON_ANSWERS:
+        insufficient_dims = {
+            "structure": {
+                "score": 0.0,
+                "evidence": [f"{word_count} words submitted", "Insufficient narrative structure"],
+                "explanation": "Answer is too brief or trivial to assess narrative flow.",
+                "recommended_action": "Provide a complete verbal or written response of at least 40 words."
+            },
+            "technical": {
+                "score": 0.0,
+                "evidence": ["0 domain keywords found", f"Evaluated category: {category}"],
+                "explanation": "No technical concepts or mechanisms were provided.",
+                "recommended_action": "Describe specific tools, frameworks, protocols, and architectural patterns."
+            },
+            "reasoning": {
+                "score": 0.0,
+                "evidence": ["No comparative justification or trade-offs found"],
+                "explanation": "No rationale or comparative trade-offs were detected.",
+                "recommended_action": "Articulate why an engineering decision was made and compare against alternatives."
+            },
+            "star": {
+                "score": 0.0,
+                "evidence": ["0/4 STAR components identified"],
+                "explanation": "No STAR elements detected in response.",
+                "recommended_action": "Use the STAR method: Situation, Task, Action, and measurable Result."
+            },
+            "consistency": {
+                "score": 0.0,
+                "evidence": ["Insufficient text to cross-reference against resume skills"],
+                "explanation": "Could not verify background claims from an insufficient or single-token answer.",
+                "recommended_action": "Reference specific project experiences from your background."
+            }
+        }
+        return {
+            "score": 0.0,
+            "overall_score": 0.0,
+            "structure_score": 0.0,
+            "clarity_score": 0.0,
+            "depth_score": 0.0,
+            "technical_score": 0.0,
+            "reasoning_score": 0.0,
+            "star_score": 0.0,
+            "consistency_score": 0.0,
+            "answer_status": "INSUFFICIENT",
+            "dimensions": insufficient_dims,
+            "structure": insufficient_dims["structure"],
+            "technical": insufficient_dims["technical"],
+            "reasoning": insufficient_dims["reasoning"],
+            "star": insufficient_dims["star"],
+            "consistency": insufficient_dims["consistency"],
+            "strengths": [],
+            "weaknesses": ["Answer is insufficient or trivial; does not address the question."],
+            "missing_concepts": ["Direct answer to the question", "Technical mechanisms", "Implementation details"],
+            "suggestions": ["Elaborate on your answer with concrete technical mechanisms, trade-offs, and examples."]
         }
 
     # 1. Structure Score (0 - 100)
@@ -349,10 +411,13 @@ def calculate_session_score(
     technical_scores: Optional[List[float]] = None,
     communication_scores: Optional[List[float]] = None,
     consistency_scores: Optional[List[float]] = None,
-    behavioral_score: Optional[float] = None
+    behavioral_score: Optional[float] = None,
+    evidence_coverage: Optional[float] = None
 ) -> Dict[str, Any]:
     """
     Weighted Session Score Formula.
+    EVIDENCE-GATED: If no answer scores are submitted (zero answers or all skipped),
+    readiness score MUST be 0.0 with Low assessment confidence and Incomplete status.
 
     When Delivery & Visual Stability is measured:
       Final Readiness = 0.30 Communication + 0.30 Technical + 0.20 Delivery + 0.20 Resume Consistency
@@ -364,7 +429,32 @@ def calculate_session_score(
       Resume:        0.20 / 0.80 = 0.250
       Final Readiness = 0.375 Communication + 0.375 Technical + 0.250 Resume Consistency
     """
-    avg_answer = sum(answer_scores) / len(answer_scores) if answer_scores else 70.0
+    if not answer_scores:
+        return {
+            "final_readiness_score": 0.0,
+            "communication_score": 0.0,
+            "technical_score": 0.0,
+            "delivery_score": None,
+            "delivery_measured": False,
+            "behavioral_score": None,
+            "resume_consistency_score": 0.0,
+            "score_confidence": "Low",
+            "confidence_explanation": "No meaningful interview answers were submitted, so readiness cannot be reliably assessed.",
+            "weights_used": {
+                "communication": 0.375,
+                "technical": 0.375,
+                "delivery": 0.0,
+                "resume_consistency": 0.25
+            },
+            "strongest_category": "None (Insufficient Evidence)",
+            "weakest_category": "All Dimensions (Evidence Missing)",
+            "insights": [
+                "Interview incomplete: no meaningful answers were submitted to evaluate readiness.",
+                "Complete interview questions to generate verified technical and communication scores."
+            ]
+        }
+
+    avg_answer = sum(answer_scores) / len(answer_scores)
 
     comm_score = (
         round(sum(communication_scores) / len(communication_scores), 1)
@@ -381,7 +471,7 @@ def calculate_session_score(
     cons_score = (
         round(sum(consistency_scores) / len(consistency_scores), 1)
         if consistency_scores and len(consistency_scores) > 0
-        else 75.0
+        else round(avg_answer, 1)
     )
 
     # Determine delivery score (support both delivery_score and legacy behavioral_score)
@@ -449,7 +539,10 @@ def calculate_session_score(
         insights.append("Note: Delivery & Visual Stability was not measured (camera was off/denied). Readiness was re-normalized across Communication (37.5%), Technical (37.5%), and Resume Consistency (25.0%).")
 
     num_answers = len(answer_scores)
-    if num_answers >= 5:
+    if evidence_coverage is not None and evidence_coverage < 50.0:
+        score_confidence = "Low"
+        confidence_explanation = f"Low confidence ({round(evidence_coverage, 1)}% evidence coverage). Complete more questions for full readiness assessment."
+    elif num_answers >= 5:
         score_confidence = "High"
         confidence_explanation = f"High assessment confidence based on {num_answers} evaluated turns."
     elif num_answers >= 3:

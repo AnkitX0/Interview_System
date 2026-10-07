@@ -64,6 +64,13 @@ function Interview() {
   const speechRecognizerRef = useRef(null);
   const speechSegmentsRef = useRef([]);
   const currentSpeechStartRef = useRef(null);
+  const speechBaseTextRef = useRef("");
+  const isListeningDesiredRef = useRef(false);
+  const answerRef = useRef(answer);
+
+  useEffect(() => {
+    answerRef.current = answer;
+  }, [answer]);
 
   // Question submission & progress state
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -107,6 +114,7 @@ function Interview() {
         if (prev <= 1) {
           clearInterval(timer);
           // Stop speech cleanly when time expires
+          isListeningDesiredRef.current = false;
           if (speechRecognizerRef.current && speechState === "listening") {
             try { speechRecognizerRef.current.stop(); } catch {}
           }
@@ -130,6 +138,12 @@ function Interview() {
     questionStartTimeRef.current = Date.now();
     speechSegmentsRef.current = [];
     currentSpeechStartRef.current = null;
+    speechBaseTextRef.current = "";
+    isListeningDesiredRef.current = false;
+    if (speechRecognizerRef.current) {
+      try { speechRecognizerRef.current.stop(); } catch {}
+    }
+    setSpeechState("stopped");
     answerVisualFramesRef.current = {
       totalSampled: 0,
       faceDetected: 0,
@@ -154,7 +168,7 @@ function Interview() {
       setSpeechSupported(false);
       setSpeechState("unsupported");
       setInputMode("text");
-      setSpeechNotice("Speech recognition is not available in this browser. You can type your answers.");
+      setSpeechNotice("Live speech transcription is not supported in this browser. You can type your answers.");
       return;
     }
 
@@ -180,26 +194,40 @@ function Interview() {
           interimTranscript += textChunk;
         }
       }
-      setAnswer((prev) => {
-        const newText = (finalTranscript + interimTranscript).trim();
-        return newText || prev;
-      });
+      const recognized = (finalTranscript + interimTranscript).trim();
+      const base = speechBaseTextRef.current ? speechBaseTextRef.current.trim() : "";
+      const combined = base ? `${base} ${recognized}` : recognized;
+      setAnswer(combined.trim());
     };
 
     recognizer.onerror = (event) => {
       console.warn("Speech recognition notice:", event.error);
-      setSpeechState("error");
       if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        isListeningDesiredRef.current = false;
+        setSpeechState("error");
         setSpeechNotice("Microphone permission denied. Switched to text mode.");
         setInputMode("text");
       } else if (event.error === "no-speech") {
-        setSpeechNotice("No speech detected. Speak clearly into your microphone or type your answer.");
-      } else if (event.error === "audio-capture") {
-        setSpeechNotice("Microphone capture error. Verify microphone connection or switch to text mode.");
+        if (!isListeningDesiredRef.current) {
+          setSpeechState("stopped");
+        }
+      } else {
+        setSpeechState("error");
+        setSpeechNotice(`Microphone notice: ${event.error}. You can also type your answer.`);
       }
     };
 
     recognizer.onend = () => {
+      if (isListeningDesiredRef.current) {
+        // Auto-resume recognition if user is still in listening mode
+        speechBaseTextRef.current = answerRef.current ? answerRef.current.trim() : "";
+        try {
+          recognizer.start();
+          return;
+        } catch {
+          // Ignore if already transitioning
+        }
+      }
       setSpeechState("stopped");
       setIsMicOn(false);
       if (currentSpeechStartRef.current) {
@@ -218,6 +246,7 @@ function Interview() {
     speechRecognizerRef.current = recognizer;
 
     return () => {
+      isListeningDesiredRef.current = false;
       try {
         recognizer.abort();
       } catch {
@@ -229,15 +258,27 @@ function Interview() {
   const toggleSpeechRecognition = () => {
     if (!speechRecognizerRef.current) return;
     if (speechState === "listening") {
-      speechRecognizerRef.current.stop();
+      isListeningDesiredRef.current = false;
+      try {
+        speechRecognizerRef.current.stop();
+      } catch {}
       setSpeechState("stopped");
     } else {
       try {
+        isListeningDesiredRef.current = true;
+        speechBaseTextRef.current = answer.trim();
         setSpeechState("starting");
         speechRecognizerRef.current.start();
       } catch (e) {
         console.warn("Speech recognition start warning:", e);
-        setSpeechState("error");
+        try {
+          speechRecognizerRef.current.abort();
+          setTimeout(() => {
+            if (isListeningDesiredRef.current) {
+              speechRecognizerRef.current.start();
+            }
+          }, 150);
+        } catch {}
       }
     }
   };
@@ -1025,7 +1066,7 @@ function Interview() {
                 onClick={toggleSpeechRecognition}
                 disabled={evaluating || loadingNext || submittingFinal}
               >
-                {speechState === "listening" ? "Stop Speaking" : "Start Speaking"}
+                {speechState === "listening" ? "● Stop Speaking" : "🎤 Start Speaking"}
               </Button>
             ) : <div />}
 

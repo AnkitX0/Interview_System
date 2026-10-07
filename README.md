@@ -167,18 +167,112 @@ FastAPI Backend (Port 8000)
 
 ---
 
-## 5. Setup & Installation
+## 5. Quick Start with Docker (Recommended)
+
+Run the entire application (FastAPI backend + React frontend + persistent SQLite volume + Gemini intelligence) with a single command.
+
+### FIRST RUN:
+
+1. Install Docker Desktop / Docker Engine + Compose.
+
+2. Clone repository:
+   ```bash
+   git clone <repo>
+   cd Interview_System
+   ```
+
+3. Create environment file:
+   ```bash
+   cp .env.example .env
+   ```
+
+4. Add Gemini key:
+   ```bash
+   GEMINI_API_KEY=your_gemini_api_key_here
+   ```
+
+5. Start application:
+   ```bash
+   docker compose up --build
+   ```
+
+6. Open:
+   ```
+   http://localhost:5173
+   ```
+
+---
+
+### STOP:
+
+```bash
+docker compose down
+```
+
+---
+
+### START AGAIN:
+
+```bash
+docker compose up
+```
+
+---
+
+### REBUILD AFTER CODE CHANGES:
+
+```bash
+docker compose up --build
+```
+
+---
+
+### RUN IN BACKGROUND:
+
+```bash
+docker compose up --build -d
+```
+
+---
+
+### VIEW LOGS:
+
+```bash
+docker compose logs -f
+```
+
+**Backend only:**
+```bash
+docker compose logs -f backend
+```
+
+**Frontend only:**
+```bash
+docker compose logs -f frontend
+```
+
+---
+
+### RESET DATABASE:
+
+> ⚠️ **WARNING**: This deletes Docker volumes and therefore local persistent application data.
+
+```bash
+docker compose down -v
+```
+
+---
+
+## 6. Optional Local Development (Native Mode)
+
+If you prefer running natively outside of Docker without containerization:
 
 ### Prerequisites
 - Python 3.10+ (tested with Python 3.12 and 3.14)
 - Node.js 18+ and npm
 - `pdftotext` (available on Linux via `sudo apt install poppler-utils`)
 
----
-
-## 6. How to Run
-
-### Backend Startup
+### Backend Native Startup
 
 1. Open a terminal in the project root:
    ```bash
@@ -188,18 +282,12 @@ FastAPI Backend (Port 8000)
    ```bash
    source venv/bin/activate
    ```
-3. Run migrations and start the FastAPI server on port 8000:
+3. Run migrations and start the FastAPI server:
    ```bash
-   uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
-   ```
-   *The backend will automatically initialize `interview.db`, run Alembic migrations to head, and load the pre-seeded question bank.*
-
-4. *(Optional)* Claim unassigned legacy pre-Alembic data for an account:
-   ```bash
-   python scripts/claim_legacy_data.py --email your_email@example.com
+   uvicorn backend.main:app --host 127.0.0.1 --port 8001 --reload
    ```
 
-### Frontend Startup
+### Frontend Native Startup
 
 1. Open a second terminal:
    ```bash
@@ -209,10 +297,7 @@ FastAPI Backend (Port 8000)
    ```bash
    npm run dev
    ```
-3. Open your browser at:
-   ```
-   http://localhost:5173
-   ```
+3. Open your browser at `http://localhost:5173`.
 
 ---
 

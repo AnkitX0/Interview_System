@@ -13,6 +13,7 @@ from backend.services.practice_recommendation_engine import (
     WEAKNESS_TO_PRACTICE_MAP
 )
 from backend.services.question_selector import select_questions
+from backend.services.practice_drill_service import select_distinct_practice_questions
 from backend.services.comparability_service import is_comparable
 from backend.services.scoring_engine import calculate_session_score
 
@@ -138,12 +139,13 @@ def start_targeted_practice(
     }
     target_category = category_map.get(p_type, "Technical")
 
-    questions = select_questions(
+    questions = select_distinct_practice_questions(
         db=db,
-        mode=target_category.lower(),
+        user_id=user.id,
+        practice_type=p_type,
         difficulty=data.difficulty or "medium",
         count=target_count,
-        target_role=data.target_role
+        target_role=data.target_role or "Software Engineer"
     )
 
     for q in questions:

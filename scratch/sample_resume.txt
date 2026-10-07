@@ -1,0 +1,24 @@
+Jane Doe
+Email: jane.doe@example.com | Phone: 555-0199 | San Francisco, CA
+
+PROFESSIONAL SUMMARY
+Senior Backend Engineer with 5+ years of experience building resilient microservices, optimizing databases, and architecting REST APIs.
+
+TECHNICAL SKILLS
+Languages: Python, Java, SQL, TypeScript, Bash
+Frameworks & Libraries: FastAPI, Django, React, Pandas
+Databases: PostgreSQL, Redis, MongoDB
+Cloud & DevOps: Docker, Kubernetes, AWS, CI/CD, Git
+
+EXPERIENCE
+Senior Software Engineer - CloudTech Solutions (2021 - Present)
+- Architected high-throughput REST APIs using FastAPI and PostgreSQL, serving 25,000 requests per second.
+- Implemented Redis caching, reducing p99 API query latency by 45%.
+- Deployed containerized microservices to AWS EKS with automated CI/CD pipelines.
+
+Software Developer Intern - DevCorp (2019 - 2020)
+- Worked on various tasks as assigned and helped the team with bug fixing.
+
+EDUCATION
+B.Tech in Computer Science and Engineering, Tech University (2017 - 2021)
+GPA: 3.8 / 4.0

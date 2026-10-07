@@ -149,7 +149,7 @@ def select_next_practice(
         # Default fallback practice if candidate showed no detectable weaknesses
         fallback_target_role = target_session.target_role if target_session else "Software Engineer"
         fallback_practice = {
-            "weakness": "Maintenance of balanced technical depth and communication pacing.",
+            "weakness": "Advanced architectural depth and trade-off precision.",
             "weakness_type": "tech_shallow_depth",
             "dimension": "technical",
             "priority": 1,
@@ -158,7 +158,7 @@ def select_next_practice(
             "target_count": 5,
             "expected_skill": "Advanced Trade-off Reasoning",
             "difficulty": "hard",
-            "rationale": f"Candidate demonstrated baseline readiness for '{fallback_target_role}' with no active weakness indicators. Advanced trade-off drills recommended for mastery.",
+            "rationale": f"Recent sessions show baseline readiness for '{fallback_target_role}' with no critical weakness. This drill is recommended to strengthen advanced technical depth.",
             "decision_metadata": {
                 "rule": "no_active_weakness_fallback",
                 "source": "baseline_mastery"

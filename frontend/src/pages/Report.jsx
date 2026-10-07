@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   BarChart,
   Bar,
@@ -25,6 +25,22 @@ function normalizeReport(raw) {
     behavioral.delivery_measured === true ||
     (behavioral.eye_contact_percent !== null && behavioral.eye_contact_percent !== undefined);
 
+  const answers = Array.isArray(raw.answers) ? raw.answers : [];
+  const meaningfulAnswers = answers.filter(
+    (a) => !a.is_skipped && a.status !== "skipped" && a.status !== "empty" && a.status !== "insufficient"
+  ).length;
+
+  const evidenceSummary = raw.evidence_summary || {
+    total_questions: answers.length,
+    answered_questions: answers.filter((a) => !a.is_skipped && a.status !== "skipped").length,
+    skipped_questions: answers.filter((a) => a.is_skipped || a.status === "skipped").length,
+    empty_answers: answers.filter((a) => a.status === "empty" || a.status === "insufficient").length,
+    meaningful_answers: meaningfulAnswers,
+    evidence_coverage: answers.length ? Math.round((meaningfulAnswers / answers.length) * 100) : 0,
+    confidence: raw.assessment_confidence || (meaningfulAnswers >= 5 ? "High" : meaningfulAnswers >= 3 ? "Moderate" : "Low"),
+    interview_status: raw.readiness_score === 0 ? "Incomplete" : "Completed",
+  };
+
   return {
     ...raw,
     session_id: raw.session_id || 0,
@@ -32,10 +48,11 @@ function normalizeReport(raw) {
     mode: raw.mode || "technical",
     difficulty: raw.difficulty || "medium",
     readiness_score: typeof raw.readiness_score === "number" ? Math.round(raw.readiness_score) : 0,
-    status_label: raw.status_label || (raw.readiness_score >= 80 ? "Job-Ready Candidate" : raw.readiness_score >= 65 ? "Near Interview-Ready" : "Requires Targeted Practice"),
-    score_confidence: raw.score_confidence || (raw.answers?.length >= 5 ? "High" : raw.answers?.length >= 3 ? "Moderate" : "Low"),
-    confidence_explanation: raw.confidence_explanation || (raw.answers?.length >= 5 ? "High assessment confidence based on comprehensive multi-turn evidence." : "Calibrated estimate based on evaluated turns."),
+    status_label: raw.status_label || (raw.readiness_score >= 80 ? "Job-Ready Candidate" : raw.readiness_score >= 65 ? "Near Interview-Ready" : (raw.readiness_score === 0 ? "Incomplete Assessment" : "Requires Targeted Practice")),
+    score_confidence: raw.assessment_confidence || evidenceSummary.confidence || "Low",
+    confidence_explanation: raw.confidence_explanation || (raw.readiness_score === 0 ? "No meaningful interview answers were submitted, so readiness cannot be reliably assessed." : "Assessment based on evaluated turns."),
     isDeliveryMeasured,
+    evidence_summary: evidenceSummary,
     subscores: {
       technical: Math.round(raw.subscores?.technical || 0),
       communication: Math.round(raw.subscores?.communication || 0),
@@ -49,7 +66,7 @@ function normalizeReport(raw) {
       delivery_measured: isDeliveryMeasured,
       note: behavioral.note || (isDeliveryMeasured ? "Measured" : "Not measured: camera was off"),
     },
-    answers: Array.isArray(raw.answers) ? raw.answers : [],
+    answers,
     timeline: Array.isArray(raw.timeline) ? raw.timeline : [],
     session_weaknesses: Array.isArray(raw.session_weaknesses) ? raw.session_weaknesses : [],
     next_practice: Array.isArray(raw.next_practice) ? raw.next_practice : [],
@@ -72,7 +89,7 @@ function Report() {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState("summary"); // summary | questions | timeline | verification
+  const [activeTab, setActiveTab] = useState("questions"); // questions | summary | timeline | verification
   const [startingPractice, setStartingPractice] = useState(false);
 
   useEffect(() => {
@@ -98,7 +115,6 @@ function Report() {
           return;
         }
 
-        // If specific session failed, try latest session score
         const latestRes = await apiFetch("/interview/latest");
         if (latestRes.ok) {
           const latestData = await latestRes.json();
@@ -138,11 +154,9 @@ function Report() {
       if (res.ok) {
         const data = await res.json();
         navigate("/interview", { state: { sessionId: data.session_id, isPractice: true } });
-      } else {
-        navigate("/practice");
       }
-    } catch {
-      navigate("/practice");
+    } catch (err) {
+      console.error("Practice start error:", err);
     } finally {
       setStartingPractice(false);
     }
@@ -150,295 +164,242 @@ function Report() {
 
   if (loading) {
     return (
-      <div className="container" style={{ padding: "40px 20px" }}>
-        <Skeleton width="280px" height="32px" style={{ marginBottom: "12px" }} />
-        <Skeleton width="450px" height="18px" style={{ marginBottom: "28px" }} />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "20px", marginBottom: "24px" }}>
-          <Skeleton height="180px" borderRadius="var(--radius-lg)" />
-          <Skeleton height="180px" borderRadius="var(--radius-lg)" />
-        </div>
-        <Skeleton height="300px" borderRadius="var(--radius-lg)" />
+      <div style={{ maxWidth: "1080px", margin: "0 auto", padding: "0 16px 80px 16px" }}>
+        <Skeleton height="60px" borderRadius="var(--radius-md)" style={{ marginBottom: "20px" }} />
+        <Skeleton height="240px" borderRadius="var(--radius-lg)" style={{ marginBottom: "24px" }} />
+        <Skeleton height="360px" borderRadius="var(--radius-lg)" />
       </div>
     );
   }
 
   if (error || !report) {
     return (
-      <div className="container" style={{ textAlign: "center", padding: "60px 20px" }}>
-        <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "8px" }}>Interview Report</h2>
-        <p style={{ color: "var(--text-secondary)", marginBottom: "20px" }}>
-          {error || "We could not find an interview report for this session."}
-        </p>
-        <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
-          <Button variant="secondary" onClick={() => navigate("/dashboard")}>Back to Dashboard</Button>
-          <Button variant="secondary" onClick={() => navigate("/history")}>View History</Button>
-          <Button variant="primary" onClick={() => navigate("/setup")}>Start New Interview</Button>
+      <div style={{ maxWidth: "680px", margin: "60px auto", textAlign: "center" }}>
+        <div style={{ padding: "40px 24px", backgroundColor: "#ffffff", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+          <h2 style={{ fontSize: "20px", fontWeight: "700", color: "#0f172a", marginBottom: "8px" }}>
+            Report Not Available
+          </h2>
+          <p style={{ fontSize: "14px", color: "#64748b", marginBottom: "24px" }}>
+            {error || "We could not find an interview report for this session."}
+          </p>
+          <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+            <Button variant="secondary" onClick={() => navigate("/dashboard")}>
+              Return to Dashboard
+            </Button>
+            <Button variant="primary" onClick={() => navigate("/setup")}>
+              Start New Interview
+            </Button>
+          </div>
         </div>
       </div>
     );
   }
 
-  const isDeliveryMeasured = report.isDeliveryMeasured;
-  const readinessScore = report.readiness_score;
-  const scoreVariant = readinessScore >= 75 ? "success" : readinessScore >= 60 ? "info" : "warning";
+  const {
+    readiness_score: readinessScore,
+    isDeliveryMeasured,
+    subscores,
+    evidence_summary: evSummary,
+  } = report;
+
+  const isZeroEvidence = readinessScore === 0 || evSummary?.meaningful_answers === 0;
+
+  const scoreVariant = isZeroEvidence
+    ? "neutral"
+    : readinessScore >= 80
+    ? "success"
+    : readinessScore >= 65
+    ? "info"
+    : "warning";
 
   const nextRec = report.next_practice && report.next_practice.length > 0 ? report.next_practice[0] : null;
-  const drillTitle = nextRec?.drill_title || nextRec?.practice_objective || (nextRec?.weakness_type ? nextRec.weakness_type.replace(/_/g, " ").toUpperCase() : "Technical Deep Dive");
-  const drillRationale = nextRec?.rationale || nextRec?.practice_objective || "Sharpen your explanations on architecture constraints and failure handling.";
   const drillType = nextRec?.practice_type || "TECHNICAL_DEPTH";
+  const drillTitle = nextRec?.drill_title || drillType.replace(/_/g, " ").toUpperCase();
+  const drillRationale = nextRec?.rationale || "Practice answering focused technical follow-ups with concrete implementation details.";
 
-  // Chart data for subscores
   const subscoreBarData = [
-    { name: "Technical Depth", score: report.subscores.technical, fill: "#2563eb" },
-    { name: "Communication", score: report.subscores.communication, fill: "#0ea5e9" },
-    ...(isDeliveryMeasured && report.subscores.delivery !== null
-      ? [{ name: "Delivery & Stability", score: report.subscores.delivery, fill: "#6366f1" }]
-      : []),
-    { name: "Resume Consistency", score: report.subscores.resume_consistency, fill: "#f59e0b" },
+    { name: "Technical Depth", score: isZeroEvidence ? 0 : subscores.technical, fill: "#3b82f6" },
+    { name: "Communication", score: isZeroEvidence ? 0 : subscores.communication, fill: "#6366f1" },
+    { name: "Resume Consistency", score: isZeroEvidence ? 0 : subscores.resume_consistency, fill: "#0ea5e9" },
   ];
 
-  return (
-    <div className="container" style={{ maxWidth: "1080px", paddingBottom: "60px" }}>
-      {/* Top Breadcrumb & Actions */}
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: "14px",
-          marginBottom: "20px",
-        }}
-      >
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <Link to="/history" style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-              ← Interview History
-            </Link>
-            <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>/</span>
-            <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: "600" }}>
-              Session #{report.session_id}
-            </span>
-          </div>
-          <h1 style={{ fontSize: "24px", fontWeight: "700", color: "var(--text-primary)", marginTop: "4px" }}>
-            Performance & Delivery Report
-          </h1>
-          <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "2px" }}>
-            {report.target_role} · {report.mode} · {report.difficulty} difficulty
-          </div>
-        </div>
+  if (isDeliveryMeasured && subscores.delivery !== null) {
+    subscoreBarData.push({
+      name: "Delivery & Stability",
+      score: isZeroEvidence ? 0 : subscores.delivery,
+      fill: "#10b981",
+    });
+  }
 
-        <div style={{ display: "flex", gap: "10px" }}>
-          <Button variant="secondary" size="sm" onClick={() => navigate("/dashboard")}>
-            Dashboard
-          </Button>
-          <Button variant="primary" size="sm" onClick={() => navigate("/setup")}>
-            New Interview
-          </Button>
+  return (
+    <div style={{ maxWidth: "1080px", margin: "0 auto", padding: "0 16px 80px 16px" }}>
+      {/* HEADER: Study Review */}
+      <div style={{ marginBottom: "24px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+          <span style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--primary-700)" }}>
+            Session Analysis & Study Review
+          </span>
+          <Badge variant={isZeroEvidence ? "warning" : "info"}>
+            {isZeroEvidence ? "Incomplete Assessment" : "Evaluated Session"}
+          </Badge>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
+          <div>
+            <h1 style={{ fontSize: "28px", fontWeight: "800", color: "#0f172a", letterSpacing: "-0.02em" }}>
+              Your Interview Review
+            </h1>
+            <p style={{ color: "#64748b", marginTop: "4px", fontSize: "14px" }}>
+              Role: <strong style={{ color: "#1e293b" }}>{report.target_role}</strong> · Round: <strong style={{ color: "#1e293b" }}>{report.mode}</strong> · Difficulty: <strong style={{ color: "#1e293b" }}>{report.difficulty}</strong>
+            </p>
+          </div>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <Button variant="secondary" size="sm" onClick={() => navigate("/dashboard")}>
+              ← Dashboard
+            </Button>
+            <Button variant="primary" size="sm" onClick={() => handleStartPractice(drillType)} loading={startingPractice}>
+              Start Next Drill →
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Hero Overview: Score & Focus Highlights */}
+      {/* EVIDENCE SUMMARY STRIP */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-          gap: "20px",
+          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+          gap: "12px",
           marginBottom: "24px",
+          backgroundColor: "#f8fafc",
+          padding: "16px",
+          borderRadius: "10px",
+          border: "1px solid #e2e8f0",
         }}
       >
+        <div>
+          <div style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", color: "#64748b" }}>Questions Total</div>
+          <div style={{ fontSize: "20px", fontWeight: "800", color: "#0f172a", marginTop: "2px" }}>{evSummary.total_questions}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", color: "#64748b" }}>Answered</div>
+          <div style={{ fontSize: "20px", fontWeight: "800", color: "#16a34a", marginTop: "2px" }}>{evSummary.answered_questions}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", color: "#64748b" }}>Skipped (Missing)</div>
+          <div style={{ fontSize: "20px", fontWeight: "800", color: evSummary.skipped_questions > 0 ? "#dc2626" : "#64748b", marginTop: "2px" }}>
+            {evSummary.skipped_questions}
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", color: "#64748b" }}>Evidence Coverage</div>
+          <div style={{ fontSize: "20px", fontWeight: "800", color: evSummary.evidence_coverage < 50 ? "#d97706" : "#2563eb", marginTop: "2px" }}>
+            {evSummary.evidence_coverage}%
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: "11px", fontWeight: "600", textTransform: "uppercase", color: "#64748b" }}>Assessment Confidence</div>
+          <div style={{ marginTop: "4px" }}>
+            <Badge variant={evSummary.confidence === "High" ? "success" : evSummary.confidence === "Moderate" ? "info" : "warning"}>
+              {evSummary.confidence}
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      {/* HERO SCORE & HIGHLIGHTS */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "20px", marginBottom: "28px" }}>
         {/* Score Card */}
-        <Card style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+        <Card style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "24px" }}>
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-              <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)" }}>
+              <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", color: "#64748b" }}>
                 Interview Readiness Score
               </span>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <Badge variant={scoreVariant}>{report.status_label}</Badge>
-                {report.score_confidence && (
-                  <Badge variant="neutral">Confidence: {report.score_confidence}</Badge>
-                )}
-              </div>
+              <Badge variant={scoreVariant}>{report.status_label}</Badge>
             </div>
 
-            <div style={{ display: "flex", alignItems: "baseline", gap: "8px", margin: "8px 0" }}>
-              <span style={{ fontSize: "48px", fontWeight: "800", color: "var(--text-primary)", lineHeight: 1 }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: "8px", margin: "12px 0" }}>
+              <span style={{ fontSize: "52px", fontWeight: "800", color: isZeroEvidence ? "#94a3b8" : "#0f172a", lineHeight: 1 }}>
                 {readinessScore}
               </span>
-              <span style={{ fontSize: "18px", color: "var(--text-muted)", fontWeight: "500" }}>/ 100</span>
+              <span style={{ fontSize: "20px", color: "#94a3b8", fontWeight: "500" }}>/ 100</span>
             </div>
 
-            <p style={{ fontSize: "12px", color: "var(--text-secondary)", lineHeight: "1.5" }}>
-              {isDeliveryMeasured ? (
-                "Formula: 30% Technical + 30% Communication + 20% Delivery & Stability + 20% Resume Consistency."
-              ) : (
-                "Re-normalized formula: 37.5% Technical + 37.5% Communication + 25% Resume Consistency (camera was inactive)."
-              )}
+            <p style={{ fontSize: "13px", color: "#475569", lineHeight: "1.5" }}>
+              {isZeroEvidence
+                ? "No meaningful interview answers were submitted, so readiness cannot be reliably assessed."
+                : isDeliveryMeasured
+                ? "Formula: 30% Technical + 30% Communication + 20% Delivery & Stability + 20% Resume Consistency."
+                : "Re-normalized formula: 37.5% Technical + 37.5% Communication + 25% Resume Consistency (camera was inactive)."}
             </p>
             {report.confidence_explanation && (
-              <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "4px", fontStyle: "italic" }}>
+              <p style={{ fontSize: "12px", color: "#64748b", marginTop: "6px", fontStyle: "italic" }}>
                 {report.confidence_explanation}
               </p>
             )}
           </div>
 
-          <div style={{ borderTop: "1px solid var(--border-default)", paddingTop: "12px", marginTop: "16px", display: "flex", justifyContent: "space-between", fontSize: "12px", color: "var(--text-muted)" }}>
-            <span>Evaluated answers: {report.answers.length}</span>
-            <span>Duration: {Math.round((report.duration_seconds || 180) / 60)} min</span>
+          <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: "12px", marginTop: "16px", display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#64748b" }}>
+            <span>Meaningful answers: {evSummary.meaningful_answers} of {evSummary.total_questions}</span>
+            <span>Status: {evSummary.interview_status}</span>
           </div>
         </Card>
 
-        {/* Highlights & Growth Focus Card */}
-        <Card style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+        {/* Observations Card */}
+        <Card style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "24px" }}>
           <div>
-            <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)" }}>
+            <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", color: "#64748b" }}>
               Key Observations
             </span>
 
-            <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "10px" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
-                <span style={{ color: "var(--success-text)", fontWeight: "700" }}>✓</span>
-                <div>
-                  <div style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-primary)" }}>
-                    Strongest: {report.insights?.strongest_category || "Technical Depth"}
+            {isZeroEvidence ? (
+              <div style={{ marginTop: "16px", padding: "14px 16px", borderRadius: "8px", backgroundColor: "#fffbeb", border: "1px solid #fef3c7" }}>
+                <div style={{ fontSize: "13px", fontWeight: "700", color: "#92400e", marginBottom: "4px" }}>
+                  Missing Interview Evidence
+                </div>
+                <div style={{ fontSize: "12px", color: "#b45309", lineHeight: "1.5" }}>
+                  Candidate skipped or provided minimal text across interview questions. To receive an actionable evaluation and readiness score, complete full verbal or written answers.
+                </div>
+              </div>
+            ) : (
+              <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
+                  <span style={{ color: "#16a34a", fontWeight: "700" }}>✓</span>
+                  <div>
+                    <div style={{ fontSize: "13px", fontWeight: "700", color: "#0f172a" }}>
+                      Strongest: {report.insights?.strongest_category || "Technical Depth"}
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#475569", marginTop: "1px" }}>
+                      {report.insights?.top_improvements?.[0] || "Demonstrated sound understanding of core technical concepts."}
+                    </div>
                   </div>
-                  <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "1px" }}>
-                    {report.insights?.top_improvements?.[0] || "Solid mastery of core technical decisions."}
+                </div>
+
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
+                  <span style={{ color: "#d97706", fontWeight: "700" }}>!</span>
+                  <div>
+                    <div style={{ fontSize: "13px", fontWeight: "700", color: "#0f172a" }}>
+                      Growth Opportunity: {report.insights?.weakest_category || "Communication Structure"}
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#475569", marginTop: "1px" }}>
+                      {report.insights?.top_improvements?.[1] || "Answers benefit from explicit architectural trade-offs and quantifiable SLAs."}
+                    </div>
                   </div>
                 </div>
               </div>
-
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
-                <span style={{ color: "var(--warning-text)", fontWeight: "700" }}>!</span>
-                <div>
-                  <div style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-primary)" }}>
-                    Needs Attention: {report.insights?.weakest_category || "Communication Structure"}
-                  </div>
-                  <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "1px" }}>
-                    {report.insights?.top_improvements?.[1] || "Answers benefit from tighter STAR structure and fewer filler pauses."}
-                  </div>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
 
-          {report.evaluation_engine && (
-            <div style={{ borderTop: "1px solid var(--border-default)", paddingTop: "12px", marginTop: "16px", fontSize: "11px", color: "var(--text-muted)" }}>
-              Evaluated by: {String(report.evaluation_engine).toUpperCase()} [{report.prompt_version || "rubric v1.0"}]
-            </div>
-          )}
+          <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: "12px", marginTop: "16px", fontSize: "11px", color: "#64748b" }}>
+            Evidence-Gated Assessment Engine [rubric + Gemini synthesis]
+          </div>
         </Card>
       </div>
 
-      {/* WHAT WENT WELL / WHAT HELD YOU BACK / NEXT PRACTICE */}
+      {/* TABS NAVIGATION */}
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-          gap: "20px",
-          marginBottom: "32px",
-        }}
-      >
-        {/* Pillar 1: What Went Well */}
-        <Card style={{ borderTop: "3px solid var(--success-text)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "12px" }}>
-            <span style={{ color: "var(--success-text)", fontWeight: "bold" }}>●</span>
-            <h3 style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>
-              What Went Well
-            </h3>
-          </div>
-
-          <div style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.5", display: "flex", flexDirection: "column", gap: "10px" }}>
-            {report.answers && report.answers.flatMap((a) => a.strengths || []).length > 0 ? (
-              Array.from(new Set(report.answers.flatMap((a) => a.strengths || [])))
-                .slice(0, 3)
-                .map((str, idx) => (
-                  <div key={idx} style={{ display: "flex", gap: "8px" }}>
-                    <span style={{ color: "var(--success-text)" }}>✓</span>
-                    <span>{str}</span>
-                  </div>
-                ))
-            ) : (
-              <div>Maintained structured explanations across interview questions.</div>
-            )}
-          </div>
-        </Card>
-
-        {/* Pillar 2: What Held You Back */}
-        <Card style={{ borderTop: "3px solid var(--warning-text)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "12px" }}>
-            <span style={{ color: "var(--warning-text)", fontWeight: "bold" }}>●</span>
-            <h3 style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>
-              What Held You Back
-            </h3>
-          </div>
-
-          <div style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.5", display: "flex", flexDirection: "column", gap: "10px" }}>
-            {report.session_weaknesses && report.session_weaknesses.length > 0 ? (
-              report.session_weaknesses.slice(0, 2).map((w, idx) => {
-                const title = (w.weakness_type || w.id || w.dimension || "Weakness").replace(/_/g, " ").toUpperCase();
-                const explanation = w.explanation || w.symptom || w.pattern || "Technical depth required more specifics.";
-                const actionText = typeof w.recommended_action === "object"
-                  ? (w.recommended_action?.focus || w.recommended_action?.practice_type || "Practice targeted depth drills.")
-                  : (w.actionable_guidance || w.recommended_action || "Cite concrete trade-offs and metrics.");
-
-                return (
-                  <div key={idx} style={{ backgroundColor: "var(--slate-50)", padding: "10px 12px", borderRadius: "6px", border: "1px solid var(--border-default)" }}>
-                    <div style={{ fontSize: "12px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "2px" }}>
-                      {title}
-                    </div>
-                    <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>
-                      {explanation}
-                    </div>
-                    <div style={{ fontSize: "11px", color: "var(--primary-700)", fontWeight: "500" }}>
-                      Action: {actionText}
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div>Answers would be stronger with more specific metrics and architectural constraints.</div>
-            )}
-          </div>
-        </Card>
-
-        {/* Pillar 3: Next Recommended Practice */}
-        <Card style={{ borderTop: "3px solid var(--primary-600)", backgroundColor: "var(--slate-50)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-            <h3 style={{ fontSize: "15px", fontWeight: "700", color: "var(--primary-900)" }}>
-              Recommended Next Practice
-            </h3>
-            <Badge variant="info">Targeted</Badge>
-          </div>
-
-          <div style={{ marginBottom: "14px" }}>
-            <div style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "4px" }}>
-              {drillTitle}
-            </div>
-            <p style={{ fontSize: "12px", color: "var(--text-secondary)", lineHeight: "1.5", marginBottom: "10px" }}>
-              {drillRationale}
-            </p>
-            <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>
-              {nextRec?.target_count || 5} questions · ~10 minutes
-            </div>
-          </div>
-
-          <Button
-            variant="primary"
-            fullWidth
-            onClick={() => handleStartPractice(drillType)}
-            loading={startingPractice}
-          >
-            Start This Practice Drill
-          </Button>
-        </Card>
-      </div>
-
-      {/* Progressive Disclosure Tabs */}
-      <div
-        style={{
-          borderBottom: "1px solid var(--border-default)",
+          borderBottom: "1px solid #e2e8f0",
           display: "flex",
           gap: "8px",
           marginBottom: "24px",
@@ -446,36 +407,36 @@ function Report() {
       >
         <button
           type="button"
-          onClick={() => setActiveTab("summary")}
-          style={{
-            padding: "10px 16px",
-            background: "none",
-            border: "none",
-            borderBottom: activeTab === "summary" ? "2px solid var(--slate-900)" : "2px solid transparent",
-            fontWeight: activeTab === "summary" ? "600" : "500",
-            color: activeTab === "summary" ? "var(--text-primary)" : "var(--text-secondary)",
-            fontSize: "13px",
-            cursor: "pointer",
-          }}
-        >
-          Dimension Breakdown
-        </button>
-
-        <button
-          type="button"
           onClick={() => setActiveTab("questions")}
           style={{
             padding: "10px 16px",
             background: "none",
             border: "none",
-            borderBottom: activeTab === "questions" ? "2px solid var(--slate-900)" : "2px solid transparent",
-            fontWeight: activeTab === "questions" ? "600" : "500",
-            color: activeTab === "questions" ? "var(--text-primary)" : "var(--text-secondary)",
-            fontSize: "13px",
+            borderBottom: activeTab === "questions" ? "2px solid #0f172a" : "2px solid transparent",
+            fontWeight: activeTab === "questions" ? "700" : "500",
+            color: activeTab === "questions" ? "#0f172a" : "#64748b",
+            fontSize: "14px",
             cursor: "pointer",
           }}
         >
-          Per-Question Review ({report.answers.length})
+          Per-Question Study Review ({report.answers.length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("summary")}
+          style={{
+            padding: "10px 16px",
+            background: "none",
+            border: "none",
+            borderBottom: activeTab === "summary" ? "2px solid #0f172a" : "2px solid transparent",
+            fontWeight: activeTab === "summary" ? "700" : "500",
+            color: activeTab === "summary" ? "#0f172a" : "#64748b",
+            fontSize: "14px",
+            cursor: "pointer",
+          }}
+        >
+          Dimensions & Signals
         </button>
 
         <button
@@ -485,38 +446,166 @@ function Report() {
             padding: "10px 16px",
             background: "none",
             border: "none",
-            borderBottom: activeTab === "timeline" ? "2px solid var(--slate-900)" : "2px solid transparent",
-            fontWeight: activeTab === "timeline" ? "600" : "500",
-            color: activeTab === "timeline" ? "var(--text-primary)" : "var(--text-secondary)",
-            fontSize: "13px",
+            borderBottom: activeTab === "timeline" ? "2px solid #0f172a" : "2px solid transparent",
+            fontWeight: activeTab === "timeline" ? "700" : "500",
+            color: activeTab === "timeline" ? "#0f172a" : "#64748b",
+            fontSize: "14px",
             cursor: "pointer",
           }}
         >
-          Interview Timeline ({report.timeline.length} turns)
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("verification")}
-          style={{
-            padding: "10px 16px",
-            background: "none",
-            border: "none",
-            borderBottom: activeTab === "verification" ? "2px solid var(--slate-900)" : "2px solid transparent",
-            fontWeight: activeTab === "verification" ? "600" : "500",
-            color: activeTab === "verification" ? "var(--text-primary)" : "var(--text-secondary)",
-            fontSize: "13px",
-            cursor: "pointer",
-          }}
-        >
-          Resume Verification
+          Session Timeline ({report.timeline.length} turns)
         </button>
       </div>
 
-      {/* Tab 1: Dimension Breakdown */}
+      {/* TAB 1: PER-QUESTION STUDY REVIEW */}
+      {activeTab === "questions" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          {report.answers && report.answers.map((ans, idx) => {
+            const isSkipped = ans.is_skipped || ans.status === "skipped" || (ans.transcript && ans.transcript.includes("[SKIPPED]"));
+            const ansStatus = ans.answer_status || (isSkipped ? "SKIPPED" : "PARTIAL");
+
+            return (
+              <Card key={idx} style={{ padding: "24px", border: "1px solid #e2e8f0" }}>
+                {/* Header */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px", flexWrap: "wrap", gap: "10px" }}>
+                  <div>
+                    <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", color: "#2563eb" }}>
+                      Question {idx + 1}
+                    </span>
+                    <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#0f172a", marginTop: "2px" }}>
+                      {ans.question_text}
+                    </h3>
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    {isSkipped ? (
+                      <Badge variant="neutral">Skipped · Missing Evidence</Badge>
+                    ) : (
+                      <>
+                        <Badge variant={ansStatus === "STRONG" ? "success" : ansStatus === "PARTIAL" ? "info" : "warning"}>
+                          {ans.status_label || `${ansStatus} Answer`}
+                        </Badge>
+                        <Badge variant="neutral">
+                          Score: {Math.round(ans.overall_score || 0)}/100
+                        </Badge>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Candidate Answer Box */}
+                {isSkipped ? (
+                  <div style={{ backgroundColor: "#f8fafc", padding: "12px 16px", borderRadius: "8px", marginBottom: "16px", border: "1px dashed #cbd5e1" }}>
+                    <div style={{ fontSize: "12px", fontWeight: "700", color: "#64748b", marginBottom: "2px" }}>
+                      Evidence Status: Skipped
+                    </div>
+                    <p style={{ fontSize: "13px", color: "#475569" }}>
+                      You chose not to answer this question. This was recorded as an evidence gap rather than a penalized incorrect answer.
+                    </p>
+                  </div>
+                ) : (
+                  <div style={{ backgroundColor: "#f8fafc", padding: "14px 16px", borderRadius: "8px", marginBottom: "16px", border: "1px solid #e2e8f0" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                      <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: "#64748b" }}>
+                        Your Submission
+                      </span>
+                      {ans.wpm > 0 && (
+                        <span style={{ fontSize: "11px", color: "#64748b" }}>
+                          Pacing: {ans.wpm} WPM · Response time: {ans.response_time}s
+                        </span>
+                      )}
+                    </div>
+                    <p style={{ fontSize: "14px", color: "#1e293b", lineHeight: "1.6", fontStyle: "italic" }}>
+                      "{ans.transcript || "No transcript recorded."}"
+                    </p>
+                  </div>
+                )}
+
+                {/* COMPARATIVE STUDY REVIEW GRIDS */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "16px", marginBottom: "16px" }}>
+                  {/* Expected Concepts */}
+                  <div style={{ backgroundColor: "#f0fdf4", padding: "14px 16px", borderRadius: "8px", border: "1px solid #bbf7d0" }}>
+                    <div style={{ fontSize: "12px", fontWeight: "700", color: "#166534", textTransform: "uppercase", marginBottom: "8px" }}>
+                      What a Strong Answer Should Cover
+                    </div>
+                    <ul style={{ margin: 0, paddingLeft: "16px", fontSize: "13px", color: "#14532d", lineHeight: "1.5" }}>
+                      {ans.strong_answer_should_cover && ans.strong_answer_should_cover.length > 0 ? (
+                        ans.strong_answer_should_cover.map((c, cIdx) => <li key={cIdx} style={{ marginBottom: "4px" }}>{c}</li>)
+                      ) : (
+                        <>
+                          <li style={{ marginBottom: "4px" }}>Core conceptual definition and purpose</li>
+                          <li style={{ marginBottom: "4px" }}>Concrete technical mechanisms and protocols</li>
+                          <li style={{ marginBottom: "4px" }}>Production constraints and engineering trade-offs</li>
+                        </>
+                      )}
+                    </ul>
+                  </div>
+
+                  {/* What You Missed */}
+                  {!isSkipped && (
+                    <div style={{ backgroundColor: "#fffbeb", padding: "14px 16px", borderRadius: "8px", border: "1px solid #fef3c7" }}>
+                      <div style={{ fontSize: "12px", fontWeight: "700", color: "#92400e", textTransform: "uppercase", marginBottom: "8px" }}>
+                        What Was Missing
+                      </div>
+                      <ul style={{ margin: 0, paddingLeft: "16px", fontSize: "13px", color: "#78350f", lineHeight: "1.5" }}>
+                        {ans.missing_points && ans.missing_points.length > 0 ? (
+                          ans.missing_points.map((m, mIdx) => <li key={mIdx} style={{ marginBottom: "4px" }}>{m}</li>)
+                        ) : (
+                          <>
+                            <li style={{ marginBottom: "4px" }}>Specific implementation metrics and throughput numbers</li>
+                            <li style={{ marginBottom: "4px" }}>Alternative architectural trade-offs evaluated</li>
+                          </>
+                        )}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                {/* HOW TO IMPROVE (MODEL ANSWER) */}
+                {ans.improved_answer && (
+                  <div style={{ backgroundColor: "#eff6ff", padding: "14px 16px", borderRadius: "8px", marginBottom: "16px", border: "1px solid #bfdbfe" }}>
+                    <div style={{ fontSize: "12px", fontWeight: "700", color: "#1e40af", textTransform: "uppercase", marginBottom: "6px" }}>
+                      How to Structure an Improved Answer
+                    </div>
+                    <p style={{ fontSize: "13px", color: "#1e3a8a", lineHeight: "1.6" }}>
+                      {ans.improved_answer}
+                    </p>
+                  </div>
+                )}
+
+                {/* RESUME / PROJECT CONNECTION */}
+                {ans.resume_connection && (
+                  <div style={{ backgroundColor: "#faf5ff", padding: "14px 16px", borderRadius: "8px", marginBottom: "16px", border: "1px solid #e9d5ff" }}>
+                    <div style={{ fontSize: "12px", fontWeight: "700", color: "#6b21a8", textTransform: "uppercase", marginBottom: "4px" }}>
+                      Why This Matters for Your Resume
+                    </div>
+                    <p style={{ fontSize: "13px", color: "#581c87", lineHeight: "1.5" }}>
+                      {ans.resume_connection}
+                    </p>
+                  </div>
+                )}
+
+                {/* ACTION: Practice This Topic */}
+                <div style={{ display: "flex", justifyContent: "flex-end", borderTop: "1px solid #f1f5f9", paddingTop: "12px" }}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleStartPractice(drillType)}
+                    loading={startingPractice}
+                  >
+                    Practice This Topic →
+                  </Button>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {/* TAB 2: DIMENSIONS & PHYSICAL SIGNALS */}
       {activeTab === "summary" && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "20px" }}>
-          <Card>
+          <Card style={{ padding: "24px" }}>
             <CardHeader title="Dimensions Breakdown" subtitle="Relative performance across measured competencies" />
             <div style={{ height: "240px", width: "100%" }}>
               <ResponsiveContainer width="100%" height="100%">
@@ -531,110 +620,37 @@ function Report() {
             </div>
           </Card>
 
-          <Card>
-            <CardHeader title="Presentation & Physical Signals" subtitle="Camera positioning, blink rate, and speech cadence" />
+          <Card style={{ padding: "24px" }}>
+            <CardHeader title="Presentation & Physical Signals" subtitle="Sensor measurements vs diagnostic interpretation" />
             {!isDeliveryMeasured && (
               <div className="alert alert-warning" style={{ fontSize: "12px", marginBottom: "14px" }}>
                 Visual analysis unavailable for this session (camera was off/denied). Physical delivery was excluded from readiness score.
               </div>
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: "12px", fontSize: "13px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--border-default)" }}>
-                <span style={{ color: "var(--text-secondary)" }}>Camera Positioning (Centering proxy):</span>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #f1f5f9" }}>
+                <span style={{ color: "#64748b" }}>Camera Centering (Measured):</span>
                 <strong>{isDeliveryMeasured && report.behavioral_metrics.eye_contact_percent !== null ? `${report.behavioral_metrics.eye_contact_percent}%` : "Not measured"}</strong>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--border-default)" }}>
-                <span style={{ color: "var(--text-secondary)" }}>Blink Frequency:</span>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #f1f5f9" }}>
+                <span style={{ color: "#64748b" }}>Blink Frequency (Measured):</span>
                 <strong>{isDeliveryMeasured && report.behavioral_metrics.blink_rate !== null ? `${report.behavioral_metrics.blink_rate} / min` : "Not measured"}</strong>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--border-default)" }}>
-                <span style={{ color: "var(--text-secondary)" }}>Speaking Cadence / Pauses:</span>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #f1f5f9" }}>
+                <span style={{ color: "#64748b" }}>Pause Cadence (Measured):</span>
                 <strong>{report.behavioral_metrics.pause_rate !== null ? `${report.behavioral_metrics.pause_rate}s avg` : "2.0s avg"}</strong>
               </div>
             </div>
-            <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "14px" }}>
-              Note: Physical signals are diagnostic framing and pacing indicators, not assessments of confidence, truthfulness, or internal emotion.
+            <p style={{ fontSize: "12px", color: "#64748b", marginTop: "16px", backgroundColor: "#f8fafc", padding: "10px", borderRadius: "6px" }}>
+              <strong>Interpretation:</strong> Physical signals reflect video framing stability and conversational pacing. They do NOT represent psychological truthfulness, anxiety, or hiring suitability.
             </p>
           </Card>
         </div>
       )}
 
-      {/* Tab 2: Question Reviews */}
-      {activeTab === "questions" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          {report.answers && report.answers.map((ans, idx) => {
-            const isSkipped = ans.is_skipped || ans.status === "skipped" || (ans.transcript && ans.transcript.includes("[SKIPPED]"));
-
-            return (
-              <Card key={idx}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
-                  <div>
-                    <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: "var(--primary-700)" }}>
-                      Question {idx + 1}
-                    </span>
-                    <h4 style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)", marginTop: "2px" }}>
-                      {ans.question_text}
-                    </h4>
-                  </div>
-                  {isSkipped ? (
-                    <Badge variant="neutral">Skipped</Badge>
-                  ) : (
-                    <Badge variant={ans.overall_score >= 75 ? "success" : "neutral"}>
-                      Score: {Math.round(ans.overall_score || 0)}
-                    </Badge>
-                  )}
-                </div>
-
-                {isSkipped ? (
-                  <div style={{ backgroundColor: "var(--slate-50)", padding: "12px 14px", borderRadius: "6px", marginBottom: "14px", fontSize: "13px", color: "var(--text-secondary)", border: "1px solid var(--border-default)" }}>
-                    <div style={{ fontWeight: "600", color: "var(--text-primary)", marginBottom: "4px" }}>Status: Skipped</div>
-                    Candidate did not provide evidence for this question.
-                  </div>
-                ) : (
-                  <div style={{ backgroundColor: "var(--slate-50)", padding: "12px 14px", borderRadius: "6px", marginBottom: "14px", fontSize: "13px", color: "var(--text-primary)", fontStyle: "italic", border: "1px solid var(--border-default)" }}>
-                    "{ans.transcript || "No transcript recorded."}"
-                  </div>
-                )}
-
-                {/* Rubric Dimension Breakdown */}
-                {!isSkipped && ans.dimensions && Object.keys(ans.dimensions).length > 0 && (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px", marginBottom: "12px" }}>
-                    {Object.entries(ans.dimensions).map(([dimKey, dimVal]) => (
-                      <div key={dimKey} style={{ padding: "8px 10px", borderRadius: "6px", border: "1px solid var(--border-default)", backgroundColor: "#ffffff" }}>
-                        <div style={{ fontSize: "11px", fontWeight: "600", textTransform: "capitalize", color: "var(--text-muted)" }}>
-                          {dimKey}
-                        </div>
-                        <div style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>
-                          {Math.round(dimVal?.score || 0)}/100
-                        </div>
-                        <div style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "2px" }}>
-                          {dimVal?.explanation}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {isSkipped ? (
-                  <div style={{ fontSize: "12px", color: "var(--text-secondary)", backgroundColor: "var(--slate-100)", padding: "8px 12px", borderRadius: "6px" }}>
-                    <strong>Note:</strong> Candidate chose to skip this question. It was logged as an evidence gap rather than a technically incorrect answer.
-                  </div>
-                ) : (
-                  ans.suggestions && ans.suggestions.length > 0 && (
-                    <div style={{ fontSize: "12px", color: "var(--primary-800)", backgroundColor: "var(--primary-50)", padding: "8px 12px", borderRadius: "6px" }}>
-                      <strong>Suggestion:</strong> {ans.suggestions[0]}
-                    </div>
-                  )
-                )}
-              </Card>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Tab 3: Timeline & Decisions */}
+      {/* TAB 3: TIMELINE & DECISIONS */}
       {activeTab === "timeline" && (
-        <Card>
+        <Card style={{ padding: "24px" }}>
           <CardHeader title="Session Timeline" subtitle="Chronological progression of questions and follow-ups" />
           {report.timeline && report.timeline.length > 0 ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -643,64 +659,28 @@ function Report() {
                 const mins = Math.floor(offset / 60);
                 const secs = Math.floor(offset % 60);
                 return (
-                  <div key={idx} style={{ padding: "12px 14px", borderRadius: "6px", backgroundColor: "var(--slate-50)", border: "1px solid var(--border-default)" }}>
+                  <div key={idx} style={{ padding: "12px 14px", borderRadius: "6px", backgroundColor: "#f8fafc", border: "1px solid #e2e8f0" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <span style={{ fontSize: "11px", fontWeight: "700", backgroundColor: "var(--slate-900)", color: "#ffffff", padding: "2px 6px", borderRadius: "4px" }}>
+                        <span style={{ fontSize: "11px", fontWeight: "700", backgroundColor: "#0f172a", color: "#ffffff", padding: "2px 6px", borderRadius: "4px" }}>
                           Turn {item.turn || idx + 1} · +{mins}:{secs.toString().padStart(2, "0")}
                         </span>
-                        <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-primary)" }}>
-                          {item.question_type || item.event_type || "Event"}
-                        </span>
+                        <strong style={{ fontSize: "13px", color: "#0f172a" }}>{item.event_type || item.action}</strong>
                       </div>
-                      <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
-                        {item.word_count || item.evidence?.word_count || 0} words
-                      </span>
+                      <span style={{ fontSize: "11px", color: "#64748b" }}>{item.status || "OK"}</span>
                     </div>
-                    <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "4px" }}>
-                      {item.question_text || item.description || item.title}
-                    </div>
+                    <p style={{ fontSize: "12px", color: "#475569", margin: 0 }}>
+                      {item.summary || item.details}
+                    </p>
                   </div>
                 );
               })}
             </div>
           ) : (
-            <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>No timeline events recorded.</p>
-          )}
-        </Card>
-      )}
-
-      {/* Tab 4: Resume Verification */}
-      {activeTab === "verification" && (
-        <Card>
-          <CardHeader title="Resume Verification" subtitle="Alignment between resume claims and interview responses" />
-          {report.claim_consistency && report.claim_consistency.length > 0 ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {report.claim_consistency.map((claim, idx) => (
-                <div key={idx} style={{ padding: "12px 14px", borderRadius: "6px", backgroundColor: "var(--slate-50)", border: "1px solid var(--border-default)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                    <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-primary)" }}>
-                      {claim.claim_text || `Claim #${claim.claim_id}`}
-                    </span>
-                    <Badge variant={claim.label === "consistent" ? "success" : "neutral"}>
-                      {claim.label}
-                    </Badge>
-                  </div>
-                  <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-                    {claim.explanation || "Verified against spoken implementation details."}
-                  </div>
-                </div>
-              ))}
+            <div style={{ fontSize: "13px", color: "#64748b" }}>
+              No timeline events recorded for this session.
             </div>
-          ) : (
-            <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>
-              No specific resume claims were targeted in this session.
-            </p>
           )}
-
-          <div style={{ marginTop: "16px", padding: "10px 12px", backgroundColor: "var(--slate-100)", borderRadius: "6px", fontSize: "11px", color: "var(--text-muted)" }}>
-            Resume verification evaluates whether interview answers provide supporting detail for claims listed on your resume. It does not make accusations or truth conclusions.
-          </div>
         </Card>
       )}
     </div>

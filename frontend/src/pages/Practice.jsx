@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../utils/api";
-import { Card, CardHeader } from "../components/ui/Card";
+import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
 import { Skeleton } from "../components/ui/Skeleton";
@@ -12,60 +12,77 @@ const DRILL_CATALOG = [
     type: "TECHNICAL_DEPTH",
     title: "Technical Deep Dive",
     subtitle: "Architecture & System Mechanics",
-    description: "Practice explaining complex engineering choices, bottleneck optimizations, and failure handling with concrete specifics.",
+    icon: "⚙",
+    description: "Master system mechanics, database concurrency, memory management, and scaling limits with deep technical precision.",
     defaultQuestions: 5,
     estimatedMinutes: 10,
-    badge: "Core Technical",
+    badge: "Architecture & Systems",
     badgeVariant: "neutral",
+  },
+  {
+    type: "TRADEOFF_REASONING",
+    title: "Trade-off Reasoning",
+    subtitle: "Comparative Architectural Choices",
+    icon: "⚖",
+    description: "Defend engineering choices under real constraints: relational vs document models, sync vs async messaging, and caching trade-offs.",
+    defaultQuestions: 5,
+    estimatedMinutes: 10,
+    badge: "Architectural Decisions",
+    badgeVariant: "info",
   },
   {
     type: "FOLLOWUP_DEFENSE",
     title: "Follow-up & Probe Defense",
-    subtitle: "Multi-turn Question Ladders",
-    description: "Strengthen how you respond when an interviewer digs into trade-offs, edge cases, and architectural alternatives.",
+    subtitle: "Handling Pressure & Edge Cases",
+    icon: "↳",
+    description: "Strengthen how you respond when interviewers probe deeper into failure modes, cache stampedes, and 10x traffic spikes.",
     defaultQuestions: 5,
     estimatedMinutes: 10,
-    badge: "Interview Agility",
+    badge: "Interview Pressure",
     badgeVariant: "info",
   },
   {
     type: "PROJECT_DEFENSE",
     title: "Project & Claim Defense",
-    subtitle: "Resume-Grounded Questions",
-    description: "Validate deliverables, system metrics, and architectural ownership from projects cited on your resume.",
+    subtitle: "Resume-Grounded Evidence",
+    icon: "▣",
+    description: "Defend projects, frameworks, and architecture claims directly cited on your resume with authentic personal ownership.",
     defaultQuestions: 5,
     estimatedMinutes: 10,
-    badge: "Resume Anchored",
+    badge: "Resume & Projects",
     badgeVariant: "info",
   },
   {
     type: "STRUCTURED_ANSWER",
     title: "Structured Communication",
     subtitle: "Context, Action & Impact",
-    description: "Sharpen verbal delivery using structured frameworks. Eliminate mid-sentence hesitation and reduce verbal fillers.",
+    icon: "Aa",
+    description: "Sharpen verbal delivery using structured frameworks. Deliver concise 90-second technical briefings without rambling.",
     defaultQuestions: 5,
     estimatedMinutes: 8,
-    badge: "Delivery & Clarity",
+    badge: "Answer Structure",
     badgeVariant: "neutral",
   },
   {
     type: "BEHAVIORAL_STAR",
     title: "Behavioral Scenarios",
     subtitle: "STAR Method Practice",
-    description: "Walk through high-impact teamwork, disagreement, conflict resolution, and prioritization examples.",
+    icon: "◎",
+    description: "Master STAR scenarios: architectural disagreements, production outages under your watch, and team mentoring.",
     defaultQuestions: 5,
     estimatedMinutes: 10,
-    badge: "Culture & Leadership",
+    badge: "Real Situations",
     badgeVariant: "neutral",
   },
   {
     type: "PRESSURE_RESPONSE",
     title: "High-Urgency Pressure Practice",
     subtitle: "45-Second Incident Response",
-    description: "Simulate high-stakes incident post-mortems and live troubleshooting with strict 45-second answer windows.",
+    icon: "◷",
+    description: "Simulate live production incident triage, database locks, and outage recovery with strict 45-second answer timers.",
     defaultQuestions: 5,
     estimatedMinutes: 8,
-    badge: "Pressure Drill",
+    badge: "Fast Decisions",
     badgeVariant: "warning",
   },
 ];
@@ -75,27 +92,36 @@ function Practice() {
   const { user } = useAuth();
 
   const [recommendations, setRecommendations] = useState([]);
+  const [progressData, setProgressData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [launchingType, setLaunchingType] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function fetchRecs() {
+    async function loadData() {
       setLoading(true);
       setError(null);
       try {
-        const res = await apiFetch("/practice/recommendations");
-        if (res.ok) {
-          const data = await res.json();
-          setRecommendations(Array.isArray(data) ? data : []);
+        const [recsRes, progRes] = await Promise.all([
+          apiFetch("/practice/recommendations"),
+          apiFetch("/analytics/progress"),
+        ]);
+
+        if (recsRes.ok) {
+          const recsData = await recsRes.json();
+          setRecommendations(Array.isArray(recsData) ? recsData : []);
+        }
+        if (progRes.ok) {
+          const prog = await progRes.json();
+          setProgressData(prog);
         }
       } catch (err) {
-        console.error("Failed to load practice recommendations:", err);
+        console.error("Failed to load practice hub data:", err);
       } finally {
         setLoading(false);
       }
     }
-    fetchRecs();
+    loadData();
   }, []);
 
   const handleStartDrill = async (drillType, count = 5) => {
@@ -134,14 +160,20 @@ function Practice() {
   const primaryRec = recommendations.length > 0 ? recommendations[0] : null;
 
   return (
-    <div className="container" style={{ maxWidth: "var(--container-max-w)" }}>
-      {/* Header */}
+    <div style={{ maxWidth: "1080px", margin: "0 auto", padding: "0 16px 80px 16px" }}>
+      {/* Header: Study Style */}
       <div style={{ marginBottom: "28px" }}>
-        <h1 style={{ fontSize: "26px", fontWeight: "700", color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
-          Targeted Practice
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+          <span style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--primary-700)" }}>
+            Study · Practice · Improve
+          </span>
+          <Badge variant="info">Targeted Drills</Badge>
+        </div>
+        <h1 style={{ fontSize: "28px", fontWeight: "800", color: "#0f172a", letterSpacing: "-0.02em" }}>
+          Your Interview Practice
         </h1>
-        <p style={{ fontSize: "14px", color: "var(--text-secondary)", marginTop: "4px" }}>
-          Target specific skills and recurring weaknesses with concise, 5-question focused drills.
+        <p style={{ fontSize: "14px", color: "#64748b", marginTop: "4px" }}>
+          Build stronger answers one session at a time. Each drill targets a specific cognitive dimension with dedicated question pools.
         </p>
       </div>
 
@@ -151,47 +183,50 @@ function Practice() {
         </div>
       )}
 
-      {/* Primary Recommended Practice Hero */}
+      {/* TODAY'S FOCUS HERO */}
       {loading ? (
         <Skeleton height="180px" borderRadius="var(--radius-lg)" style={{ marginBottom: "32px" }} />
       ) : primaryRec ? (
         <Card
           style={{
             marginBottom: "32px",
-            backgroundColor: "var(--slate-50)",
-            borderColor: "var(--primary-200)",
+            backgroundColor: "#f8fafc",
+            borderColor: "#cbd5e1",
             padding: "24px 28px",
+            borderLeft: "4px solid #3b82f6",
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--primary-700)" }}>
-                Recommended For You
+              <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.06em", color: "#2563eb" }}>
+                Today's Focus
               </span>
-              <Badge variant="warning">Priority 1</Badge>
+              <Badge variant={primaryRec.decision_metadata?.rule === "no_active_weakness_fallback" ? "info" : "warning"}>
+                {primaryRec.decision_metadata?.rule === "no_active_weakness_fallback" ? "Mastery Focus" : `Priority ${primaryRec.priority || 1}`}
+              </Badge>
             </div>
-            <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-              Based on your recent performance
+            <span style={{ fontSize: "12px", color: "#64748b" }}>
+              Calibrated from recent session performance
             </span>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "24px", alignItems: "center" }}>
             <div>
-              <h2 style={{ fontSize: "20px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "8px" }}>
+              <h2 style={{ fontSize: "20px", fontWeight: "700", color: "#0f172a", marginBottom: "8px" }}>
                 {primaryRec.drill_title || primaryRec.practice_type?.replace(/_/g, " ")}
               </h2>
-              <p style={{ fontSize: "14px", color: "var(--text-secondary)", lineHeight: "1.5", marginBottom: "12px", maxWidth: "680px" }}>
+              <p style={{ fontSize: "14px", color: "#334155", lineHeight: "1.5", marginBottom: "12px", maxWidth: "680px" }}>
                 {primaryRec.rationale || "Practice answering focused technical follow-ups with concrete implementation details."}
               </p>
-              <div style={{ display: "flex", gap: "14px", fontSize: "12px", color: "var(--text-muted)" }}>
+              <div style={{ display: "flex", gap: "14px", fontSize: "12px", color: "#64748b" }}>
                 <span>{primaryRec.target_count || 5} questions</span>
                 <span>·</span>
                 <span>~10 minutes</span>
                 {primaryRec.dimension && (
                   <>
                     <span>·</span>
-                    <span style={{ color: "var(--primary-700)", fontWeight: "500" }}>
-                      Dimension: {primaryRec.dimension}
+                    <span style={{ color: "#2563eb", fontWeight: "600" }}>
+                      Target: {primaryRec.dimension.toUpperCase()}
                     </span>
                   </>
                 )}
@@ -205,20 +240,87 @@ function Practice() {
                 onClick={() => handleStartDrill(primaryRec.practice_type, primaryRec.target_count || 5)}
                 loading={launchingType === primaryRec.practice_type}
               >
-                Start Recommended Drill
+                Start Practice →
               </Button>
             </div>
           </div>
         </Card>
       ) : null}
 
-      {/* Drill Catalog */}
-      <div style={{ marginBottom: "20px" }}>
-        <h3 style={{ fontSize: "18px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "4px" }}>
-          All Practice Drills
+      {/* COMPACT LEARNING PROGRESS SECTION */}
+      <div style={{ marginBottom: "32px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+          <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#0f172a" }}>
+            Interview Skill Mastery
+          </h3>
+          <span style={{ fontSize: "12px", color: "#64748b" }}>
+            {progressData?.total_interviews ? `${progressData.total_interviews} sessions completed` : "No sessions recorded"}
+          </span>
+        </div>
+
+        {progressData && progressData.total_interviews > 0 ? (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: "14px",
+            }}
+          >
+            {[
+              { label: "Technical Depth", score: Math.round(progressData.latest_score ? (progressData.sessions?.[progressData.sessions.length - 1]?.technical_score || progressData.latest_score) : 0) },
+              { label: "Structured Communication", score: Math.round(progressData.latest_score ? (progressData.sessions?.[progressData.sessions.length - 1]?.communication_score || progressData.latest_score) : 0) },
+              { label: "Behavioral & STAR", score: Math.round(progressData.latest_score ? (progressData.sessions?.[progressData.sessions.length - 1]?.behavioral_score || progressData.latest_score) : 0) },
+              { label: "Overall Preparation", score: Math.round(progressData.latest_score || 0) },
+            ].map((skill, idx) => (
+              <div
+                key={idx}
+                style={{
+                  padding: "14px 16px",
+                  borderRadius: "8px",
+                  backgroundColor: "#ffffff",
+                  border: "1px solid #e2e8f0",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                  <span style={{ fontSize: "12px", color: "#64748b", fontWeight: "500" }}>{skill.label}</span>
+                  <span style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a" }}>{skill.score}/100</span>
+                </div>
+                <div style={{ height: "6px", backgroundColor: "#f1f5f9", borderRadius: "3px", overflow: "hidden" }}>
+                  <div
+                    style={{
+                      height: "100%",
+                      width: `${Math.min(100, Math.max(0, skill.score))}%`,
+                      backgroundColor: skill.score >= 75 ? "#16a34a" : skill.score >= 60 ? "#3b82f6" : "#f59e0b",
+                      borderRadius: "3px",
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div
+            style={{
+              padding: "16px 20px",
+              borderRadius: "8px",
+              backgroundColor: "#f8fafc",
+              border: "1px dashed #cbd5e1",
+              fontSize: "13px",
+              color: "#64748b",
+            }}
+          >
+            No practice history yet. Complete a targeted drill or mock interview to track longitudinal skill progress.
+          </div>
+        )}
+      </div>
+
+      {/* PRACTICE LIBRARY */}
+      <div style={{ marginBottom: "16px" }}>
+        <h3 style={{ fontSize: "18px", fontWeight: "700", color: "#0f172a", marginBottom: "4px" }}>
+          Practice Library
         </h3>
-        <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>
-          Choose a specific dimension to practice at your own pace.
+        <p style={{ fontSize: "13px", color: "#64748b" }}>
+          Select a dedicated curriculum module to drill specific interview competencies.
         </p>
       </div>
 
@@ -238,29 +340,34 @@ function Practice() {
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
-                padding: "20px",
+                padding: "22px",
+                border: "1px solid #e2e8f0",
+                transition: "box-shadow 0.2s ease",
               }}
             >
               <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                  <Badge variant={drill.badgeVariant}>{drill.badge}</Badge>
-                  <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ fontSize: "16px", fontWeight: "700", color: "#3b82f6" }}>{drill.icon}</span>
+                    <Badge variant={drill.badgeVariant}>{drill.badge}</Badge>
+                  </div>
+                  <span style={{ fontSize: "11px", color: "#64748b" }}>
                     {drill.defaultQuestions} questions · ~{drill.estimatedMinutes}m
                   </span>
                 </div>
 
-                <h4 style={{ fontSize: "16px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "4px" }}>
+                <h4 style={{ fontSize: "16px", fontWeight: "700", color: "#0f172a", marginBottom: "4px" }}>
                   {drill.title}
                 </h4>
-                <div style={{ fontSize: "12px", fontWeight: "500", color: "var(--text-muted)", marginBottom: "10px" }}>
+                <div style={{ fontSize: "12px", fontWeight: "500", color: "#64748b", marginBottom: "10px" }}>
                   {drill.subtitle}
                 </div>
-                <p style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.5", marginBottom: "20px" }}>
+                <p style={{ fontSize: "13px", color: "#334155", lineHeight: "1.5", marginBottom: "20px" }}>
                   {drill.description}
                 </p>
               </div>
 
-              <div style={{ borderTop: "1px solid var(--border-default)", paddingTop: "14px" }}>
+              <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: "14px" }}>
                 <Button
                   variant="secondary"
                   fullWidth
@@ -279,4 +386,3 @@ function Practice() {
 }
 
 export default Practice;
-

@@ -247,6 +247,28 @@ def evaluate_answer(
         logger.info("Evaluation cache hit for key %s", cache_key[:8])
         return _EVALUATION_CACHE[cache_key]
 
+    # Evidence gate: empty or trivial non-answers must NOT be sent to LLM
+    words = text.split()
+    lower_text = text.lower()
+    TRIVIAL_NON_ANSWERS = {
+        "idk", "i don't know", "idk.", "no", "yes", "skip", "none", "pass", "na", "n/a",
+        "dsjnd", "test", "asdf", "hello", "hi", "bye", "ok", "okay"
+    }
+    if len(words) == 0 or len(words) < 4 or lower_text in TRIVIAL_NON_ANSWERS:
+        result = evaluate_rubric_for_answer(
+            transcript=transcript,
+            question_text=question_text,
+            category=category,
+            resume_skills=resume_skills,
+            response_time=response_time,
+            wpm=wpm,
+            filler_count=filler_count
+        )
+        result["engine_used"] = "rubric_evidence_gate"
+        result["prompt_version"] = LLM_CONFIG.get("prompt_version", "v1.0")
+        _EVALUATION_CACHE[cache_key] = result
+        return result
+
     gemini_key = os.getenv("GEMINI_API_KEY")
     openai_key = os.getenv("OPENAI_API_KEY")
 

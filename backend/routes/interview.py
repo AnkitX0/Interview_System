@@ -920,14 +920,34 @@ def complete_interview(
     # Calculate delivery score (returns None if visual sensors are null/unmeasured)
     calculated_deliv_score = calculate_delivery_score(eye_percent, blink_rate, pause_rate)
 
-    # Fetch answer evaluations
-    evaluations = db.query(models.AnswerEvaluation).join(
-        models.InterviewAnswer
-    ).filter(
+    # Fetch answers to compute evidence coverage and filter out skipped/empty turns
+    answers = db.query(models.InterviewAnswer).filter(
         models.InterviewAnswer.session_id == session.id
     ).all()
 
-    overall_scores = [e.overall_score for e in evaluations] if evaluations else [75.0]
+    meaningful_answers = []
+    skipped_count = 0
+    empty_count = 0
+
+    for a in answers:
+        transcript = (a.transcript or "").strip()
+        if transcript.startswith("[SKIPPED]"):
+            skipped_count += 1
+        elif len(transcript.split()) < 3:
+            empty_count += 1
+        else:
+            meaningful_answers.append(a)
+
+    total_turns = len(answers)
+    evidence_coverage = round((len(meaningful_answers) / total_turns) * 100, 1) if total_turns > 0 else 0.0
+
+    # Fetch answer evaluations for meaningful answers only
+    meaningful_answer_ids = {a.id for a in meaningful_answers}
+    evaluations = db.query(models.AnswerEvaluation).filter(
+        models.AnswerEvaluation.answer_id.in_(meaningful_answer_ids)
+    ).all() if meaningful_answer_ids else []
+
+    overall_scores = [e.overall_score for e in evaluations if e.overall_score is not None]
     tech_scores = [e.technical_score for e in evaluations if e.technical_score is not None]
     comm_scores = [e.structure_score for e in evaluations if e.structure_score is not None]
     cons_scores = [e.consistency_score for e in evaluations if e.consistency_score is not None]
@@ -935,15 +955,20 @@ def complete_interview(
     # Evaluate per-claim consistency and derive session consistency score if sufficient turns
     claim_consistency_res = evaluate_session_claim_consistency(session_id=session.id, db=db)
     consistency_source = claim_consistency_res["consistency_source"]
-    if consistency_source == "claim_level" and claim_consistency_res["derived_score"] is not None:
+    if consistency_source == "claim_level" and claim_consistency_res["derived_score"] is not None and meaningful_answers:
         cons_scores = [claim_consistency_res["derived_score"]]
+
+    # When zero meaningful answers were submitted, delivery sensor data cannot create a high readiness score
+    if not meaningful_answers:
+        calculated_deliv_score = None
 
     session_score_data = calculate_session_score(
         answer_scores=overall_scores,
         delivery_score=calculated_deliv_score,
         technical_scores=tech_scores,
         communication_scores=comm_scores,
-        consistency_scores=cons_scores
+        consistency_scores=cons_scores,
+        evidence_coverage=evidence_coverage
     )
 
     # Persist session score with weights_used and consistency_source
@@ -1023,21 +1048,35 @@ def submit_interview_legacy(
         data.pause_rate
     )
 
-    evaluations = db.query(models.AnswerEvaluation).join(
-        models.InterviewAnswer
-    ).filter(
+    answers = db.query(models.InterviewAnswer).filter(
         models.InterviewAnswer.session_id == session.id
     ).all()
 
-    overall_scores = [e.overall_score for e in evaluations] if evaluations else [75.0]
+    meaningful_answers = [
+        a for a in answers
+        if not (a.transcript or "").strip().startswith("[SKIPPED]") and len((a.transcript or "").strip().split()) >= 3
+    ]
+    total_turns = len(answers)
+    evidence_coverage = round((len(meaningful_answers) / total_turns) * 100, 1) if total_turns > 0 else 0.0
+
+    meaningful_answer_ids = {a.id for a in meaningful_answers}
+    evaluations = db.query(models.AnswerEvaluation).filter(
+        models.AnswerEvaluation.answer_id.in_(meaningful_answer_ids)
+    ).all() if meaningful_answer_ids else []
+
+    overall_scores = [e.overall_score for e in evaluations if e.overall_score is not None]
     tech_scores = [e.technical_score for e in evaluations if e.technical_score is not None]
     comm_scores = [e.structure_score for e in evaluations if e.structure_score is not None]
+
+    if not meaningful_answers:
+        beh_score = None
 
     score_data = calculate_session_score(
         answer_scores=overall_scores,
         behavioral_score=beh_score,
         technical_scores=tech_scores,
-        communication_scores=comm_scores
+        communication_scores=comm_scores,
+        evidence_coverage=evidence_coverage
     )
 
     score = models.SessionScore(

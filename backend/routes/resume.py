@@ -109,11 +109,17 @@ def _build_resume_detail_response(resume: models.Resume, db: Session) -> Dict[st
     claims_rows = db.query(models.ResumeClaim).filter(models.ResumeClaim.resume_id == resume.id).order_by(models.ResumeClaim.probe_priority.desc()).all()
     flags_rows = db.query(models.ResumeFlag).filter(models.ResumeFlag.resume_id == resume.id).all()
 
+    categorized: Dict[str, List[str]] = {}
+    for s in skills_rows:
+        cat = s.category or "Other Competencies"
+        categorized.setdefault(cat, []).append(s.name)
+
     return {
         "id": resume.id,
         "filename": resume.filename,
         "candidate_name": resume.candidate_name,
         "skills": json.loads(resume.skills or "[]"),
+        "categorized_skills": categorized,
         "skills_detailed": [
             {"id": s.id, "name": s.name, "category": s.category, "confidence": s.confidence, "evidenced": s.evidenced}
             for s in skills_rows
@@ -148,6 +154,7 @@ def _build_resume_detail_response(resume: models.Resume, db: Session) -> Dict[st
         "weak_areas": json.loads(resume.weak_areas or "[]"),
         "suggested_improvements": json.loads(resume.suggested_improvements or "[]"),
         "summary": resume.summary,
+        "raw_text": resume.raw_text,
     }
 
 

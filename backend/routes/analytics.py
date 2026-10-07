@@ -15,6 +15,7 @@ from backend.services.recurring_weakness_service import aggregate_user_weaknesse
 from backend.services.velocity_service import calculate_improvement_velocity
 from backend.services.practice_recommendation_engine import select_next_practice
 from backend.services.readiness_engine import compute_longitudinal_readiness
+from backend.services.answer_study_service import generate_study_comparison_for_answer
 from backend.config import VERIFICATION_RISK_CONFIG
 
 router = APIRouter(tags=["Analytics & Reports"])
@@ -65,7 +66,30 @@ def get_session_report(
         models.InterviewAnswer.session_id == session_id
     ).all()
 
+    # Retrieve candidate resume context if associated with session
+    resume_skills = []
+    resume_projects = []
+    if session.resume_id:
+        res_rec = db.query(models.Resume).filter(models.Resume.id == session.resume_id).first()
+        if res_rec:
+            if res_rec.skills:
+                try:
+                    resume_skills = json.loads(res_rec.skills)
+                except Exception:
+                    pass
+            proj_rows = db.query(models.ResumeProject).filter(models.ResumeProject.resume_id == res_rec.id).all()
+            for pr in proj_rows:
+                resume_projects.append({
+                    "title": pr.title,
+                    "description": pr.description,
+                    "technologies": pr.technologies or []
+                })
+
     answer_evals = []
+    meaningful_answers_count = 0
+    skipped_count = 0
+    empty_count = 0
+
     for ans in answers:
         ev = db.query(models.AnswerEvaluation).filter(
             models.AnswerEvaluation.answer_id == ans.id
@@ -139,11 +163,34 @@ def get_session_report(
                 models.InterviewQuestion.question_text == ans.question_text
             ).first()
 
-        is_skipped = (ans.transcript or "").startswith("[SKIPPED]") or (ev and getattr(ev, "engine_used", "") == "skipped")
-        status = "skipped" if is_skipped else ("answered" if (ans.transcript and ans.transcript.strip()) else "unanswered")
+        transcript_text = (ans.transcript or "").strip()
+        is_skipped = transcript_text.startswith("[SKIPPED]") or (ev and getattr(ev, "engine_used", "") == "skipped")
+        is_empty = len(transcript_text) == 0
+        is_insufficient = not is_skipped and len(transcript_text.split()) < 3
+
         if is_skipped:
-            weaknesses = ["Candidate did not provide evidence for this question."]
-            suggestions = ["Candidate skipped question. Review foundational concepts for this topic."]
+            skipped_count += 1
+            status = "skipped"
+        elif is_empty or is_insufficient:
+            empty_count += 1
+            status = "insufficient" if is_insufficient else "empty"
+        else:
+            meaningful_answers_count += 1
+            status = "answered"
+
+        # Generate grounded study comparison (Expected concepts, missing points, model answer, resume link)
+        study_comp = generate_study_comparison_for_answer(
+            question_text=ans.question_text or "Question",
+            candidate_answer=transcript_text,
+            category=session.mode or "Technical",
+            resume_skills=resume_skills,
+            resume_projects=resume_projects,
+            target_role=session.target_role or "Software Engineer"
+        )
+
+        display_score = None if is_skipped else (
+            0.0 if (is_empty or is_insufficient) else (ev.overall_score if ev else 70.0)
+        )
 
         answer_evals.append({
             "answer_id": ans.id,
@@ -155,22 +202,29 @@ def get_session_report(
             "generated_reason": iq.generated_reason if iq else None,
             "is_skipped": is_skipped,
             "status": status,
-            "transcript": "Candidate did not provide evidence for this question." if is_skipped else (ans.transcript or ""),
+            "answer_status": study_comp["answer_status"],
+            "status_label": study_comp.get("status_label", "Evaluated Answer"),
+            "transcript": "Candidate did not provide evidence for this question. Candidate chose not to answer this question." if is_skipped else (ans.transcript or ""),
             "response_time": ans.response_time or 0.0,
             "wpm": ans.wpm or 0.0,
             "filler_count": ans.filler_count or 0,
             "voice_metrics": vm_data,
-            "overall_score": None if is_skipped else (ev.overall_score if ev else 70.0),
-            "structure_score": None if is_skipped else (ev.structure_score if ev else 70.0),
-            "technical_score": None if is_skipped else (ev.technical_score if ev else 70.0),
-            "reasoning_score": None if is_skipped else (ev.reasoning_score if ev else 70.0),
-            "star_score": None if is_skipped else (ev.star_score if ev else 70.0),
-            "consistency_score": None if is_skipped else (ev.consistency_score if ev else 75.0),
+            "overall_score": display_score,
+            "structure_score": None if is_skipped else (0.0 if (is_empty or is_insufficient) else (ev.structure_score if ev else 70.0)),
+            "technical_score": None if is_skipped else (0.0 if (is_empty or is_insufficient) else (ev.technical_score if ev else 70.0)),
+            "reasoning_score": None if is_skipped else (0.0 if (is_empty or is_insufficient) else (ev.reasoning_score if ev else 70.0)),
+            "star_score": None if is_skipped else (0.0 if (is_empty or is_insufficient) else (ev.star_score if ev else 70.0)),
+            "consistency_score": None if is_skipped else (0.0 if (is_empty or is_insufficient) else (ev.consistency_score if ev else 75.0)),
             "dimensions": {} if is_skipped else ev_eval.get("dimensions", {}),
-            "strengths": strengths if not is_skipped else [],
-            "weaknesses": weaknesses,
-            "missing_concepts": missing_concepts if not is_skipped else ["Evidence not obtained"],
+            "strengths": strengths if not is_skipped and not is_empty and not is_insufficient else [],
+            "weaknesses": study_comp.get("missing_points", weaknesses),
+            "missing_concepts": study_comp.get("missing_points", ["Evidence not obtained"]),
             "suggestions": suggestions,
+            "strong_answer_should_cover": study_comp.get("strong_answer_should_cover", []),
+            "missing_points": study_comp.get("missing_points", []),
+            "improved_answer": study_comp.get("improved_answer", ""),
+            "resume_connection": study_comp.get("resume_connection"),
+            "practice_prompt": study_comp.get("practice_prompt"),
             "engine_used": (ev.engine_used if ev and hasattr(ev, 'engine_used') and ev.engine_used else "rubric"),
             "prompt_version": (ev.prompt_version if ev and hasattr(ev, 'prompt_version') and ev.prompt_version else "v1.0"),
             "verification_risk": {
@@ -182,15 +236,75 @@ def get_session_report(
             }
         })
 
+    # Evidence coverage computation
+    total_questions = len(answers)
+    answered_questions = total_questions - skipped_count
+    meaningful_answers = meaningful_answers_count
+    evidence_coverage = round((meaningful_answers / total_questions) * 100, 1) if total_questions > 0 else 0.0
 
-    # Session scoring values
-    readiness = score_record.readiness_score if score_record else 72.0
-    comm = score_record.communication_score if score_record else 75.0
-    tech = score_record.technical_score if score_record else 70.0
-    deliv = score_record.behavioral_score if score_record else None
-    cons = score_record.resume_consistency_score if score_record else 75.0
-    strongest = score_record.strongest_category if score_record else "Communication"
-    weakest = score_record.weakest_category if score_record else "Technical"
+    # Evidence-gated session scoring values
+    if total_questions > 0 and meaningful_answers == 0:
+        readiness = 0.0
+        comm = 0.0
+        tech = 0.0
+        deliv = None
+        cons = 0.0
+        strongest = "None (Insufficient Evidence)"
+        weakest = "All Dimensions (Evidence Missing)"
+        status_label = "Incomplete Assessment (No Evidence)"
+        computed_conf = "Low"
+        computed_expl = "No meaningful interview answers were submitted, so readiness cannot be reliably assessed."
+        insights = [
+            "Interview incomplete: no meaningful answers were submitted to evaluate readiness.",
+            "Complete interview questions to generate verified technical and communication scores."
+        ]
+    elif total_questions == 0:
+        # Fixture / legacy score where questions were not tracked in DB
+        readiness = score_record.readiness_score if score_record else 0.0
+        comm = score_record.communication_score if score_record else 0.0
+        tech = score_record.technical_score if score_record else 0.0
+        deliv = score_record.behavioral_score if score_record else None
+        cons = score_record.resume_consistency_score if score_record else 0.0
+        strongest = score_record.strongest_category if score_record else "Communication"
+        weakest = score_record.weakest_category if score_record else "Technical"
+        status_label = "Completed" if readiness > 0 else "Incomplete"
+        computed_conf = "Moderate" if readiness > 0 else "Low"
+        computed_expl = "Historical session score"
+        insights = []
+    else:
+        readiness = score_record.readiness_score if score_record else 72.0
+        comm = score_record.communication_score if score_record else 75.0
+        tech = score_record.technical_score if score_record else 70.0
+        deliv = score_record.behavioral_score if score_record else None
+        cons = score_record.resume_consistency_score if score_record else 75.0
+        strongest = score_record.strongest_category if score_record else "Communication"
+        weakest = score_record.weakest_category if score_record else "Technical"
+
+        if evidence_coverage < 50.0:
+            status_label = "Preliminary Assessment (Low Evidence)"
+            computed_conf = "Low"
+            computed_expl = f"Low confidence ({round(evidence_coverage, 1)}% evidence coverage). Complete more questions for full readiness assessment."
+        elif meaningful_answers >= 5:
+            status_label = "Job-Ready Candidate" if readiness >= 80 else ("Near Interview-Ready" if readiness >= 65 else "Requires Targeted Practice")
+            computed_conf = "High"
+            computed_expl = f"High assessment confidence based on {meaningful_answers} evaluated turns ({round(evidence_coverage, 1)}% coverage)."
+        else:
+            status_label = "Job-Ready Candidate" if readiness >= 80 else ("Near Interview-Ready" if readiness >= 65 else "Requires Targeted Practice")
+            computed_conf = "Moderate"
+            computed_expl = f"Moderate assessment confidence based on {meaningful_answers} evaluated turns ({round(evidence_coverage, 1)}% coverage)."
+
+        insights = []
+        if score_record and score_record.insights:
+            try:
+                insights = json.loads(score_record.insights)
+            except Exception:
+                insights = [score_record.insights]
+
+        if not insights:
+            insights = [
+                f"Strongest performance observed in {strongest} ({comm}%).",
+                f"Opportunity to sharpen {weakest} depth and structural examples.",
+            ]
 
     weights_used = {}
     if score_record and score_record.weights_used:
@@ -302,8 +416,16 @@ def get_session_report(
         else "legacy"
     )
 
-    computed_conf = "High" if len(answers) >= 6 else ("Moderate" if len(answers) >= 4 else "Low")
-    computed_expl = f"{computed_conf} assessment confidence based on {len(answers)} evaluated turns across multi-dimensional criteria."
+    evidence_summary = {
+        "total_questions": total_questions,
+        "answered_questions": answered_questions,
+        "skipped_questions": skipped_count,
+        "empty_answers": empty_count,
+        "meaningful_answers": meaningful_answers,
+        "evidence_coverage": evidence_coverage,
+        "confidence": computed_conf,
+        "interview_status": "Incomplete" if (meaningful_answers == 0 or skipped_count > answered_questions) else "Completed"
+    }
 
     return {
         "session_id": session.id,
@@ -315,6 +437,7 @@ def get_session_report(
         "status_label": status_label,
         "assessment_confidence": computed_conf,
         "confidence_explanation": computed_expl,
+        "evidence_summary": evidence_summary,
         "question_mode": getattr(session, "question_mode", "ADAPTIVE") or "ADAPTIVE",
         "session_policy": getattr(session, "session_policy", "STANDARD") or "STANDARD",
         "interview_state": getattr(session, "interview_state", "FINISHED") or "FINISHED",
