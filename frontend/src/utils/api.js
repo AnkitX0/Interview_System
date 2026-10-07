@@ -3,6 +3,10 @@ import { API_BASE_URL } from "../config";
 /**
  * Enhanced fetch client that automatically attaches `credentials: "include"`
  * for httpOnly cookie management and dispatches global auth:unauthorized on 401.
+ *
+ * Network-level failures (backend unreachable, wrong port, CORS preflight error)
+ * are caught and re-thrown with a descriptive message instead of the raw browser
+ * "Failed to fetch" string.
  */
 export async function apiFetch(url, options = {}) {
   const fullUrl = url.startsWith("http") ? url : `${API_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
@@ -21,7 +25,18 @@ export async function apiFetch(url, options = {}) {
     credentials: "include",
   };
 
-  const response = await fetch(fullUrl, config);
+  let response;
+  try {
+    response = await fetch(fullUrl, config);
+  } catch (networkErr) {
+    // fetch() throws a TypeError when the backend is unreachable (wrong port,
+    // server not started, DNS failure, or CORS preflight hard-blocked).
+    throw new Error(
+      `Cannot reach the backend at ${API_BASE_URL}. ` +
+      `Verify the server is running and VITE_API_URL is correct. ` +
+      `(${networkErr.message})`
+    );
+  }
 
   if (
     response.status === 401 &&
