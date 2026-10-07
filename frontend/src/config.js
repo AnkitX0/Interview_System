@@ -4,11 +4,11 @@
  * Dynamically aligns 127.0.0.1 <-> localhost hostnames to prevent browser SameSite cookie blocking.
  */
 function resolveApiBaseUrl() {
-  const envUrl = import.meta.env.VITE_API_URL;
+  const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
   const currentHost = typeof window !== "undefined" ? window.location.hostname : "localhost";
 
   if (!envUrl) {
-    return `http://${currentHost}:8000`;
+    return `http://${currentHost}:8001`;
   }
 
   try {
