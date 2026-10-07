@@ -29,11 +29,14 @@ function Interview() {
   const targetRole = location.state?.targetRole || savedState.targetRole || "Software Engineer";
   const textOnly = Boolean(location.state?.textOnly ?? savedState.textOnly ?? false);
   const isPracticeDrill = Boolean(location.state?.isPractice);
+  const totalQuestionBudget = location.state?.questionCount || savedState.questionCount || 5;
 
   const initialQuestions = location.state?.questions || savedState.questions || [
     { id: 1, question: "Explain REST API architecture and how HTTP status codes are utilized." },
     { id: 2, question: "Describe a challenging technical problem you solved in your past project." },
     { id: 3, question: "How do you handle database indexing and optimize slow queries?" },
+    { id: 4, question: "What is the difference between SQL and NoSQL databases?" },
+    { id: 5, question: "Explain the CAP theorem and how it applies to distributed systems." },
   ];
 
   const [questions, setQuestions] = useState(initialQuestions);
@@ -41,17 +44,21 @@ function Interview() {
   const [timeLeft, setTimeLeft] = useState(currentMode === "pressure" ? 45 : 90);
   const [answer, setAnswer] = useState("");
 
-  // Media & sensor state (used for telemetry, not displayed distractingly to user)
+  // Camera & sensor states (INITIALIZING | ACTIVE | OFF | DENIED | UNAVAILABLE)
+  const [cameraState, setCameraState] = useState(textOnly ? "OFF" : "INITIALIZING");
+  const [cameraNotice, setCameraNotice] = useState("");
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [isMicOn, setIsMicOn] = useState(false);
   const [eyeContactPercent, setEyeContactPercent] = useState(null);
   const [blinkCount, setBlinkCount] = useState(0);
 
-  // Speech-to-text recognition state
-  const [speechRecognitionActive, setSpeechRecognitionActive] = useState(false);
+  // Speech-to-text recognition state machine: idle | starting | listening | processing | stopped | error | unsupported
+  const [speechState, setSpeechState] = useState("idle");
   const [speechSupported, setSpeechSupported] = useState(!textOnly);
-  const [inputMode, setInputMode] = useState(textOnly ? "text" : "mic");
+  const [inputMode, setInputMode] = useState(textOnly ? "text" : "mic"); // mic | text
   const [speechNotice, setSpeechNotice] = useState("");
+  const [submitError, setSubmitError] = useState(null);
+
   const speechRecognizerRef = useRef(null);
   const speechSegmentsRef = useRef([]);
   const currentSpeechStartRef = useRef(null);
@@ -61,6 +68,7 @@ function Interview() {
   const [evaluating, setEvaluating] = useState(false);
   const [loadingNext, setLoadingNext] = useState(false);
   const [submittingFinal, setSubmittingFinal] = useState(false);
+  const [finalizationError, setFinalizationError] = useState(null);
   const [isFollowUp, setIsFollowUp] = useState(false);
   const [followUpQuestion, setFollowUpQuestion] = useState("");
 
@@ -85,7 +93,6 @@ function Interview() {
   const streamRef = useRef(null);
   const cameraRef = useRef(null);
   const faceMeshRef = useRef(null);
-  const meshInitialized = useRef(false);
 
   const currentQ = questions[currentIndex] || { id: 1, question: "Interview Question" };
 
@@ -93,17 +100,30 @@ function Interview() {
   useEffect(() => {
     if (timeLeft <= 0 || isSubmitted) return;
     const timer = setInterval(() => {
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          // Stop speech cleanly when time expires
+          if (speechRecognizerRef.current && speechState === "listening") {
+            try { speechRecognizerRef.current.stop(); } catch {}
+          }
+          setSpeechNotice("Time is up! You can review and submit your response.");
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, isSubmitted]);
+  }, [timeLeft, isSubmitted, speechState]);
 
-  // Reset timer on question change
+  // Reset timer & state on question change
   useEffect(() => {
     const defaultTime = currentMode === "pressure" ? 45 : (currentQ.time_limit_seconds || 90);
     setTimeLeft(defaultTime);
     setAnswer("");
     setIsSubmitted(false);
+    setSubmitError(null);
+    setFinalizationError(null);
     questionStartTimeRef.current = Date.now();
     speechSegmentsRef.current = [];
     currentSpeechStartRef.current = null;
@@ -122,12 +142,14 @@ function Interview() {
   useEffect(() => {
     if (textOnly) {
       setSpeechSupported(false);
+      setSpeechState("unsupported");
       return;
     }
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       setSpeechSupported(false);
+      setSpeechState("unsupported");
       setInputMode("text");
       setSpeechNotice("Speech recognition is not available in this browser. You can type your answers.");
       return;
@@ -139,7 +161,7 @@ function Interview() {
     recognizer.lang = "en-US";
 
     recognizer.onstart = () => {
-      setSpeechRecognitionActive(true);
+      setSpeechState("listening");
       setIsMicOn(true);
       currentSpeechStartRef.current = Date.now();
     };
@@ -155,11 +177,15 @@ function Interview() {
           interimTranscript += textChunk;
         }
       }
-      setAnswer((finalTranscript + interimTranscript).trim());
+      setAnswer((prev) => {
+        const newText = (finalTranscript + interimTranscript).trim();
+        return newText || prev;
+      });
     };
 
     recognizer.onerror = (event) => {
       console.warn("Speech recognition notice:", event.error);
+      setSpeechState("error");
       if (event.error === "not-allowed" || event.error === "service-not-allowed") {
         setSpeechNotice("Microphone permission denied. Switched to text mode.");
         setInputMode("text");
@@ -168,11 +194,11 @@ function Interview() {
       } else if (event.error === "audio-capture") {
         setSpeechNotice("Microphone capture error. Verify microphone connection or switch to text mode.");
       }
-      setSpeechRecognitionActive(false);
     };
 
     recognizer.onend = () => {
-      setSpeechRecognitionActive(false);
+      setSpeechState("stopped");
+      setIsMicOn(false);
       if (currentSpeechStartRef.current) {
         const segStart = (currentSpeechStartRef.current - questionStartTimeRef.current) / 1000;
         const segEnd = (Date.now() - questionStartTimeRef.current) / 1000;
@@ -199,26 +225,31 @@ function Interview() {
 
   const toggleSpeechRecognition = () => {
     if (!speechRecognizerRef.current) return;
-    if (speechRecognitionActive) {
+    if (speechState === "listening") {
       speechRecognizerRef.current.stop();
-      setSpeechRecognitionActive(false);
+      setSpeechState("stopped");
     } else {
       try {
+        setSpeechState("starting");
         speechRecognizerRef.current.start();
-        setSpeechRecognitionActive(true);
       } catch (e) {
         console.warn("Speech recognition start warning:", e);
+        setSpeechState("error");
       }
     }
   };
 
-  // Background MediaPipe FaceMesh for post-interview telemetry
+  // Background MediaPipe FaceMesh & Camera Stream Setup
   useEffect(() => {
-    if (textOnly) return;
+    if (textOnly) {
+      setCameraState("OFF");
+      return;
+    }
 
     let isSubscribed = true;
 
     async function initCamera() {
+      setCameraState("INITIALIZING");
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { width: 640, height: 480 },
@@ -237,11 +268,11 @@ function Interview() {
             await videoRef.current.play();
           } catch {}
 
-          // Verify actual active video dimensions before declaring camera active
           const checkCameraDimensions = () => {
             if (!isSubscribed) return;
             if (videoRef.current && videoRef.current.videoWidth > 0 && videoRef.current.videoHeight > 0) {
               setIsCameraOn(true);
+              setCameraState("ACTIVE");
             } else {
               setTimeout(checkCameraDimensions, 200);
             }
@@ -277,7 +308,6 @@ function Interview() {
               av.alignedCount += 1;
             }
 
-            // Blink calculation
             const topEye = landmarks[159];
             const botEye = landmarks[145];
             const eyeDist = Math.abs(topEye.y - botEye.y);
@@ -314,7 +344,11 @@ function Interview() {
         }
       } catch (err) {
         console.warn("Camera could not be accessed:", err);
-        setIsCameraOn(false);
+        if (isSubscribed) {
+          setIsCameraOn(false);
+          setCameraState("DENIED");
+          setCameraNotice("Camera permission denied or device unavailable. Proceeding in text/mic mode.");
+        }
       }
     }
 
@@ -323,6 +357,7 @@ function Interview() {
     return () => {
       isSubscribed = false;
       setIsCameraOn(false);
+      setCameraState("OFF");
       if (cameraRef.current) {
         try { cameraRef.current.stop(); } catch {}
       }
@@ -333,11 +368,27 @@ function Interview() {
     };
   }, [textOnly]);
 
+  const toggleCamera = () => {
+    if (isCameraOn) {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => (track.enabled = false));
+      }
+      setIsCameraOn(false);
+      setCameraState("OFF");
+    } else {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => (track.enabled = true));
+        setIsCameraOn(true);
+        setCameraState("ACTIVE");
+      }
+    }
+  };
+
   // Handle Answer Submission
   const handleSubmitAnswer = async () => {
-    if (speechRecognitionActive && speechRecognizerRef.current) {
-      speechRecognizerRef.current.stop();
-      setSpeechRecognitionActive(false);
+    if (speechRecognizerRef.current && speechState === "listening") {
+      try { speechRecognizerRef.current.stop(); } catch {}
+      setSpeechState("stopped");
     }
 
     if (!answer.trim()) {
@@ -346,7 +397,7 @@ function Interview() {
     }
 
     setEvaluating(true);
-    setIsSubmitted(true);
+    setSubmitError(null);
 
     const isTyped = inputMode === "text";
     const responseDuration = (Date.now() - questionStartTimeRef.current) / 1000;
@@ -357,7 +408,7 @@ function Interview() {
     const visualPayload = isCameraOn && av.totalSampled > 0
       ? {
           head_alignment_percent: av.faceDetected > 0 ? Number(((av.alignedCount / av.faceDetected) * 100).toFixed(1)) : null,
-          blink_rate: responseDuration > 0 ? Number(((av.blinks / (responseDuration / 60)).toFixed(1))) : null,
+          blink_rate: responseDuration > 0 ? Number((av.blinks / (responseDuration / 60)).toFixed(1)) : null,
           face_visibility_ratio: Number((av.faceDetected / av.totalSampled).toFixed(2)),
           frames_sampled: av.totalSampled,
         }
@@ -384,10 +435,13 @@ function Interview() {
       });
 
       if (!res.ok) {
-        throw new Error("Answer recording failed");
+        throw new Error("Answer recording failed on server.");
       }
+
+      setIsSubmitted(true);
     } catch (err) {
-      console.warn("Answer submission notice (offline fallback):", err);
+      console.warn("Answer submission notice (preserving transcript):", err);
+      setSubmitError("Your answer wasn't submitted due to a network issue. Your transcript is preserved.");
     } finally {
       setEvaluating(false);
     }
@@ -441,6 +495,8 @@ function Interview() {
   // Complete interview and navigate to Report
   const handleFinishInterview = async () => {
     setSubmittingFinal(true);
+    setFinalizationError(null);
+
     try {
       const durationSeconds = (Date.now() - interviewStartRef.current) / 1000;
       const durationMinutes = durationSeconds / 60 || 1;
@@ -477,7 +533,7 @@ function Interview() {
       navigate(`/report?sessionId=${sessionId}`);
     } catch (err) {
       console.error("Interview complete error:", err);
-      setSpeechNotice(`Finalization Error: ${err.message}. Please click 'Finish & View Report' again to retry.`);
+      setFinalizationError(`Finalization Error: ${err.message}. Please click 'Retry Finalization' to continue.`);
     } finally {
       setSubmittingFinal(false);
     }
@@ -502,9 +558,20 @@ function Interview() {
   const timeFormatted = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
   const isTimeLow = timeLeft <= 15;
   const wordCount = answer.trim().split(/\s+/).filter(Boolean).length;
+  const totalCount = Math.max(questions.length, totalQuestionBudget);
+
+  // Human readable category badge mapping
+  const categoryLabel = (() => {
+    if (isFollowUp) return "Deep-Dive Follow-Up";
+    const type = (currentQ.question_type || currentQ.caption || "technical").toLowerCase();
+    if (type.includes("resume") || type.includes("claim")) return "Resume Defense";
+    if (type.includes("system") || type.includes("architecture")) return "System Design";
+    if (type.includes("behavioral") || type.includes("star")) return "Behavioral";
+    return "Technical Depth";
+  })();
 
   return (
-    <div className="container" style={{ maxWidth: "1000px", paddingBottom: "40px" }}>
+    <div className="container" style={{ maxWidth: "1020px", paddingBottom: "40px" }}>
       {/* Top Header Bar */}
       <div
         style={{
@@ -527,7 +594,7 @@ function Interview() {
             {currentMode === "pressure" && <Badge variant="warning">Incident Timing (45s)</Badge>}
           </div>
           <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "2px" }}>
-            Question {currentIndex + 1} of {questions.length}
+            Question {currentIndex + 1} of {totalCount}
           </div>
         </div>
 
@@ -573,15 +640,33 @@ function Interview() {
       </div>
 
       {speechNotice && (
-        <div className="alert alert-info" style={{ marginBottom: "16px" }}>
+        <div className="alert alert-info" style={{ marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>{speechNotice}</span>
           <button
             type="button"
             onClick={() => setSpeechNotice("")}
-            style={{ background: "none", border: "none", cursor: "pointer", marginLeft: "auto", fontWeight: "bold" }}
+            style={{ background: "none", border: "none", cursor: "pointer", fontWeight: "bold" }}
           >
             ✕
           </button>
+        </div>
+      )}
+
+      {submitError && (
+        <div className="alert alert-warning" style={{ marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span>{submitError}</span>
+          <Button size="sm" variant="secondary" onClick={handleSubmitAnswer}>
+            Retry Submission
+          </Button>
+        </div>
+      )}
+
+      {finalizationError && (
+        <div className="alert alert-warning" style={{ marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span>{finalizationError}</span>
+          <Button size="sm" variant="primary" onClick={handleFinishInterview} loading={submittingFinal}>
+            Retry Finalization
+          </Button>
         </div>
       )}
 
@@ -589,11 +674,9 @@ function Interview() {
       <Card style={{ marginBottom: "20px", padding: "20px 24px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
           <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--primary-700)" }}>
-            {isFollowUp ? "Deep-Dive Follow-Up" : `Question ${currentIndex + 1}`}
+            {categoryLabel}
           </span>
-          {currentQ.caption && (
-            <Badge variant="info">{currentQ.caption}</Badge>
-          )}
+          <Badge variant="info">Difficulty: {difficulty}</Badge>
         </div>
 
         <h2 style={{ fontSize: "20px", fontWeight: "700", color: "var(--text-primary)", lineHeight: "1.4" }}>
@@ -601,7 +684,7 @@ function Interview() {
         </h2>
       </Card>
 
-      {/* Distraction-Free Workspace Grid (Desktop: 2 columns, Mobile: 1 column) */}
+      {/* Workspace Grid (Desktop: 2 columns, Mobile: 1 column) */}
       <div
         style={{
           display: "grid",
@@ -624,7 +707,7 @@ function Interview() {
               justifyContent: "center",
             }}
           >
-            {/* Video element always rendered in DOM so srcObject binding and frame sampling succeed */}
+            {/* Video element always mounted in DOM so srcObject binding and frame sampling succeed */}
             <video
               ref={videoRef}
               autoPlay
@@ -655,7 +738,7 @@ function Interview() {
               </div>
             )}
 
-            {/* Status Pill */}
+            {/* Camera Status Pill */}
             <div
               style={{
                 position: "absolute",
@@ -692,7 +775,7 @@ function Interview() {
             {!textOnly && (
               <button
                 type="button"
-                onClick={() => setIsCameraOn(!isCameraOn)}
+                onClick={toggleCamera}
                 style={{
                   background: "none",
                   border: "none",
@@ -710,14 +793,14 @@ function Interview() {
 
         {/* Right Column: Answer Input & Controls */}
         <Card style={{ padding: "20px" }}>
-          {/* Input Mode Selector */}
+          {/* Input Mode Selector Tabs */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
             <div style={{ display: "flex", gap: "6px", backgroundColor: "var(--slate-100)", padding: "3px", borderRadius: "6px" }}>
               <button
                 type="button"
                 onClick={() => {
                   setInputMode("mic");
-                  if (!speechRecognitionActive && speechRecognizerRef.current) {
+                  if (speechState === "stopped" || speechState === "idle") {
                     toggleSpeechRecognition();
                   }
                 }}
@@ -738,9 +821,9 @@ function Interview() {
                 type="button"
                 onClick={() => {
                   setInputMode("text");
-                  if (speechRecognitionActive && speechRecognizerRef.current) {
-                    speechRecognizerRef.current.stop();
-                    setSpeechRecognitionActive(false);
+                  if (speechState === "listening" && speechRecognizerRef.current) {
+                    try { speechRecognizerRef.current.stop(); } catch {}
+                    setSpeechState("stopped");
                   }
                 }}
                 style={{
@@ -764,7 +847,7 @@ function Interview() {
           </div>
 
           {/* Speech Active Indicator Banner */}
-          {speechRecognitionActive && (
+          {speechState === "listening" && (
             <div
               style={{
                 display: "flex",
@@ -786,14 +869,13 @@ function Interview() {
                   height: "8px",
                   borderRadius: "50%",
                   backgroundColor: "var(--danger-text)",
-                  animation: "pulse 1s infinite",
                 }}
               />
               <span>Listening... speak your response clearly</span>
             </div>
           )}
 
-          {/* Textarea Input */}
+          {/* Textarea Input (Live transcript or typing) */}
           <textarea
             value={answer}
             disabled={isSubmitted}
@@ -818,12 +900,12 @@ function Interview() {
           <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "10px" }}>
             {inputMode === "mic" && speechSupported ? (
               <Button
-                variant={speechRecognitionActive ? "danger" : "secondary"}
+                variant={speechState === "listening" ? "danger" : "secondary"}
                 size="sm"
                 onClick={toggleSpeechRecognition}
                 disabled={isSubmitted}
               >
-                {speechRecognitionActive ? "Stop Speaking" : "Start Speaking"}
+                {speechState === "listening" ? "Stop Speaking" : "Start Speaking"}
               </Button>
             ) : <div />}
 
@@ -843,7 +925,7 @@ function Interview() {
                   onClick={handleProceed}
                   loading={loadingNext || submittingFinal}
                 >
-                  {currentIndex < questions.length - 1 ? "Next Question →" : "Finish & View Report →"}
+                  {currentIndex < totalCount - 1 ? "Next Question →" : "Finish & View Report →"}
                 </Button>
               )}
             </div>
@@ -867,7 +949,7 @@ function Interview() {
                 ✓ Response recorded
               </div>
               <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-                Click "{currentIndex < questions.length - 1 ? "Next Question" : "Finish"}" to continue
+                Click "{currentIndex < totalCount - 1 ? "Next Question" : "Finish"}" to continue
               </span>
             </div>
           )}
