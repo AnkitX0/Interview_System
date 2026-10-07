@@ -54,8 +54,19 @@ export function AuthProvider({ children }) {
 
     const data = await res.json();
     if (!res.ok) {
-      const errorMsg = data?.error?.message || data?.detail || "Authentication failed";
+      const errorMsg = data?.error?.message || data?.detail || "Invalid email or password";
       throw new Error(errorMsg);
+    }
+
+    try {
+      const meRes = await apiFetch("/auth/me");
+      if (meRes.ok) {
+        const meData = await meRes.json();
+        setUser(meData);
+        return meData;
+      }
+    } catch {
+      // Fallback to data.user if /auth/me check encounters network glitch
     }
 
     setUser(data.user);
@@ -72,6 +83,17 @@ export function AuthProvider({ children }) {
     if (!res.ok) {
       const errorMsg = data?.error?.message || data?.detail || "Registration failed";
       throw new Error(errorMsg);
+    }
+
+    try {
+      const meRes = await apiFetch("/auth/me");
+      if (meRes.ok) {
+        const meData = await meRes.json();
+        setUser(meData);
+        return meData;
+      }
+    } catch {
+      // Fallback
     }
 
     setUser(data.user);

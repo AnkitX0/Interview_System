@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
@@ -7,10 +7,19 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const { register } = useAuth();
+  const { user, loading: authLoading, register } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const from = location.state?.from?.pathname || "/dashboard";
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate(from, { replace: true });
+    }
+  }, [user, authLoading, navigate, from]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,15 +30,19 @@ export default function Register() {
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
 
     try {
       await register(email, password, fullName);
-      navigate("/setup", { replace: true });
+      navigate(from, { replace: true });
     } catch (err) {
-      setError(err.message || "Registration failed");
+      if (err.message?.includes("Email is already registered")) {
+        setError("An account with this email already exists.");
+      } else {
+        setError(err.message || "Registration failed");
+      }
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -93,14 +106,14 @@ export default function Register() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={submitting}
             style={{
               ...buttonStyle,
-              opacity: loading ? 0.7 : 1,
-              cursor: loading ? "not-allowed" : "pointer",
+              opacity: submitting ? 0.7 : 1,
+              cursor: submitting ? "not-allowed" : "pointer",
             }}
           >
-            {loading ? "Creating account..." : "Create Account"}
+            {submitting ? "Creating account..." : "Create Account"}
           </button>
         </form>
 

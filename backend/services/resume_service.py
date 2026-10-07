@@ -104,9 +104,148 @@ def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> str:
             else:
                 extracted_text = re.sub(r"[^\x20-\x7E\n]", " ", raw_str)
         except Exception:
-            extracted_text = "Sample resume extracted text."
+            extracted_text = ""
 
     return extracted_text.strip()
+
+
+def extract_pdf_page_count(pdf_bytes: bytes) -> Optional[int]:
+    """Helper to extract page count from PDF using pdfinfo or regex form feed markers."""
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_file:
+        tmp_path = tmp_file.name
+        tmp_file.write(pdf_bytes)
+
+    page_count = None
+    try:
+        res = subprocess.run(["pdfinfo", tmp_path], capture_output=True, text=True, timeout=5)
+        if res.returncode == 0:
+            for line in res.stdout.split("\n"):
+                if line.startswith("Pages:"):
+                    parts = line.split(":")
+                    if len(parts) > 1:
+                        page_count = int(parts[1].strip())
+                        break
+    except Exception:
+        pass
+    finally:
+        if os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except Exception:
+                pass
+
+    if page_count is None:
+        ff_count = pdf_bytes.count(b"\x0c")
+        if ff_count > 0:
+            page_count = ff_count + 1
+        else:
+            page_matches = len(re.findall(b"/Type\s*/Page\b", pdf_bytes))
+            if page_matches > 0:
+                page_count = page_matches
+
+    return page_count
+
+
+def sanitize_resume_text(text: str) -> str:
+    """Sanitizes extracted resume text to remove HTML/CSS artifacts and binary noise."""
+    cleaned = re.sub(r"<[^>]+>", " ", text)
+    cleaned = re.sub(r"\{[^\}]*(?:margin|padding|color|font|background|border):[^\}]*\}", " ", cleaned, flags=re.IGNORECASE)
+    lines = [line.strip() for line in cleaned.split("\n") if line.strip()]
+    return "\n".join(lines)
+
+
+def validate_resume_document(text: str, filename: str = "", page_count: Optional[int] = None) -> Tuple[bool, str, Dict[str, Any]]:
+    """
+    Quality gate validating whether an extracted document is a legitimate resume/CV,
+    filtering out code dumps, stack traces, HTML/CSS markup, server logs, and unrelated files.
+    """
+    clean_text = text.strip()
+    words = clean_text.split()
+    total_words = len(words)
+
+    if total_words < 5 or len(clean_text) < 25:
+        return False, "Extracted text is too short to contain resume information.", {
+            "reason": "text_too_short",
+            "word_count": total_words,
+            "page_count": page_count,
+        }
+
+    # Negative Signal 1: High density of HTML / XML tags
+    html_tags = len(re.findall(r"<[a-zA-Z\/][^>]*>", clean_text))
+
+    # Negative Signal 2: High density of CSS styling blocks
+    css_blocks = len(re.findall(r"\{[^\}]*(?:margin|padding|color|font|background|border|display):[^\}]*\}", clean_text, re.IGNORECASE))
+
+    # Negative Signal 3: High density of source code statements & keywords
+    code_patterns = [
+        r"\bimport\s+java\b", r"\bpublic\s+class\b", r"\bprivate\s+void\b", r"\bSystem\.out\.print",
+        r"\bString\s+url\s*=", r"\bjdbc:mysql:", r"\bfunction\s*\([^\)]*\)\s*\{", r"#include\s*<",
+        r"\busing\s+namespace\b", r"\bdef\s+\w+\([^\)]*\):", r"\bconst\s+\w+\s*=\s*require\(",
+        r"\bvar\s+\w+\s*=\s*new\b", r"\bval\s+\w+\s*:", r"\blet\s+\w+\s*="
+    ]
+    code_matches = sum(len(re.findall(pat, clean_text, re.IGNORECASE)) for pat in code_patterns)
+
+    # Negative Signal 4: Stack traces and server logs
+    log_patterns = [
+        r"\bINFO:\s*", r"\bSEVERE:\s*", r"\bWARN:\s*", r"\bDEBUG:\s*", r"Server startup in \d+",
+        r"Exception in thread", r"\bat com\.", r"\bat org\.", r"\bat java\.", r"Traceback \(most recent call last\):"
+    ]
+    log_matches = sum(len(re.findall(pat, clean_text, re.IGNORECASE)) for pat in log_patterns)
+
+    # Negative Signal 5: SQL DDL / DML dumps
+    sql_patterns = [r"\bCREATE TABLE\b", r"\bINSERT INTO\b", r"\bALTER TABLE\b", r"\bFOREIGN KEY\b"]
+    sql_matches = sum(len(re.findall(pat, clean_text, re.IGNORECASE)) for pat in sql_patterns)
+
+    total_noise_count = html_tags + css_blocks + (code_matches * 2) + (log_matches * 2) + (sql_matches * 2)
+
+    # Positive Signal 1: Contact Info (Email, Phone, LinkedIn/GitHub)
+    has_email = bool(re.search(r"[\w\.-]+@[\w\.-]+\.\w+", clean_text))
+    has_phone = bool(re.search(r"\+?\d[\d\s\-\(\)]{8,}\d", clean_text))
+    has_link = bool(re.search(r"\b(linkedin\.com|github\.com|portfolio)\b", clean_text, re.IGNORECASE))
+    contact_score = (1 if has_email else 0) + (1 if has_phone else 0) + (1 if has_link else 0)
+
+    # Positive Signal 2: Resume Section Headers
+    sections_found = 0
+    header_keywords = [
+        r"\b(summary|objective|profile)\b",
+        r"\b(experience|work experience|employment|work history)\b",
+        r"\b(projects|technical projects)\b",
+        r"\b(skills|technical skills|competencies)\b",
+        r"\b(education|academic background|qualifications)\b"
+    ]
+    for hk in header_keywords:
+        if re.search(hk, clean_text, re.IGNORECASE):
+            sections_found += 1
+
+    noise_ratio = total_noise_count / max(1, total_words / 20)
+
+    # Page count check: High page count documents (>15) require strong evidence of resume structure
+    if page_count is not None and page_count >= 15:
+        if sections_found < 3 or contact_score == 0:
+            return False, "That document doesn't appear to be a resume. We extracted mostly code, markup, logs, or unrelated document content rather than resume information.", {
+                "reason": "high_page_count_low_resume_signal",
+                "page_count": page_count,
+                "sections_found": sections_found,
+                "contact_score": contact_score,
+                "noise_count": total_noise_count,
+                "detail": f"Detected {page_count} pages with high density of code/logs and low resume structure confidence."
+            }
+
+    if noise_ratio > 2.5 and (sections_found < 2 or contact_score == 0):
+        return False, "That document doesn't appear to be a resume. We extracted mostly code, markup, logs, or unrelated document content rather than resume information.", {
+            "reason": "high_noise_density",
+            "noise_ratio": round(noise_ratio, 2),
+            "sections_found": sections_found,
+            "contact_score": contact_score,
+            "detail": "High density of source code, HTML/CSS markup, SQL, or server logs detected."
+        }
+
+    return True, "Valid resume document", {
+        "page_count": page_count,
+        "sections_found": sections_found,
+        "contact_score": contact_score,
+        "noise_ratio": round(noise_ratio, 2)
+    }
 
 
 def split_resume_into_sections(text: str) -> Dict[str, List[str]]:

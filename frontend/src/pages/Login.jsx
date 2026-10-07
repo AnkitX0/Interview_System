@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -6,18 +6,24 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const { login } = useAuth();
+  const { user, loading: authLoading, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || "/setup";
+  const from = location.state?.from?.pathname || "/dashboard";
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate(from, { replace: true });
+    }
+  }, [user, authLoading, navigate, from]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-    setLoading(true);
+    setSubmitting(true);
 
     try {
       await login(email, password);
@@ -25,7 +31,7 @@ export default function Login() {
     } catch (err) {
       setError(err.message || "Invalid credentials");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -75,14 +81,14 @@ export default function Login() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={submitting}
             style={{
               ...buttonStyle,
-              opacity: loading ? 0.7 : 1,
-              cursor: loading ? "not-allowed" : "pointer",
+              opacity: submitting ? 0.7 : 1,
+              cursor: submitting ? "not-allowed" : "pointer",
             }}
           >
-            {loading ? "Authenticating..." : "Sign In"}
+            {submitting ? "Authenticating..." : "Sign In"}
           </button>
         </form>
 

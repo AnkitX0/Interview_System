@@ -9,6 +9,9 @@ from backend.schemas.schemas import ResumeAnalyzeRequest
 from backend.services.auth_service import get_current_user
 from backend.services.resume_service import (
     extract_text_from_pdf_bytes,
+    extract_pdf_page_count,
+    sanitize_resume_text,
+    validate_resume_document,
     parse_resume_text
 )
 
@@ -162,11 +165,13 @@ async def upload_resume(
     """
     text = ""
     filename = "uploaded_resume.txt"
+    page_count = None
 
     if file:
         filename = file.filename
         contents = await file.read()
         if filename.lower().endswith(".pdf"):
+            page_count = extract_pdf_page_count(contents)
             text = extract_text_from_pdf_bytes(contents)
         else:
             try:
@@ -178,18 +183,22 @@ async def upload_resume(
         text = raw_text.strip()
 
     if not text:
-        text = (
-            "Software Engineer with experience in Python, FastAPI, React, SQL, and Docker. "
-            "Developed REST APIs, reduced query response times by 30%, and deployed scalable microservices. "
-            "Education: B.Tech in Computer Science."
+        raise HTTPException(
+            status_code=400,
+            detail="No document text could be extracted. Please upload a valid PDF or paste resume text."
         )
 
-    parsed = parse_resume_text(text)
+    clean_text = sanitize_resume_text(text)
+    is_valid, error_msg, _details = validate_resume_document(clean_text, filename=filename, page_count=page_count)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
+
+    parsed = parse_resume_text(clean_text)
 
     resume_record = models.Resume(
         user_id=user.id,
         filename=filename,
-        raw_text=text,
+        raw_text=clean_text,
     )
     db.add(resume_record)
     db.flush()
@@ -223,7 +232,12 @@ def analyze_resume(
     if not text:
         raise HTTPException(status_code=400, detail="Text or resume_id required")
 
-    parsed = parse_resume_text(text)
+    clean_text = sanitize_resume_text(text)
+    is_valid, error_msg, _details = validate_resume_document(clean_text)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
+
+    parsed = parse_resume_text(clean_text)
     return parsed
 
 

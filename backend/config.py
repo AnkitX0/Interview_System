@@ -95,8 +95,8 @@ if not SECRET_KEY:
     if ENVIRONMENT == "production":
         raise RuntimeError("FATAL: SECRET_KEY environment variable is required in production mode.")
     else:
-        SECRET_KEY = secrets.token_urlsafe(32)
-        _logger.warning("No SECRET_KEY set. Generated ephemeral dev secret. Logins will invalidate on server restart.")
+        SECRET_KEY = "dev-secret-key-interview-system-2026-persistent-token"
+        _logger.warning("No SECRET_KEY set in env. Using persistent development secret key.")
 
 AUTH_COOKIE_NAME = "auth_token"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))

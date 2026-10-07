@@ -32,9 +32,7 @@ export async function apiFetch(url, options = {}) {
     // fetch() throws a TypeError when the backend is unreachable (wrong port,
     // server not started, DNS failure, or CORS preflight hard-blocked).
     throw new Error(
-      `Cannot reach the backend at ${API_BASE_URL}. ` +
-      `Verify the server is running and VITE_API_URL is correct. ` +
-      `(${networkErr.message})`
+      `Unable to connect to the server at ${API_BASE_URL}. Make sure the backend server is running.`
     );
   }
 

@@ -48,47 +48,20 @@ function ResumeUpload() {
         body: formData,
       });
 
+      const data = await res.json();
       if (!res.ok) {
-        throw new Error(`Upload failed with status: ${res.status}`);
+        const errorMsg = data?.error?.message || data?.detail || "Document validation failed. Please ensure file is a valid resume.";
+        setError(errorMsg);
+        setProfile(null);
+        return;
       }
 
-      const data = await res.json();
       setProfile(data);
       setResumeData(data);
     } catch (err) {
       console.error("Resume analysis error:", err);
-      // Fallback offline mock profile for resiliency
-      const fallback = {
-        id: 1,
-        filename: file?.name || "Candidate_Resume.txt",
-        candidate_name: "Alex Taylor",
-        skills: ["Python", "FastAPI", "React", "SQL", "Docker", "REST API", "Git"],
-        categorized_skills: {
-          Languages: ["Python", "SQL", "JavaScript"],
-          Frameworks: ["FastAPI", "React"],
-          Databases: ["PostgreSQL", "SQLite"],
-          "Cloud & DevOps": ["Docker", "Git"],
-        },
-        education: "B.Tech in Computer Science and Engineering",
-        experience: "Engineered scalable REST APIs and full-stack reactive applications.",
-        resume_score: 78.5,
-        strengths: [
-          "Strong foundation in full-stack Python/React development.",
-          "Clear experience with modern containerization and databases.",
-        ],
-        weak_areas: [
-          "Lacks quantifiable metrics in key project descriptions.",
-          "Could emphasize testing frameworks (PyTest, Jest).",
-        ],
-        suggested_improvements: [
-          "Quantify impact with metrics (e.g. 'reduced latency by 30%').",
-          "Clarify personal contributions versus general team accomplishments.",
-        ],
-        summary: "Candidate with solid competencies in Python, FastAPI, React, and SQL.",
-      };
-      setProfile(fallback);
-      setResumeData(fallback);
-      setError("Note: Running in offline fallback mode. Analysis preview generated.");
+      setError(err.message || "Failed to analyze document. Please check the file and try again.");
+      setProfile(null);
     } finally {
       setLoading(false);
     }
@@ -324,17 +297,24 @@ function ResumeUpload() {
                 Areas identified for deterministic follow-up probing during interview rounds.
               </p>
               <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
-                {profile.risk_areas.map((risk, idx) => (
-                  <div key={idx} style={{ padding: "12px", border: "1px solid #fed7aa", background: "#fffbeb", borderRadius: "8px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: "14px", fontWeight: "600", color: "#9a3412" }}>{risk.area}</span>
-                      <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "4px", background: "#ffedd5", color: "#c2410c" }}>
-                        Probe Priority: {(risk.probe_priority * 100).toFixed(0)}%
-                      </span>
+                {profile.risk_areas.map((risk, idx) => {
+                  const isObj = typeof risk === "object" && risk !== null;
+                  const areaLabel = isObj ? (risk.area || risk.title || "Audit Risk Area") : risk;
+                  const priorityVal = isObj && typeof risk.probe_priority === "number" ? Math.round(risk.probe_priority * 100) : 60;
+                  const reasonText = isObj ? risk.reason : null;
+
+                  return (
+                    <div key={idx} style={{ padding: "12px", border: "1px solid #fed7aa", background: "#fffbeb", borderRadius: "8px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontSize: "14px", fontWeight: "600", color: "#9a3412" }}>{areaLabel}</span>
+                        <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "4px", background: "#ffedd5", color: "#c2410c" }}>
+                          Probe Priority: {priorityVal}%
+                        </span>
+                      </div>
+                      {reasonText && <p style={{ fontSize: "13px", color: "#78350f", marginTop: "4px" }}>{reasonText}</p>}
                     </div>
-                    <p style={{ fontSize: "13px", color: "#78350f", marginTop: "4px" }}>{risk.reason}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

@@ -656,7 +656,28 @@ def complete_interview(
     if not session:
         raise HTTPException(status_code=404, detail="Interview session not found")
 
-    # Record behavioral / delivery metrics (nullable if camera off/unmeasured)
+    existing_score = db.query(models.SessionScore).filter(
+        models.SessionScore.session_id == session_id
+    ).first()
+
+    if session.status == "completed" and existing_score:
+        return {
+            "session_id": session.id,
+            "status": "completed",
+            "readiness_score": existing_score.readiness_score or existing_score.behavioral_score,
+            "delivery_measured": existing_score.behavioral_score is not None,
+            "weights_used": json.loads(existing_score.weights_used or "{}"),
+            "consistency_source": existing_score.consistency_source or "session_level",
+            "subscores": {
+                "communication": existing_score.communication_score,
+                "technical": existing_score.technical_score,
+                "delivery": existing_score.behavioral_score,
+                "resume_consistency": existing_score.resume_consistency_score,
+            },
+            "strongest_category": existing_score.strongest_category,
+            "weakest_category": existing_score.weakest_category,
+            "insights": json.loads(existing_score.insights or "[]")
+        }
     eye_percent = data.eye_contact_percent
     blink_rate = data.blink_rate
     pause_rate = data.pause_rate if data.pause_rate is not None else 2.0
