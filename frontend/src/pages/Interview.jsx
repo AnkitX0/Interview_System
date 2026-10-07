@@ -146,17 +146,27 @@ function Interview() {
 
     recognizer.onresult = (event) => {
       let finalTranscript = "";
+      let interimTranscript = "";
       for (let i = 0; i < event.results.length; i++) {
-        finalTranscript += event.results[i][0].transcript + " ";
+        const textChunk = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += textChunk + " ";
+        } else {
+          interimTranscript += textChunk;
+        }
       }
-      setAnswer(finalTranscript.trim());
+      setAnswer((finalTranscript + interimTranscript).trim());
     };
 
     recognizer.onerror = (event) => {
       console.warn("Speech recognition notice:", event.error);
-      if (event.error === "not-allowed") {
-        setSpeechNotice("Microphone permission denied. Switched to text input.");
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        setSpeechNotice("Microphone permission denied. Switched to text mode.");
         setInputMode("text");
+      } else if (event.error === "no-speech") {
+        setSpeechNotice("No speech detected. Speak clearly into your microphone or type your answer.");
+      } else if (event.error === "audio-capture") {
+        setSpeechNotice("Microphone capture error. Verify microphone connection or switch to text mode.");
       }
       setSpeechRecognitionActive(false);
     };
@@ -223,8 +233,21 @@ function Interview() {
         streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
+          try {
+            await videoRef.current.play();
+          } catch {}
+
+          // Verify actual active video dimensions before declaring camera active
+          const checkCameraDimensions = () => {
+            if (!isSubscribed) return;
+            if (videoRef.current && videoRef.current.videoWidth > 0 && videoRef.current.videoHeight > 0) {
+              setIsCameraOn(true);
+            } else {
+              setTimeout(checkCameraDimensions, 200);
+            }
+          };
+          checkCameraDimensions();
         }
-        setIsCameraOn(true);
 
         const faceMesh = new FaceMesh({
           locateFile: (file) => `/mediapipe/face_mesh/${file}`,
@@ -299,11 +322,13 @@ function Interview() {
 
     return () => {
       isSubscribed = false;
+      setIsCameraOn(false);
       if (cameraRef.current) {
         try { cameraRef.current.stop(); } catch {}
       }
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
       }
     };
   }, [textOnly]);
@@ -439,17 +464,22 @@ function Interview() {
         body: JSON.stringify(payload),
       });
 
-      if (res.ok) {
-        const finalReport = await res.json();
-        setReportData(finalReport);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.error?.message || errData?.detail || "Session finalization failed.");
       }
-    } catch (err) {
-      console.warn("Interview complete notice:", err);
-    } finally {
+
+      const finalReport = await res.json();
+      setReportData(finalReport);
       sessionStorage.setItem("interviewCompleted", "true");
       sessionStorage.setItem("currentSessionId", String(sessionId));
-      setSubmittingFinal(false);
+
       navigate(`/report?sessionId=${sessionId}`);
+    } catch (err) {
+      console.error("Interview complete error:", err);
+      setSpeechNotice(`Finalization Error: ${err.message}. Please click 'Finish & View Report' again to retry.`);
+    } finally {
+      setSubmittingFinal(false);
     }
   };
 
@@ -594,53 +624,67 @@ function Interview() {
               justifyContent: "center",
             }}
           >
-            {isCameraOn && !textOnly ? (
-              <>
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    transform: "scaleX(-1)", // Mirror camera feed naturally
-                  }}
-                />
-                {/* Hidden canvas for background MediaPipe processing */}
-                <canvas ref={canvasRef} style={{ display: "none" }} />
+            {/* Video element always rendered in DOM so srcObject binding and frame sampling succeed */}
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                transform: "scaleX(-1)", // Mirror camera feed naturally
+                display: isCameraOn && !textOnly ? "block" : "none",
+              }}
+            />
+            {/* Hidden canvas for background MediaPipe processing */}
+            <canvas ref={canvasRef} style={{ display: "none" }} />
 
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: "10px",
-                    left: "10px",
-                    backgroundColor: "rgba(15, 23, 42, 0.75)",
-                    padding: "3px 8px",
-                    borderRadius: "4px",
-                    fontSize: "11px",
-                    color: "#ffffff",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                >
-                  <span style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#22c55e" }} />
-                  <span>Framing active</span>
-                </div>
-              </>
-            ) : (
+            {(!isCameraOn || textOnly) && (
               <div style={{ textAlign: "center", padding: "20px", color: "var(--slate-400)" }}>
                 <div style={{ fontSize: "36px", marginBottom: "8px" }}>📷</div>
                 <div style={{ fontSize: "13px", fontWeight: "600", color: "#f8fafc" }}>
-                  {textOnly ? "Privacy Mode Active" : "Camera Off"}
+                  {textOnly ? "Privacy Mode Active" : (cameraNotice ? "Camera Unavailable" : "Initializing Camera...")}
                 </div>
                 <div style={{ fontSize: "11px", marginTop: "4px" }}>
-                  {textOnly ? "Local video processing is disabled." : "Proceeding in text/microphone mode."}
+                  {textOnly
+                    ? "Local video processing is disabled."
+                    : (cameraNotice || "Connecting to local video device for presentation analysis...")}
                 </div>
               </div>
             )}
+
+            {/* Status Pill */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: "10px",
+                left: "10px",
+                backgroundColor: "rgba(15, 23, 42, 0.85)",
+                padding: "3px 8px",
+                borderRadius: "4px",
+                fontSize: "11px",
+                color: "#ffffff",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              <span
+                style={{
+                  width: "6px",
+                  height: "6px",
+                  borderRadius: "50%",
+                  backgroundColor: isCameraOn && !textOnly ? "#22c55e" : (textOnly ? "#94a3b8" : "#f59e0b"),
+                }}
+              />
+              <span>
+                {isCameraOn && !textOnly
+                  ? "Camera on"
+                  : (textOnly ? "Camera off" : (cameraNotice ? "Camera unavailable" : "Camera initializing..."))}
+              </span>
+            </div>
           </div>
 
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px", fontSize: "12px", color: "var(--text-muted)" }}>
