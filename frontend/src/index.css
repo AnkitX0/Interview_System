@@ -1,27 +1,7 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+@import "./styles/global.css";
 
-body {
-  font-family: Inter, system-ui, Arial, sans-serif;
-  background-color: #f4f6f8;
-  color: #111827;
-}
-
-h1, h2, h3, h4 {
-  font-weight: 600;
-}
-
-section {
-  margin-bottom: 80px;
-}
-
-button {
-  transition: all 0.2s ease;
-}
-
-button:hover {
-  opacity: 0.9;
+/* Additional site-wide overrides */
+html, body {
+  background-color: var(--bg-app);
+  color: var(--text-primary);
 }

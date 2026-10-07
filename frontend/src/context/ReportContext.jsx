@@ -68,6 +68,20 @@ export function ReportProvider({ children }) {
     }
   };
 
+  const clearReportContext = () => {
+    setReportDataState(null);
+    setResumeDataState(null);
+    setCurrentSessionIdState(null);
+    try {
+      sessionStorage.removeItem("reportData");
+      sessionStorage.removeItem("resumeData");
+      sessionStorage.removeItem("currentSessionId");
+      sessionStorage.clear();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <ReportContext.Provider
       value={{
@@ -77,6 +91,7 @@ export function ReportProvider({ children }) {
         setResumeData,
         currentSessionId,
         setCurrentSessionId,
+        clearReportContext,
       }}
     >
       {children}

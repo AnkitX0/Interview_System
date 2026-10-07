@@ -1,5 +1,6 @@
 import re
 from typing import Dict, Any, List, Optional
+from backend.config import DEFAULT_SESSION_WEIGHTS, WORD_COUNT_BANDS, FILLER_WORDS
 
 TECHNICAL_KEYWORDS = [
     "api", "rest", "database", "sql", "nosql", "index", "cache", "redis",
@@ -45,8 +46,42 @@ def evaluate_rubric_for_answer(
     word_count = len(words)
     lower_text = text.lower()
 
-    if word_count < 5:
+    if word_count < WORD_COUNT_BANDS["floor_min"]:
+        empty_dimensions = {
+            "structure": {
+                "score": 20.0,
+                "evidence": [f"{word_count} words submitted (minimum expected: {WORD_COUNT_BANDS['floor_min']})", "0 sentence transitions"],
+                "explanation": "Answer is too brief or empty to assess narrative flow.",
+                "recommended_action": "Provide a complete verbal or written response of at least 70 words."
+            },
+            "technical": {
+                "score": 15.0,
+                "evidence": ["0 domain keywords found", f"Evaluated category: {category}"],
+                "explanation": "No technical concepts or mechanisms were provided.",
+                "recommended_action": "Describe specific tools, frameworks, protocols, and architectural patterns."
+            },
+            "reasoning": {
+                "score": 15.0,
+                "evidence": ["trade-off terms: 0", "No causal justification markers found"],
+                "explanation": "No rationale or comparative trade-offs were detected.",
+                "recommended_action": "Articulate why an engineering decision was made and compare against alternatives."
+            },
+            "star": {
+                "score": 10.0,
+                "evidence": ["0/4 STAR components identified", "0 quantified results found"],
+                "explanation": "No STAR elements (Situation, Task, Action, Result) detected in response.",
+                "recommended_action": "Use the STAR method: Situation, Task, Action, and measurable Result."
+            },
+            "consistency": {
+                "score": 50.0,
+                "evidence": ["Insufficient text to cross-reference against resume skills"],
+                "explanation": "Could not verify background claims from an empty or single-word answer.",
+                "recommended_action": "Reference specific project experiences from your background."
+            }
+        }
         return {
+            "score": 20.0,
+            "overall_score": 20.0,
             "structure_score": 20.0,
             "clarity_score": 20.0,
             "depth_score": 15.0,
@@ -54,7 +89,12 @@ def evaluate_rubric_for_answer(
             "reasoning_score": 15.0,
             "star_score": 10.0,
             "consistency_score": 50.0,
-            "overall_score": 20.0,
+            "dimensions": empty_dimensions,
+            "structure": empty_dimensions["structure"],
+            "technical": empty_dimensions["technical"],
+            "reasoning": empty_dimensions["reasoning"],
+            "star": empty_dimensions["star"],
+            "consistency": empty_dimensions["consistency"],
             "strengths": ["Answer was submitted."],
             "weaknesses": ["Answer is too brief or empty to assess meaningfully."],
             "missing_concepts": ["Detailed explanation", "Concrete examples"],
@@ -65,7 +105,7 @@ def evaluate_rubric_for_answer(
     # Rewards appropriate length (60-250 words), sentence transitions, punctuation
     sentences = [s.strip() for s in re.split(r"[.!?]+", text) if s.strip()]
     sentence_count = len(sentences)
-    length_factor = min(1.0, word_count / 70.0)
+    length_factor = min(1.0, word_count / float(WORD_COUNT_BANDS["optimal_min"]))
     structure_bonus = 20.0 if sentence_count >= 3 else 10.0
     transitions = sum(1 for w in ["first", "second", "additionally", "furthermore", "finally", "specifically", "overall"] if w in lower_text)
     transition_bonus = min(20.0, transitions * 7.0)
@@ -95,6 +135,7 @@ def evaluate_rubric_for_answer(
         matched_resume = [s for s in resume_skills if s.lower() in lower_text]
         consistency_score = round(min(95.0, max(55.0, 60.0 + (len(matched_resume) * 10.0))), 1)
     else:
+        matched_resume = []
         consistency_score = 75.0
 
     # 6. Overall Score
@@ -120,7 +161,98 @@ def evaluate_rubric_for_answer(
             1
         )
 
-    # Construct Qualitative Feedback
+    # Concrete Evidence Generation
+    metric_matches = re.findall(
+        r"\b\d+%(?!\w)|\b\d+(?:[xXkKmM]|\s*(?:percent|users|requests|ms|seconds|minutes|million|times|gb|mb|tb|queries))\b",
+        text,
+        re.IGNORECASE
+    )
+    metric_evidence = (
+        f"{len(metric_matches)} quantified metric(s) found ({', '.join(metric_matches[:3])})"
+        if metric_matches
+        else "0 quantified results found"
+    )
+
+    detected_fillers = filler_count
+    if detected_fillers == 0 and word_count > 0:
+        for fw in FILLER_WORDS:
+            detected_fillers += len(re.findall(r"\b" + re.escape(fw) + r"\b", lower_text))
+    filler_evidence = f"{detected_fillers} filler words in {word_count} words"
+
+    tradeoff_evidence = (
+        f"trade-off terms: {len(matched_reasoning)} ({', '.join(matched_reasoning[:3])})"
+        if matched_reasoning
+        else "trade-off terms: 0"
+    )
+
+    tech_evidence = (
+        f"{len(matched_tech)} domain keywords found ({', '.join(matched_tech[:4])})"
+        if matched_tech
+        else "0 domain keywords found"
+    )
+
+    missing_star = [k for k, v in star_hits.items() if not v]
+    star_evidence = (
+        f"{star_count}/4 STAR components identified"
+        + (f" (missing: {', '.join(missing_star)})" if missing_star else "")
+    )
+
+    if resume_skills and len(resume_skills) > 0:
+        resume_evidence = (
+            f"{len(matched_resume)} of {len(resume_skills)} declared resume skills verified ({', '.join(matched_resume[:3]) if matched_resume else 'none'})"
+        )
+    else:
+        resume_evidence = "No resume skills provided; evaluated against general engineering baseline"
+
+    dimensions = {
+        "structure": {
+            "score": structure_score,
+            "evidence": [
+                f"{word_count} words across {sentence_count} sentence(s)",
+                filler_evidence,
+                f"{transitions} transition markers detected"
+            ],
+            "explanation": "Clear communicative structure with coherent narrative flow." if structure_score >= 70 else "Narrative flow is brief or lacks transitional signposting.",
+            "recommended_action": "Structure responses into a clear 3-part narrative (Context, Action, Outcome) using explicit transitions ('First', 'Additionally', 'Finally')."
+        },
+        "technical": {
+            "score": tech_score,
+            "evidence": [
+                tech_evidence,
+                f"Evaluated category context: {category}"
+            ],
+            "explanation": f"Demonstrated solid domain concepts ({', '.join(matched_tech[:3]) if matched_tech else 'technical depth'})." if tech_score >= 70 else "Lacked specific architectural keywords or concrete protocol/database mechanisms.",
+            "recommended_action": "Mention specific mechanisms (e.g., caching strategies, index types, concurrency models) rather than generic descriptions."
+        },
+        "reasoning": {
+            "score": reasoning_score,
+            "evidence": [
+                tradeoff_evidence,
+                "Causal rationale detected ('because', 'therefore')" if any(m in lower_text for m in ["because", "therefore", "as a result", "in order to"]) else "No causal justification markers found"
+            ],
+            "explanation": "Clearly articulated engineering tradeoffs and rationales." if reasoning_score >= 70 else "Focused primarily on 'what' was done rather than 'why' architectural choices were made.",
+            "recommended_action": "Explicitly contrast your chosen architectural pattern against at least one viable alternative, noting the trade-offs."
+        },
+        "star": {
+            "score": star_score,
+            "evidence": [
+                star_evidence,
+                metric_evidence
+            ],
+            "explanation": "Followed the STAR method by highlighting action steps and tangible outcomes." if star_score >= 70 else "Incomplete STAR coverage; did not specify quantifiable final outcome.",
+            "recommended_action": "Always close with the Result stage: quantify the business or performance outcome (e.g., % improvement, latency reduction, user count)."
+        },
+        "consistency": {
+            "score": consistency_score,
+            "evidence": [
+                resume_evidence
+            ],
+            "explanation": "Skills and domain claims align with candidate's declared profile." if (resume_skills and len(matched_resume) > 0) else "General technical evaluation without resume verification linkage.",
+            "recommended_action": "Anchor technical decisions with direct references to projects and technologies listed on your resume."
+        }
+    }
+
+    # Construct Qualitative Feedback (Backward Compatible)
     strengths = []
     if structure_score >= 70:
         strengths.append("Clear communicative structure with coherent narrative flow.")
@@ -134,7 +266,7 @@ def evaluate_rubric_for_answer(
         strengths.append("Answer was direct and addressed the core question prompt.")
 
     weaknesses = []
-    if word_count < 40:
+    if word_count < WORD_COUNT_BANDS["minimal_detail"]:
         weaknesses.append("Response was too brief; missed opportunity to expand on operational details.")
     if tech_score < 60 and category.lower() == "technical":
         weaknesses.append("Lacked specific architectural keywords or concrete protocol/database mechanisms.")
@@ -159,7 +291,35 @@ def evaluate_rubric_for_answer(
         "Explain the 'why': contrast your choice against alternative designs to demonstrate senior engineering reasoning."
     ]
 
+    # 6. Directness & Evasion Detection
+    q_lower = (question_text or "").lower()
+    asking_measurement = any(k in q_lower for k in ["measure", "baseline", "metric", "how did you verify", "benchmark", "quantify"])
+    asking_tradeoff = any(k in q_lower for k in ["tradeoff", "trade-off", "alternative", "why did you choose", "instead of"])
+    has_numbers = bool(re.search(r"\b\d+(\.\d+)?%?|\b\d+(?:ms|s|m|k|mb|gb|rps|qps)\b", lower_text))
+    has_tradeoff_words = any(k in lower_text for k in ["because", "instead of", "tradeoff", "trade-off", "rather than", "alternative", "compared to"])
+
+    candidate_diversion = False
+    unresolved_point = None
+    directness_score = 85.0
+
+    if asking_measurement and not has_numbers:
+        candidate_diversion = True
+        directness_score = 35.0
+        unresolved_point = f"Specific baseline measurement and quantitative evidence for: '{question_text[:60]}'"
+    elif asking_tradeoff and not has_tradeoff_words:
+        candidate_diversion = True
+        directness_score = 45.0
+        unresolved_point = f"Architectural tradeoff justification for: '{question_text[:60]}'"
+    elif word_count < WORD_COUNT_BANDS["minimal_detail"]:
+        directness_score = 40.0
+        unresolved_point = f"Elaboration and technical depth on: '{question_text[:60]}'"
+
+    if candidate_diversion:
+        weaknesses.append("Response diverged or lacked direct evidence for the specific mechanism asked.")
+
     return {
+        "score": overall_score,
+        "overall_score": overall_score,
         "structure_score": structure_score,
         "clarity_score": structure_score,
         "depth_score": tech_score,
@@ -167,7 +327,15 @@ def evaluate_rubric_for_answer(
         "reasoning_score": reasoning_score,
         "star_score": star_score,
         "consistency_score": consistency_score,
-        "overall_score": overall_score,
+        "directness_score": directness_score,
+        "candidate_diversion": candidate_diversion,
+        "unresolved_point": unresolved_point,
+        "dimensions": dimensions,
+        "structure": dimensions["structure"],
+        "technical": dimensions["technical"],
+        "reasoning": dimensions["reasoning"],
+        "star": dimensions["star"],
+        "consistency": dimensions["consistency"],
         "strengths": strengths,
         "weaknesses": weaknesses,
         "missing_concepts": missing_concepts,
@@ -177,18 +345,24 @@ def evaluate_rubric_for_answer(
 
 def calculate_session_score(
     answer_scores: List[float],
-    behavioral_score: float = 75.0,
+    delivery_score: Optional[float] = None,
     technical_scores: Optional[List[float]] = None,
     communication_scores: Optional[List[float]] = None,
-    consistency_scores: Optional[List[float]] = None
+    consistency_scores: Optional[List[float]] = None,
+    behavioral_score: Optional[float] = None
 ) -> Dict[str, Any]:
     """
-    Weighted Session Score Formula:
-    Final Readiness =
-      0.30 * Communication
-    + 0.30 * Technical
-    + 0.20 * Behavioral
-    + 0.20 * Resume Consistency
+    Weighted Session Score Formula.
+
+    When Delivery & Visual Stability is measured:
+      Final Readiness = 0.30 Communication + 0.30 Technical + 0.20 Delivery + 0.20 Resume Consistency
+
+    When Delivery is unmeasured (camera off or denied):
+      Delivery is excluded completely, and remaining weights are re-normalized proportionally:
+      Communication: 0.30 / 0.80 = 0.375
+      Technical:     0.30 / 0.80 = 0.375
+      Resume:        0.20 / 0.80 = 0.250
+      Final Readiness = 0.375 Communication + 0.375 Technical + 0.250 Resume Consistency
     """
     avg_answer = sum(answer_scores) / len(answer_scores) if answer_scores else 70.0
 
@@ -204,29 +378,63 @@ def calculate_session_score(
         else round(avg_answer, 1)
     )
 
-    beh_score = round(max(30.0, min(100.0, behavioral_score)), 1)
-
     cons_score = (
         round(sum(consistency_scores) / len(consistency_scores), 1)
         if consistency_scores and len(consistency_scores) > 0
         else 75.0
     )
 
-    # Preferred transparent weighted formula
-    final_readiness = round(
-        0.30 * comm_score +
-        0.30 * tech_score +
-        0.20 * beh_score +
-        0.20 * cons_score,
-        1
-    )
+    # Determine delivery score (support both delivery_score and legacy behavioral_score)
+    actual_delivery = delivery_score if delivery_score is not None else behavioral_score
 
-    subscores = {
-        "Communication": comm_score,
-        "Technical": tech_score,
-        "Behavioral": beh_score,
-        "Resume Consistency": cons_score
-    }
+    if actual_delivery is not None:
+        deliv_score = round(max(0.0, min(100.0, actual_delivery)), 1)
+        delivery_measured = True
+        weights_used = {
+            "communication": DEFAULT_SESSION_WEIGHTS["communication"],
+            "technical": DEFAULT_SESSION_WEIGHTS["technical"],
+            "delivery": DEFAULT_SESSION_WEIGHTS["delivery"],
+            "resume_consistency": DEFAULT_SESSION_WEIGHTS["resume_consistency"],
+        }
+        final_readiness = round(
+            weights_used["communication"] * comm_score +
+            weights_used["technical"] * tech_score +
+            weights_used["delivery"] * deliv_score +
+            weights_used["resume_consistency"] * cons_score,
+            1
+        )
+        subscores = {
+            "Communication": comm_score,
+            "Technical": tech_score,
+            "Delivery & Visual Stability": deliv_score,
+            "Resume Consistency": cons_score
+        }
+    else:
+        deliv_score = None
+        delivery_measured = False
+        # Proportional re-normalization: total remaining weight is 0.80
+        total_remaining = (
+            DEFAULT_SESSION_WEIGHTS["communication"] +
+            DEFAULT_SESSION_WEIGHTS["technical"] +
+            DEFAULT_SESSION_WEIGHTS["resume_consistency"]
+        )
+        weights_used = {
+            "communication": round(DEFAULT_SESSION_WEIGHTS["communication"] / total_remaining, 3),  # 0.375
+            "technical": round(DEFAULT_SESSION_WEIGHTS["technical"] / total_remaining, 3),          # 0.375
+            "delivery": 0.0,
+            "resume_consistency": round(DEFAULT_SESSION_WEIGHTS["resume_consistency"] / total_remaining, 3), # 0.25
+        }
+        final_readiness = round(
+            weights_used["communication"] * comm_score +
+            weights_used["technical"] * tech_score +
+            weights_used["resume_consistency"] * cons_score,
+            1
+        )
+        subscores = {
+            "Communication": comm_score,
+            "Technical": tech_score,
+            "Resume Consistency": cons_score
+        }
 
     strongest = max(subscores.items(), key=lambda x: x[1])[0]
     weakest = min(subscores.items(), key=lambda x: x[1])[0]
@@ -234,15 +442,34 @@ def calculate_session_score(
     insights = [
         f"Strongest area is {strongest} with an average score of {subscores[strongest]}%.",
         f"Primary growth opportunity lies in {weakest} (currently at {subscores[weakest]}%).",
-        "Adopt the STAR method consistently and quantify project results with percentages and engineering metrics."
     ]
+    if delivery_measured:
+        insights.append("Adopt the STAR method consistently and quantify project results with percentages and engineering metrics.")
+    else:
+        insights.append("Note: Delivery & Visual Stability was not measured (camera was off/denied). Readiness was re-normalized across Communication (37.5%), Technical (37.5%), and Resume Consistency (25.0%).")
+
+    num_answers = len(answer_scores)
+    if num_answers >= 5:
+        score_confidence = "High"
+        confidence_explanation = f"High assessment confidence based on {num_answers} evaluated turns."
+    elif num_answers >= 3:
+        score_confidence = "Moderate"
+        confidence_explanation = f"Moderate assessment confidence based on {num_answers} evaluated turns."
+    else:
+        score_confidence = "Low"
+        confidence_explanation = f"Initial score estimate based on {num_answers} turn(s). Complete more questions for maximum accuracy."
 
     return {
         "final_readiness_score": final_readiness,
         "communication_score": comm_score,
         "technical_score": tech_score,
-        "behavioral_score": beh_score,
+        "delivery_score": deliv_score,
+        "delivery_measured": delivery_measured,
+        "behavioral_score": deliv_score,  # backward compatibility alias
         "resume_consistency_score": cons_score,
+        "score_confidence": score_confidence,
+        "confidence_explanation": confidence_explanation,
+        "weights_used": weights_used,
         "strongest_category": strongest,
         "weakest_category": weakest,
         "insights": insights

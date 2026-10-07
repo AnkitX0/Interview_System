@@ -1,8 +1,11 @@
-export function calculateBehavioralScore({
+export function calculateDeliveryScore({
   eyePercent,
   blinkRate,
   pauseRate
 }) {
+  if (eyePercent == null || blinkRate == null) {
+    return null;
+  }
   const eyeScore = calculateEyeScore(eyePercent);
   const blinkScore = calculateBlinkScore(blinkRate);
   const pauseScore = calculatePauseScore(pauseRate);
@@ -13,6 +16,10 @@ export function calculateBehavioralScore({
     pauseScore * 0.3;
 
   return Math.round(finalScore);
+}
+
+export function calculateBehavioralScore(args) {
+  return calculateDeliveryScore(args);
 }
 
 function calculateEyeScore(percent) {

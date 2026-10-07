@@ -1,501 +1,464 @@
-import { useEffect, useState, useContext } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
-  CartesianGrid,
   ResponsiveContainer,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
+  CartesianGrid
 } from "recharts";
-import { ReportContext } from "../context/ReportContext";
+import { useAuth } from "../context/AuthContext";
+import { apiFetch } from "../utils/api";
+import { Card, CardHeader } from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
+import { Badge } from "../components/ui/Badge";
+import { EmptyState } from "../components/ui/EmptyState";
+import { Skeleton } from "../components/ui/Skeleton";
 
 function Dashboard() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { currentSessionId } = useContext(ReportContext);
+  const { user } = useAuth();
 
-  const queryParams = new URLSearchParams(location.search);
-  const targetSessionId =
-    queryParams.get("sessionId") ||
-    location.state?.sessionId ||
-    currentSessionId ||
-    sessionStorage.getItem("currentSessionId");
-
-  const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [readinessData, setReadinessData] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
+  const [recentSessions, setRecentSessions] = useState([]);
+  const [readinessHistory, setReadinessHistory] = useState([]);
+  const [startingPractice, setStartingPractice] = useState(false);
+
   useEffect(() => {
-    const fetchReport = async () => {
+    async function loadDashboard() {
       setLoading(true);
       setError(null);
-
       try {
-        let endpoint = "http://127.0.0.1:8000/report/latest";
-        if (targetSessionId) {
-          endpoint = `http://127.0.0.1:8000/report/${targetSessionId}`;
-        }
+        const [readinessRes, recsRes, sessionsRes, historyRes] = await Promise.all([
+          apiFetch("/readiness/current").catch(() => null),
+          apiFetch("/practice/recommendations").catch(() => null),
+          apiFetch("/interview/history?page=1&limit=5").catch(() => null),
+          apiFetch("/readiness/history").catch(() => null),
+        ]);
 
-        const res = await fetch(endpoint);
-        if (res.ok) {
-          const data = await res.json();
-          setReport(data);
-        } else {
-          // If specific session failed, try latest session score
-          const latestRes = await fetch("http://127.0.0.1:8000/interview/latest");
-          if (latestRes.ok) {
-            const latestData = await latestRes.json();
-            if (latestData.session_id) {
-              const repRes = await fetch(`http://127.0.0.1:8000/report/${latestData.session_id}`);
-              if (repRes.ok) {
-                const repData = await repRes.json();
-                setReport(repData);
-                return;
-              }
-            }
-          }
-          throw new Error("Could not find session data.");
+        if (readinessRes?.ok) {
+          const rData = await readinessRes.json();
+          setReadinessData(rData);
+        }
+        if (recsRes?.ok) {
+          const recsData = await recsRes.json();
+          setRecommendations(Array.isArray(recsData) ? recsData : []);
+        }
+        if (sessionsRes?.ok) {
+          const sData = await sessionsRes.json();
+          setRecentSessions(sData?.items || []);
+        }
+        if (historyRes?.ok) {
+          const hData = await historyRes.json();
+          setReadinessHistory(hData?.sessions || []);
         }
       } catch (err) {
-        console.warn("Report fetch fallback:", err);
-        // Fallback demo report for college demonstration resiliency
-        setReport({
-          session_id: targetSessionId || 1,
-          mode: "Technical Round",
-          difficulty: "Medium",
-          target_role: "Software Engineer",
-          created_at: new Date().toISOString(),
-          readiness_score: 76.5,
-          status_label: "Near Interview-Ready",
-          subscores: {
-            communication: 78.0,
-            technical: 82.0,
-            behavioral: 75.0,
-            resume_consistency: 70.0,
-          },
-          insights: {
-            strongest_category: "Technical Depth",
-            weakest_category: "Resume Consistency",
-            top_improvements: [
-              "Strongest performance in Technical Architecture & Database concepts (82%).",
-              "Opportunity to highlight more specific technologies matching your resume in behavioral questions.",
-              "Adopt the STAR method consistently and quantify project results with metrics.",
-            ],
-          },
-          behavioral_metrics: {
-            eye_contact_percent: 78.5,
-            blink_rate: 18.0,
-            pause_rate: 1.8,
-          },
-          radar_data: [
-            { subject: "Communication", score: 78.0, fullMark: 100 },
-            { subject: "Technical Depth", score: 82.0, fullMark: 100 },
-            { subject: "Behavioral Signals", score: 75.0, fullMark: 100 },
-            { subject: "Resume Consistency", score: 70.0, fullMark: 100 },
-          ],
-          answers: [
-            {
-              answer_id: 1,
-              question_id: 1,
-              question_text: "Explain REST API architecture and how caching works.",
-              transcript: "In our project, we built RESTful microservices with FastAPI. We implemented Redis caching to handle frequent read spikes, which brought response times from 400ms down to 80ms.",
-              overall_score: 82.0,
-              structure_score: 80.0,
-              technical_score: 85.0,
-              reasoning_score: 80.0,
-              star_score: 75.0,
-              strengths: ["Clear technical depth explaining FastAPI and Redis cache strategies.", "Provided quantifiable latency metrics."],
-              weaknesses: ["Could briefly touch upon cache eviction policies (e.g. LRU) and invalidation strategies."],
-              suggestions: ["Mention cache invalidation tradeoffs and HTTP cache-control headers."],
-            },
-            {
-              answer_id: 2,
-              question_id: 2,
-              question_text: "Describe a challenging technical problem you solved.",
-              transcript: "I worked on a slow database query that was locking tables. I helped make it faster by adding indexes and rewriting queries.",
-              overall_score: 68.0,
-              structure_score: 65.0,
-              technical_score: 70.0,
-              reasoning_score: 68.0,
-              star_score: 60.0,
-              strengths: ["Addressed query optimization and indexing directly."],
-              weaknesses: ["Lacked specific metrics and concrete explanation of what was locking the tables.", "Passive vocabulary ('worked on', 'helped make')."],
-              suggestions: ["Use the STAR framework explicitly and quantify the throughput improvement."],
-            },
-          ],
-        });
+        console.error("Dashboard data load error:", err);
+        setError("Failed to load dashboard data. Please refresh to try again.");
       } finally {
         setLoading(false);
       }
-    };
+    }
+    loadDashboard();
+  }, []);
 
-    fetchReport();
-  }, [targetSessionId]);
+  const handleStartPractice = async (drillType = "TECHNICAL_DEPTH") => {
+    setStartingPractice(true);
+    try {
+      const res = await apiFetch("/practice/start", {
+        method: "POST",
+        body: JSON.stringify({
+          drill_type: drillType,
+          target_role: user?.profile?.target_role || "Software Engineer",
+          difficulty: user?.profile?.preferred_difficulty || "medium",
+          sensor_mode: "standard",
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        navigate("/interview", { state: { sessionId: data.session_id, isPractice: true } });
+      } else {
+        navigate("/setup");
+      }
+    } catch {
+      navigate("/setup");
+    } finally {
+      setStartingPractice(false);
+    }
+  };
 
   if (loading) {
     return (
-      <div style={{ textAlign: "center", padding: "80px 0" }}>
-        <h3 style={{ fontSize: "20px", color: "#0f172a" }}>Compiling Performance Analytics & Rubric Report...</h3>
-        <p style={{ color: "#64748b", marginTop: "8px" }}>Evaluating subscores and synthesizing actionable insights.</p>
+      <div className="container" style={{ padding: "16px 0" }}>
+        <div style={{ marginBottom: "28px" }}>
+          <Skeleton width="220px" height="32px" style={{ marginBottom: "8px" }} />
+          <Skeleton width="340px" height="18px" />
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "20px", marginBottom: "24px" }}>
+          <Skeleton height="180px" borderRadius="var(--radius-lg)" />
+          <Skeleton height="180px" borderRadius="var(--radius-lg)" />
+        </div>
+        <Skeleton height="160px" borderRadius="var(--radius-lg)" style={{ marginBottom: "24px" }} />
+        <Skeleton height="260px" borderRadius="var(--radius-lg)" />
       </div>
     );
   }
 
-  if (!report) {
-    return (
-      <div style={{ textAlign: "center", padding: "60px 0" }}>
-        <h3>No interview report data available yet.</h3>
-        <p style={{ color: "#64748b", marginTop: "8px" }}>Complete a mock interview session to view your analytics report.</p>
-        <button onClick={() => navigate("/setup")} style={primaryBtn}>
-          Start an Interview →
-        </button>
-      </div>
-    );
-  }
+  const hasSessions = recentSessions.length > 0;
+  const currentReadiness = readinessData?.current_readiness;
+  const confidence = readinessData?.confidence || "insufficient_data";
+  const trend = readinessData?.trend || "insufficient_data";
+  const nextPractice = recommendations.length > 0 ? recommendations[0] : null;
 
-  const subscoreBarData = [
-    { name: "Communication (30%)", score: report.subscores.communication, fill: "#3b82f6" },
-    { name: "Technical (30%)", score: report.subscores.technical, fill: "#10b981" },
-    { name: "Behavioral (20%)", score: report.subscores.behavioral, fill: "#8b5cf6" },
-    { name: "Resume Align (20%)", score: report.subscores.resume_consistency, fill: "#f59e0b" },
-  ];
+  // Format trend badge
+  const trendBadgeVariant =
+    trend === "improving" ? "success" : trend === "declining" ? "danger" : "neutral";
+  const trendLabel =
+    trend === "improving" ? "Improving" : trend === "declining" ? "Declining" : trend === "stable" ? "Stable" : "Building Baseline";
 
-  const getScoreColor = (score) => {
-    if (score >= 80) return "#16a34a";
-    if (score >= 65) return "#2563eb";
-    return "#dc2626";
-  };
+  // Dimension scores
+  const dimensions = readinessData?.dimensions || {};
+  const commScore = dimensions.communication ?? 0;
+  const techScore = dimensions.technical ?? 0;
+  const deliveryScore = dimensions.delivery ?? 0;
+  const resumeScore = dimensions.resume_consistency ?? 0;
+
+  // Chart data
+  const chartData = readinessHistory
+    .filter((s) => s.readiness_score !== null)
+    .slice(-8)
+    .map((s, idx) => ({
+      index: idx + 1,
+      name: `Session ${idx + 1}`,
+      date: s.created_at ? new Date(s.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : `S${idx + 1}`,
+      score: Math.round(s.readiness_score),
+    }));
 
   return (
-    <div style={{ maxWidth: "1100px", margin: "0 auto", paddingBottom: "70px" }}>
-      {/* HEADER BAR */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "25px" }}>
+    <div className="container" style={{ maxWidth: "var(--container-max-w)" }}>
+      {/* Welcome & Overview Header */}
+      <div style={{ marginBottom: "28px", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-end", gap: "16px" }}>
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={badgeStyle}>Interview Assessment #{report.session_id}</span>
-            <span style={{ fontSize: "13px", color: "#64748b" }}>Role: <strong>{report.target_role || "Software Engineer"}</strong></span>
-          </div>
-          <h1 style={{ fontSize: "28px", color: "#0f172a", marginTop: "6px" }}>Performance Intelligence Report</h1>
-        </div>
-
-        <div style={{ display: "flex", gap: "10px" }}>
-          <button onClick={() => navigate("/setup")} style={secondaryBtn}>
-            Take Another Interview
-          </button>
-          <button onClick={() => navigate("/progress")} style={primaryBtn}>
-            View Progress History →
-          </button>
-        </div>
-      </div>
-
-      {/* TOP SUMMARY CARDS */}
-      <div style={{ display: "grid", gridTemplateColumns: "1.3fr 2fr", gap: "20px" }}>
-        {/* MAIN SCORE CARD */}
-        <div style={cardStyle}>
-          <span style={{ fontSize: "12px", textTransform: "uppercase", fontWeight: "700", color: "#64748b" }}>
-            Overall Assessment
-          </span>
-          <div style={{ display: "flex", alignItems: "baseline", gap: "10px", marginTop: "10px" }}>
-            <div style={{ fontSize: "48px", fontWeight: "800", color: getScoreColor(report.readiness_score) }}>
-              {report.readiness_score}
-            </div>
-            <div style={{ fontSize: "20px", color: "#94a3b8" }}>/100</div>
-          </div>
-          <div
-            style={{
-              display: "inline-block",
-              padding: "4px 12px",
-              borderRadius: "20px",
-              backgroundColor: report.readiness_score >= 80 ? "#dcfce7" : "#dbeafe",
-              color: report.readiness_score >= 80 ? "#15803d" : "#1d4ed8",
-              fontSize: "12px",
-              fontWeight: "700",
-              marginTop: "8px",
-            }}
-          >
-            {report.status_label || "Candidate Evaluation"}
-          </div>
-          <p style={{ fontSize: "13px", color: "#64748b", marginTop: "14px", lineHeight: "1.5" }}>
-            Weighted formula: 30% Communication + 30% Technical Depth + 20% Behavioral Presence + 20% Resume Consistency.
+          <h1 style={{ fontSize: "26px", fontWeight: "700", color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
+            Welcome back{user?.full_name ? `, ${user.full_name}` : ""}
+          </h1>
+          <p style={{ fontSize: "14px", color: "var(--text-secondary)", marginTop: "4px" }}>
+            Prepare systematically for your next career interview.
           </p>
         </div>
-
-        {/* SUBSCORES GRID */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
-          <SubscoreCard title="Communication" score={report.subscores.communication} weight="30%" desc="Structure, clarity, flow" color="#3b82f6" />
-          <SubscoreCard title="Technical Depth" score={report.subscores.technical} weight="30%" desc="Domain concepts & depth" color="#10b981" />
-          <SubscoreCard title="Behavioral Presence" score={report.subscores.behavioral} weight="20%" desc="Eye contact, blinks, stability" color="#8b5cf6" />
-          <SubscoreCard title="Resume Consistency" score={report.subscores.resume_consistency} weight="20%" desc="Skill alignment with resume" color="#f59e0b" />
+        <div style={{ display: "flex", gap: "10px" }}>
+          <Button variant="secondary" onClick={() => navigate("/practice")}>
+            Browse Drills
+          </Button>
+          <Button variant="primary" onClick={() => navigate("/setup")}>
+            New Interview
+          </Button>
         </div>
       </div>
 
-      {/* CHARTS & BEHAVIORAL ROW */}
-      <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: "20px", marginTop: "20px" }}>
-        {/* BAR CHART BREAKDOWN */}
-        <div style={cardStyle}>
-          <h3 style={sectionTitle}>Scoring Dimensions Breakdown</h3>
-          <p style={{ fontSize: "12px", color: "#64748b", marginBottom: "14px" }}>Normalized performance across core interview competencies</p>
-          <ResponsiveContainer width="100%" height={230}>
-            <BarChart data={subscoreBarData} layout="vertical" margin={{ left: 20, right: 20, top: 10, bottom: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" domain={[0, 100]} />
-              <YAxis dataKey="name" type="category" width={130} style={{ fontSize: "12px" }} />
-              <Tooltip formatter={(value) => [`${value}%`, "Score"]} />
-              <Bar dataKey="score" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+      {error && (
+        <div className="alert alert-warning" style={{ marginBottom: "20px" }}>
+          {error}
         </div>
+      )}
 
-        {/* BEHAVIORAL SENSORS SUMMARY */}
-        <div style={cardStyle}>
-          <h3 style={sectionTitle}>Behavioral Metrics</h3>
-          <p style={{ fontSize: "12px", color: "#64748b", marginBottom: "16px" }}>Computer vision & speech cues tracked during interview</p>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            <BehavioralRow label="Visual Center / Eye Contact" value={`${report.behavioral_metrics?.eye_contact_percent || 75}%`} target="Target: 60% - 85%" />
-            <BehavioralRow label="Blink Frequency" value={`${report.behavioral_metrics?.blink_rate || 18} / min`} target="Target: 15 - 20 / min" />
-            <BehavioralRow label="Speech Pauses / Cadence" value={`${report.behavioral_metrics?.pause_rate || 2.0}s avg`} target="Optimal: ≤ 2.5s" />
-          </div>
-
-          <div style={{ marginTop: "18px", padding: "10px", backgroundColor: "#f8fafc", borderRadius: "6px", fontSize: "12px", color: "#475569" }}>
-            ℹ️ Behavioral signals provide diagnostic practice indicators rather than automated personality conclusions.
-          </div>
-        </div>
-      </div>
-
-      {/* ACTIONABLE INSIGHTS */}
-      <div style={{ ...cardStyle, marginTop: "20px" }}>
-        <h3 style={sectionTitle}>Key Findings & Actionable Recommendations</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginTop: "12px" }}>
-          <div style={{ padding: "14px", backgroundColor: "#f0fdf4", borderRadius: "8px", border: "1px solid #bbf7d0" }}>
-            <span style={{ fontSize: "12px", fontWeight: "700", color: "#166534" }}>STRONGEST CATEGORY</span>
-            <h4 style={{ fontSize: "16px", color: "#14532d", marginTop: "4px" }}>{report.insights?.strongest_category}</h4>
-            <p style={{ fontSize: "13px", color: "#166534", marginTop: "6px" }}>
-              {report.insights?.top_improvements?.[0] || "Demonstrated commendable performance in this competency."}
-            </p>
-          </div>
-
-          <div style={{ padding: "14px", backgroundColor: "#fef2f2", borderRadius: "8px", border: "1px solid #fecaca" }}>
-            <span style={{ fontSize: "12px", fontWeight: "700", color: "#991b1b" }}>PRIMARY GROWTH AREA</span>
-            <h4 style={{ fontSize: "16px", color: "#7f1d1d", marginTop: "4px" }}>{report.insights?.weakest_category}</h4>
-            <p style={{ fontSize: "13px", color: "#991b1b", marginTop: "6px" }}>
-              {report.insights?.top_improvements?.[1] || "Targeted practice in this dimension will significantly boost overall readiness."}
-            </p>
-          </div>
-        </div>
-
-        {report.insights?.top_improvements?.[2] && (
-          <div style={{ marginTop: "14px", padding: "12px", backgroundColor: "#eff6ff", borderRadius: "8px", border: "1px solid #bfdbfe", fontSize: "13px", color: "#1e40af" }}>
-            💡 <strong>Next Step:</strong> {report.insights.top_improvements[2]}
-          </div>
-        )}
-      </div>
-
-      {/* DETAILED ANSWER-BY-ANSWER REVIEW */}
-      <div style={{ marginTop: "35px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-          <div>
-            <h2 style={{ fontSize: "22px", color: "#0f172a" }}>Detailed Answer Review</h2>
-            <p style={{ fontSize: "13px", color: "#64748b", marginTop: "2px" }}>
-              Individual responses evaluated against the structured rubric with Fix My Answer recommendations.
-            </p>
-          </div>
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          {report.answers && report.answers.length > 0 ? (
-            report.answers.map((ans, idx) => (
-              <div key={idx} style={cardStyle}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div>
-                    <span style={{ fontSize: "11px", fontWeight: "700", color: "#2563eb", textTransform: "uppercase" }}>
-                      Question #{idx + 1}
-                    </span>
-                    <h4 style={{ fontSize: "17px", color: "#0f172a", marginTop: "4px" }}>{ans.question_text}</h4>
-                  </div>
-
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: "24px", fontWeight: "800", color: getScoreColor(ans.overall_score) }}>
-                      {Math.round(ans.overall_score)}%
-                    </div>
-                    <span style={{ fontSize: "11px", color: "#94a3b8" }}>Answer Score</span>
-                  </div>
-                </div>
-
-                {/* CANDIDATE'S TRANSCRIPT */}
-                <div style={{ marginTop: "14px", padding: "14px", backgroundColor: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
-                  <span style={{ fontSize: "11px", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>
-                    Candidate Response:
+      {!hasSessions ? (
+        <EmptyState
+          title="No interview sessions yet"
+          description="Complete your first practice interview to build your readiness score, diagnose recurring patterns, and receive targeted drill recommendations."
+          action={
+            <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+              <Button variant="secondary" onClick={() => navigate("/resume")}>
+                Upload Resume First
+              </Button>
+              <Button variant="primary" onClick={() => navigate("/setup")}>
+                Start First Interview
+              </Button>
+            </div>
+          }
+        />
+      ) : (
+        <>
+          {/* Top Row: Readiness Card + Next Recommended Practice */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+              gap: "20px",
+              marginBottom: "24px",
+            }}
+          >
+            {/* Readiness Card */}
+            <Card style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                  <span style={{ fontSize: "12px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-muted)" }}>
+                    Interview Readiness
                   </span>
-                  <p style={{ fontSize: "14px", color: "#1e293b", marginTop: "6px", lineHeight: "1.5" }}>
-                    "{ans.transcript || "No transcript recorded"}"
-                  </p>
+                  <Badge variant={trendBadgeVariant}>{trendLabel}</Badge>
                 </div>
 
-                {/* RUBRIC SCORES ROW */}
-                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "12px" }}>
-                  <RubricChip label="Tech Depth" value={ans.technical_score} />
-                  <RubricChip label="Structure" value={ans.structure_score} />
-                  <RubricChip label="Reasoning" value={ans.reasoning_score} />
-                  <RubricChip label="STAR Quality" value={ans.star_score} />
-                  <RubricChip label="Resume Match" value={ans.consistency_score} />
+                <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginBottom: "8px" }}>
+                  <span style={{ fontSize: "42px", fontWeight: "800", color: "var(--text-primary)", lineHeight: 1 }}>
+                    {currentReadiness !== null && currentReadiness !== undefined
+                      ? Math.round(currentReadiness)
+                      : "—"}
+                  </span>
+                  <span style={{ fontSize: "16px", color: "var(--text-muted)", fontWeight: "500" }}>/ 100</span>
                 </div>
 
-                {/* STRENGTHS & WEAKNESSES GRID */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "16px" }}>
-                  <div>
-                    <span style={{ fontSize: "12px", fontWeight: "700", color: "#16a34a" }}>Strengths:</span>
-                    <ul style={{ margin: "4px 0 0 16px", padding: 0, fontSize: "13px", color: "#334155" }}>
-                      {ans.strengths?.map((s, sIdx) => <li key={sIdx}>{s}</li>)}
-                    </ul>
-                  </div>
+                <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "16px" }}>
+                  {confidence === "insufficient_data" ? (
+                    "Building your baseline. Complete more comparable interviews to establish a reliable trend."
+                  ) : (
+                    `Based on ${readinessData?.comparable_sessions_count || 0} comparable sessions in your target role.`
+                  )}
+                </p>
+              </div>
 
-                  <div>
-                    <span style={{ fontSize: "12px", fontWeight: "700", color: "#dc2626" }}>Weaknesses / Gaps:</span>
-                    <ul style={{ margin: "4px 0 0 16px", padding: 0, fontSize: "13px", color: "#7f1d1d" }}>
-                      {ans.weaknesses?.map((w, wIdx) => <li key={wIdx}>{w}</li>)}
-                    </ul>
-                  </div>
+              <div style={{ borderTop: "1px solid var(--border-default)", paddingTop: "14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                  Observable practice score · Not an employment guarantee
+                </span>
+                <Link to="/progress" style={{ fontSize: "12px", fontWeight: "600" }}>
+                  View Progress →
+                </Link>
+              </div>
+            </Card>
+
+            {/* Next Recommended Practice Card */}
+            <Card
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                borderColor: nextPractice ? "var(--primary-200)" : "var(--border-default)",
+                backgroundColor: nextPractice ? "var(--slate-50)" : "#ffffff",
+              }}
+            >
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                  <span style={{ fontSize: "12px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--primary-700)" }}>
+                    Next Recommended Practice
+                  </span>
+                  <Badge variant="info">Targeted Drill</Badge>
                 </div>
 
-                {/* FIX THIS ANSWER CTA BUTTON */}
-                <div style={{ marginTop: "18px", display: "flex", justifyContent: "flex-end" }}>
-                  <button
-                    onClick={() => {
-                      navigate("/fix-answer", {
-                        state: {
-                          question: ans.question_text,
-                          answer: ans.transcript,
-                          answerId: ans.answer_id,
-                        },
-                      });
-                    }}
-                    style={fixBtn}
-                  >
-                    Fix This Answer (AI Coach) →
-                  </button>
+                <h3 style={{ fontSize: "18px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "6px" }}>
+                  {nextPractice?.drill_title || "Technical Question Defense"}
+                </h3>
+
+                <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "12px", lineHeight: "1.5" }}>
+                  {nextPractice?.rationale ||
+                    "Practice answering structured technical follow-ups with concrete implementation details."}
+                </p>
+
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "12px", color: "var(--text-muted)", marginBottom: "16px" }}>
+                  <span>{nextPractice?.estimated_questions || 5} questions</span>
+                  <span>·</span>
+                  <span>~{nextPractice?.estimated_minutes || 10} minutes</span>
+                  {nextPractice?.trigger_weakness_label && (
+                    <>
+                      <span>·</span>
+                      <span style={{ color: "var(--warning-text)" }}>Focus: {nextPractice.trigger_weakness_label}</span>
+                    </>
+                  )}
                 </div>
               </div>
-            ))
-          ) : (
-            <div style={cardStyle}>
-              <p style={{ color: "#64748b" }}>No specific answer details recorded for this session.</p>
+
+              <div>
+                <Button
+                  variant="primary"
+                  onClick={() => handleStartPractice(nextPractice?.drill_type)}
+                  loading={startingPractice}
+                  fullWidth
+                >
+                  Start Recommended Drill
+                </Button>
+              </div>
+            </Card>
+          </div>
+
+          {/* Performance Dimensions Overview */}
+          <Card style={{ marginBottom: "24px" }}>
+            <CardHeader
+              title="Performance Dimensions"
+              subtitle="Current proficiency derived across your completed sessions"
+            />
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "16px" }}>
+              <DimensionItem label="Technical Depth" score={techScore} benchmark="Target 80" />
+              <DimensionItem label="Communication Structure" score={commScore} benchmark="Target 80" />
+              <DimensionItem label="Delivery & Stability" score={deliveryScore} benchmark="Centering & Cadence" />
+              <DimensionItem label="Resume Verification" score={resumeScore} benchmark="Claim Consistency" />
             </div>
-          )}
-        </div>
-      </div>
+          </Card>
+
+          {/* Split: Recent Progress Chart + Recent Sessions */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))",
+              gap: "20px",
+            }}
+          >
+            {/* Recent Progress Chart */}
+            <Card>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+                <div>
+                  <h3 className="card-title" style={{ fontSize: "16px" }}>Recent Progress</h3>
+                  <p className="card-subtitle" style={{ fontSize: "12px" }}>Readiness trajectory across recent sessions</p>
+                </div>
+                <Link to="/progress" style={{ fontSize: "12px", fontWeight: "600" }}>
+                  Full History →
+                </Link>
+              </div>
+
+              {chartData.length < 2 ? (
+                <div style={{ padding: "40px 16px", textAlign: "center", color: "var(--text-muted)", fontSize: "13px" }}>
+                  Complete at least 2 sessions to visualize your readiness trend line.
+                </div>
+              ) : (
+                <div style={{ height: "200px", width: "100%" }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-default)" />
+                      <XAxis dataKey="date" tick={{ fontSize: 11, fill: "var(--text-muted)" }} />
+                      <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "var(--text-muted)" }} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#ffffff",
+                          borderColor: "var(--border-default)",
+                          borderRadius: "6px",
+                          fontSize: "12px",
+                        }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="score"
+                        stroke="#2563eb"
+                        strokeWidth={2.5}
+                        dot={{ r: 4, fill: "#2563eb" }}
+                        activeDot={{ r: 6 }}
+                        name="Readiness"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </Card>
+
+            {/* Recent Sessions List */}
+            <Card>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+                <div>
+                  <h3 className="card-title" style={{ fontSize: "16px" }}>Recent Interviews</h3>
+                  <p className="card-subtitle" style={{ fontSize: "12px" }}>Latest completed practice sessions</p>
+                </div>
+                <Link to="/history" style={{ fontSize: "12px", fontWeight: "600" }}>
+                  All Sessions →
+                </Link>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {recentSessions.map((s) => (
+                  <div
+                    key={s.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "10px 12px",
+                      borderRadius: "6px",
+                      backgroundColor: "var(--slate-50)",
+                      border: "1px solid var(--border-default)",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+                        {s.target_role || "General Interview"}
+                      </div>
+                      <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                        {s.created_at ? new Date(s.created_at).toLocaleDateString() : "Recent"} · {s.mode || "standard"}
+                      </div>
+                    </div>
+
+                    <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)" }}>
+                          {s.readiness_score !== null && s.readiness_score !== undefined
+                            ? Math.round(s.readiness_score)
+                            : "—"}
+                        </div>
+                        <div style={{ fontSize: "10px", color: "var(--text-muted)" }}>Readiness</div>
+                      </div>
+
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => navigate(`/report?sessionId=${s.id}`)}
+                      >
+                        Report
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
-function SubscoreCard({ title, score, weight, desc, color }) {
-  return (
-    <div style={cardStyle}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h4 style={{ fontSize: "14px", color: "#0f172a" }}>{title}</h4>
-        <span style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>{weight}</span>
-      </div>
-      <div style={{ fontSize: "28px", fontWeight: "800", color, marginTop: "6px" }}>
-        {Math.round(score)}%
-      </div>
-      <p style={{ fontSize: "12px", color: "#94a3b8", marginTop: "4px" }}>{desc}</p>
-    </div>
-  );
-}
+function DimensionItem({ label, score, benchmark }) {
+  const rounded = Math.round(score || 0);
+  const color = rounded >= 75 ? "var(--success-text)" : rounded >= 60 ? "var(--primary-600)" : "var(--warning-text)";
 
-function BehavioralRow({ label, value, target }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-      <div>
-        <span style={{ fontSize: "13px", color: "#334155", fontWeight: "500" }}>{label}</span>
-        <div style={{ fontSize: "11px", color: "#94a3b8" }}>{target}</div>
-      </div>
-      <div style={{ fontSize: "14px", fontWeight: "700", color: "#0f172a" }}>{value}</div>
-    </div>
-  );
-}
-
-function RubricChip({ label, value }) {
-  if (value === undefined || value === null) return null;
-  return (
-    <span
+    <div
       style={{
-        fontSize: "12px",
-        backgroundColor: "#f8fafc",
-        border: "1px solid #e2e8f0",
-        padding: "4px 8px",
-        borderRadius: "4px",
-        color: "#475569",
+        padding: "12px",
+        borderRadius: "var(--radius-md)",
+        backgroundColor: "var(--slate-50)",
+        border: "1px solid var(--border-default)",
       }}
     >
-      {label}: <strong>{Math.round(value)}%</strong>
-    </span>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "6px" }}>
+        <span style={{ fontSize: "12px", fontWeight: "500", color: "var(--text-secondary)" }}>{label}</span>
+        <span style={{ fontSize: "16px", fontWeight: "700", color }}>{rounded}</span>
+      </div>
+
+      <div
+        style={{
+          height: "5px",
+          width: "100%",
+          backgroundColor: "var(--border-default)",
+          borderRadius: "999px",
+          overflow: "hidden",
+          marginBottom: "6px",
+        }}
+      >
+        <div
+          style={{
+            height: "100%",
+            width: `${Math.min(100, Math.max(0, rounded))}%`,
+            backgroundColor: color,
+            borderRadius: "999px",
+          }}
+        />
+      </div>
+
+      <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>{benchmark}</span>
+    </div>
   );
 }
-
-/* STYLES */
-const cardStyle = {
-  background: "white",
-  padding: "22px",
-  borderRadius: "10px",
-  border: "1px solid #e2e8f0",
-  boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-};
-
-const badgeStyle = {
-  fontSize: "11px",
-  fontWeight: "700",
-  textTransform: "uppercase",
-  backgroundColor: "#0f172a",
-  color: "white",
-  padding: "3px 8px",
-  borderRadius: "4px",
-};
-
-const sectionTitle = {
-  fontSize: "16px",
-  color: "#0f172a",
-  fontWeight: "600",
-};
-
-const primaryBtn = {
-  padding: "10px 18px",
-  backgroundColor: "#0f172a",
-  color: "white",
-  border: "none",
-  borderRadius: "6px",
-  fontSize: "13px",
-  fontWeight: "600",
-  cursor: "pointer",
-};
-
-const secondaryBtn = {
-  padding: "10px 18px",
-  backgroundColor: "white",
-  color: "#0f172a",
-  border: "1px solid #cbd5e1",
-  borderRadius: "6px",
-  fontSize: "13px",
-  fontWeight: "600",
-  cursor: "pointer",
-};
-
-const fixBtn = {
-  padding: "8px 16px",
-  backgroundColor: "#2563eb",
-  color: "white",
-  border: "none",
-  borderRadius: "6px",
-  fontSize: "13px",
-  fontWeight: "600",
-  cursor: "pointer",
-};
 
 export default Dashboard;

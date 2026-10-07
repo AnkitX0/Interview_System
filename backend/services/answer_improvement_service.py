@@ -34,7 +34,7 @@ def improve_interview_answer(
         weaknesses.append("Response is excessively concise and fails to demonstrate technical or behavioral depth.")
     if not any(k in lower_text for k in ["because", "due to", "tradeoff", "therefore"]):
         weaknesses.append("Lacks technical justification—describes the action without clarifying why decisions were made.")
-    if not re.search(r"\b\d+([%xXkKmM]|\s*(percent|users|requests|ms|seconds|times))\b", lower_text):
+    if not re.search(r"\b\d+%(?!\w)|\b\d+([xXkKmM]|\s*(percent|users|requests|ms|seconds|times))\b", lower_text):
         weaknesses.append("Missing quantifiable outcomes (e.g. latency numbers, test coverage %, or error rate drop).")
     if any(p in lower_text for p in ["basically", "kind of", "stuff", "sort of", "i guess"]):
         weaknesses.append("Contains casual or hedging language that diminishes confidence.")

@@ -1,6 +1,7 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { ReportContext } from "../context/ReportContext";
+import { apiFetch } from "../utils/api";
 
 function ResumeUpload() {
   const navigate = useNavigate();
@@ -42,52 +43,25 @@ function ResumeUpload() {
         formData.append("raw_text", textInput);
       }
 
-      const res = await fetch("http://127.0.0.1:8000/resume/upload", {
+      const res = await apiFetch("/resume/upload", {
         method: "POST",
         body: formData,
       });
 
+      const data = await res.json();
       if (!res.ok) {
-        throw new Error(`Upload failed with status: ${res.status}`);
+        const errorMsg = data?.error?.message || data?.detail || "Document validation failed. Please ensure file is a valid resume.";
+        setError(errorMsg);
+        setProfile(null);
+        return;
       }
 
-      const data = await res.json();
       setProfile(data);
       setResumeData(data);
     } catch (err) {
       console.error("Resume analysis error:", err);
-      // Fallback offline mock profile for resiliency
-      const fallback = {
-        id: 1,
-        filename: file?.name || "Candidate_Resume.txt",
-        candidate_name: "Alex Taylor",
-        skills: ["Python", "FastAPI", "React", "SQL", "Docker", "REST API", "Git"],
-        categorized_skills: {
-          Languages: ["Python", "SQL", "JavaScript"],
-          Frameworks: ["FastAPI", "React"],
-          Databases: ["PostgreSQL", "SQLite"],
-          "Cloud & DevOps": ["Docker", "Git"],
-        },
-        education: "B.Tech in Computer Science and Engineering",
-        experience: "Engineered scalable REST APIs and full-stack reactive applications.",
-        resume_score: 78.5,
-        strengths: [
-          "Strong foundation in full-stack Python/React development.",
-          "Clear experience with modern containerization and databases.",
-        ],
-        weak_areas: [
-          "Lacks quantifiable metrics in key project descriptions.",
-          "Could emphasize testing frameworks (PyTest, Jest).",
-        ],
-        suggested_improvements: [
-          "Quantify impact with metrics (e.g. 'reduced latency by 30%').",
-          "Clarify personal contributions versus general team accomplishments.",
-        ],
-        summary: "Candidate with solid competencies in Python, FastAPI, React, and SQL.",
-      };
-      setProfile(fallback);
-      setResumeData(fallback);
-      setError("Note: Running in offline fallback mode. Analysis preview generated.");
+      setError(err.message || "Failed to analyze document. Please check the file and try again.");
+      setProfile(null);
     } finally {
       setLoading(false);
     }
@@ -292,6 +266,80 @@ function ResumeUpload() {
               </ul>
             </div>
           </div>
+
+          {/* ROLE FIT BREAKDOWN */}
+          {profile.role_fit_scores && Object.keys(profile.role_fit_scores).length > 0 && (
+            <div style={{ ...cardStyle, marginTop: "20px" }}>
+              <h4 style={sectionHeader}>Target Role Alignment</h4>
+              <p style={{ fontSize: "13px", color: "#64748b", marginTop: "4px" }}>
+                Role fit baseline calculated against core competency profiles.
+              </p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px", marginTop: "14px" }}>
+                {Object.entries(profile.role_fit_scores).map(([role, score]) => (
+                  <div key={role} style={{ padding: "12px", border: "1px solid #e2e8f0", borderRadius: "8px", background: "#f8fafc" }}>
+                    <div style={{ fontSize: "13px", fontWeight: "600", color: "#0f172a", textTransform: "capitalize" }}>
+                      {role.replace(/_/g, " ")}
+                    </div>
+                    <div style={{ fontSize: "18px", fontWeight: "700", color: score >= 75 ? "#16a34a" : score >= 50 ? "#d97706" : "#64748b", marginTop: "4px" }}>
+                      {score}% fit
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* INTERVIEW RISK AREAS */}
+          {profile.risk_areas && profile.risk_areas.length > 0 && (
+            <div style={{ ...cardStyle, marginTop: "20px" }}>
+              <h4 style={{ ...sectionHeader, color: "#92400e" }}>Interview Risk & Verification Priorities</h4>
+              <p style={{ fontSize: "13px", color: "#64748b", marginTop: "4px" }}>
+                Areas identified for deterministic follow-up probing during interview rounds.
+              </p>
+              <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                {profile.risk_areas.map((risk, idx) => {
+                  const isObj = typeof risk === "object" && risk !== null;
+                  const areaLabel = isObj ? (risk.area || risk.title || "Audit Risk Area") : risk;
+                  const priorityVal = isObj && typeof risk.probe_priority === "number" ? Math.round(risk.probe_priority * 100) : 60;
+                  const reasonText = isObj ? risk.reason : null;
+
+                  return (
+                    <div key={idx} style={{ padding: "12px", border: "1px solid #fed7aa", background: "#fffbeb", borderRadius: "8px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontSize: "14px", fontWeight: "600", color: "#9a3412" }}>{areaLabel}</span>
+                        <span style={{ fontSize: "11px", fontWeight: "700", padding: "2px 8px", borderRadius: "4px", background: "#ffedd5", color: "#c2410c" }}>
+                          Probe Priority: {priorityVal}%
+                        </span>
+                      </div>
+                      {reasonText && <p style={{ fontSize: "13px", color: "#78350f", marginTop: "4px" }}>{reasonText}</p>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* RESUME FLAGS */}
+          {profile.flags && profile.flags.length > 0 && (
+            <div style={{ ...cardStyle, marginTop: "20px" }}>
+              <h4 style={{ ...sectionHeader, color: "#b91c1c" }}>Audited Resume Flags</h4>
+              <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                {profile.flags.map((flag, idx) => (
+                  <div key={idx} style={{ padding: "12px", border: "1px solid #fecaca", background: "#fef2f2", borderRadius: "8px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: "13px", fontWeight: "700", color: "#991b1b", textTransform: "capitalize" }}>
+                        {flag.flag_type?.replace(/_/g, " ") || "Resume Flag"}
+                      </span>
+                      <span style={{ fontSize: "11px", fontWeight: "600", color: "#dc2626", textTransform: "uppercase" }}>
+                        {flag.severity}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: "13px", color: "#7f1d1d", marginTop: "4px" }}>{flag.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* FINAL BOTTOM CTA */}
           <div style={{ textAlign: "center", marginTop: "35px" }}>
