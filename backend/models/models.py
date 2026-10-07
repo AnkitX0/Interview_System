@@ -152,6 +152,9 @@ class InterviewSession(Base):
     target_role = Column(String, default="Software Engineer")
 
     total_questions = Column(Integer)
+    question_mode = Column(String, default="ADAPTIVE")
+    session_policy = Column(String, default="STANDARD")
+    interview_state = Column(String, default="STARTING")
     current_question_index = Column(Integer, default=0)
     followup_count = Column(Integer, default=0)
 

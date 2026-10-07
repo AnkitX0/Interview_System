@@ -291,6 +291,32 @@ def evaluate_rubric_for_answer(
         "Explain the 'why': contrast your choice against alternative designs to demonstrate senior engineering reasoning."
     ]
 
+    # 6. Directness & Evasion Detection
+    q_lower = (question_text or "").lower()
+    asking_measurement = any(k in q_lower for k in ["measure", "baseline", "metric", "how did you verify", "benchmark", "quantify"])
+    asking_tradeoff = any(k in q_lower for k in ["tradeoff", "trade-off", "alternative", "why did you choose", "instead of"])
+    has_numbers = bool(re.search(r"\b\d+(\.\d+)?%?|\b\d+(?:ms|s|m|k|mb|gb|rps|qps)\b", lower_text))
+    has_tradeoff_words = any(k in lower_text for k in ["because", "instead of", "tradeoff", "trade-off", "rather than", "alternative", "compared to"])
+
+    candidate_diversion = False
+    unresolved_point = None
+    directness_score = 85.0
+
+    if asking_measurement and not has_numbers:
+        candidate_diversion = True
+        directness_score = 35.0
+        unresolved_point = f"Specific baseline measurement and quantitative evidence for: '{question_text[:60]}'"
+    elif asking_tradeoff and not has_tradeoff_words:
+        candidate_diversion = True
+        directness_score = 45.0
+        unresolved_point = f"Architectural tradeoff justification for: '{question_text[:60]}'"
+    elif word_count < WORD_COUNT_BANDS["minimal_detail"]:
+        directness_score = 40.0
+        unresolved_point = f"Elaboration and technical depth on: '{question_text[:60]}'"
+
+    if candidate_diversion:
+        weaknesses.append("Response diverged or lacked direct evidence for the specific mechanism asked.")
+
     return {
         "score": overall_score,
         "overall_score": overall_score,
@@ -301,6 +327,9 @@ def evaluate_rubric_for_answer(
         "reasoning_score": reasoning_score,
         "star_score": star_score,
         "consistency_score": consistency_score,
+        "directness_score": directness_score,
+        "candidate_diversion": candidate_diversion,
+        "unresolved_point": unresolved_point,
         "dimensions": dimensions,
         "structure": dimensions["structure"],
         "technical": dimensions["technical"],
@@ -419,6 +448,17 @@ def calculate_session_score(
     else:
         insights.append("Note: Delivery & Visual Stability was not measured (camera was off/denied). Readiness was re-normalized across Communication (37.5%), Technical (37.5%), and Resume Consistency (25.0%).")
 
+    num_answers = len(answer_scores)
+    if num_answers >= 5:
+        score_confidence = "High"
+        confidence_explanation = f"High assessment confidence based on {num_answers} evaluated turns."
+    elif num_answers >= 3:
+        score_confidence = "Moderate"
+        confidence_explanation = f"Moderate assessment confidence based on {num_answers} evaluated turns."
+    else:
+        score_confidence = "Low"
+        confidence_explanation = f"Initial score estimate based on {num_answers} turn(s). Complete more questions for maximum accuracy."
+
     return {
         "final_readiness_score": final_readiness,
         "communication_score": comm_score,
@@ -427,6 +467,8 @@ def calculate_session_score(
         "delivery_measured": delivery_measured,
         "behavioral_score": deliv_score,  # backward compatibility alias
         "resume_consistency_score": cons_score,
+        "score_confidence": score_confidence,
+        "confidence_explanation": confidence_explanation,
         "weights_used": weights_used,
         "strongest_category": strongest,
         "weakest_category": weakest,

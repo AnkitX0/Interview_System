@@ -11,7 +11,8 @@ from backend.schemas.schemas import (
     FollowUpRequest,
     StartInterviewRequest,
     BehavioralInput,
-    CompleteInterviewRequest
+    CompleteInterviewRequest,
+    SkipQuestionRequest,
 )
 from backend.services.auth_service import get_current_user
 from backend.services.evaluation_engine import evaluate_answer
@@ -60,6 +61,11 @@ def start_interview(
             except Exception:
                 resume_skills = [s.strip() for s in resume.skills.split(",") if s.strip()]
 
+    policy_name = data.session_policy.upper() if data.session_policy else (
+        "DRILL" if number_of_questions <= 3 else ("SHORT" if number_of_questions <= 5 else ("STANDARD" if number_of_questions <= 8 else "DEEP"))
+    )
+    q_mode = (data.question_mode or "ADAPTIVE").upper()
+
     session = models.InterviewSession(
         user_id=user.id,
         mode=mode,
@@ -67,6 +73,9 @@ def start_interview(
         target_role=target_role,
         resume_id=data.resume_id,
         total_questions=number_of_questions,
+        question_mode=q_mode,
+        session_policy=policy_name,
+        interview_state="STARTING",
         current_question_index=0,
         followup_count=0,
         status="in_progress"
@@ -95,8 +104,8 @@ def start_interview(
         session_id=session.id,
         turn=1,
         decision="START_SESSION",
-        reason=f"Interview started in {mode} mode ({difficulty}) for role '{target_role}'. Time limit: {time_limit}s.",
-        inputs={"mode": mode, "difficulty": difficulty, "target_role": target_role, "time_limit_seconds": time_limit}
+        reason=f"Interview started in {mode} mode ({difficulty}) for role '{target_role}'. Policy: {policy_name} ({q_mode}). Time limit: {time_limit}s.",
+        inputs={"mode": mode, "difficulty": difficulty, "target_role": target_role, "session_policy": policy_name, "question_mode": q_mode, "time_limit_seconds": time_limit}
     )
     db.add(init_decision)
     db.commit()
@@ -106,6 +115,8 @@ def start_interview(
         "mode": mode,
         "difficulty": difficulty,
         "target_role": target_role,
+        "question_mode": q_mode,
+        "session_policy": policy_name,
         "total_questions": len(selected_questions),
         "questions": selected_questions
     }
@@ -262,6 +273,9 @@ def get_session_details(
         "mode": session.mode,
         "difficulty": session.difficulty,
         "target_role": session.target_role,
+        "question_mode": getattr(session, "question_mode", "ADAPTIVE"),
+        "session_policy": getattr(session, "session_policy", "STANDARD"),
+        "interview_state": getattr(session, "interview_state", "STARTING"),
         "total_questions": session.total_questions,
         "current_question_index": session.current_question_index,
         "status": session.status,
@@ -456,6 +470,219 @@ def submit_answer(
         "weaknesses": evaluation["weaknesses"],
         "missing_concepts": evaluation["missing_concepts"],
         "suggestions": evaluation["suggestions"]
+    }
+
+
+# =========================
+# SKIP QUESTION
+# =========================
+@router.post("/skip")
+@router.post("/{session_id}/skip")
+def skip_question(
+    data: Optional[SkipQuestionRequest] = None,
+    session_id: Optional[int] = None,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    target_session_id = session_id or (data.session_id if data else None)
+    if not target_session_id:
+        raise HTTPException(status_code=400, detail="session_id is required")
+
+    session = db.query(models.InterviewSession).filter(
+        models.InterviewSession.id == target_session_id,
+        models.InterviewSession.user_id == user.id
+    ).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+
+    q_id = data.question_id if data else None
+    q_text = data.question_text if data else None
+
+    if not q_text and q_id:
+        q_record = db.query(models.QuestionBank).filter(models.QuestionBank.id == q_id).first()
+        if not q_record:
+            q_record = db.query(models.InterviewQuestion).filter(models.InterviewQuestion.id == q_id).first()
+        if q_record:
+            q_text = getattr(q_record, "question_text", None) or getattr(q_record, "question", None)
+
+    if not q_text:
+        last_q = db.query(models.InterviewQuestion).filter(
+            models.InterviewQuestion.session_id == target_session_id
+        ).order_by(models.InterviewQuestion.sequence_order.desc()).first()
+        if last_q:
+            q_text = last_q.question_text
+            q_id = q_id or last_q.id
+
+    question_text = q_text or "Interview Question"
+
+    # 1. Persist skipped turn
+    answer = models.InterviewAnswer(
+        session_id=target_session_id,
+        question_id=q_id,
+        question_text=question_text,
+        transcript="[SKIPPED] Candidate chose to skip this question.",
+        response_time=0.0,
+        duration_seconds=0.0,
+        wpm=0.0,
+        filler_count=0
+    )
+    db.add(answer)
+    db.commit()
+    db.refresh(answer)
+
+    # 2. Persist safe evaluation for skipped turn
+    eval_record = models.AnswerEvaluation(
+        answer_id=answer.id,
+        structure_score=40.0,
+        clarity_score=40.0,
+        depth_score=30.0,
+        technical_score=40.0,
+        reasoning_score=40.0,
+        star_score=40.0,
+        consistency_score=50.0,
+        overall_score=40.0,
+        strengths=json.dumps([]),
+        weaknesses=json.dumps(["Candidate skipped question; evidence was not provided."]),
+        missing_concepts=json.dumps(["Evidence not obtained"]),
+        suggestions=json.dumps(["Review foundational concepts for this topic to prepare for live interviews."]),
+        engine_used="skipped",
+        prompt_version="skipped-v1",
+        verification_risk_score=None,
+        verification_risk_level="not_computed",
+        verification_risk_evidence=[],
+        verification_risk_explanation="Skipped question - verification risk not computed.",
+    )
+    db.add(eval_record)
+
+    # 3. Log decision: CANDIDATE_SKIPPED
+    decision_rec = models.InterviewDecision(
+        session_id=session.id,
+        turn=session.current_question_index + 1,
+        decision="CANDIDATE_SKIPPED",
+        reason="Candidate skipped question. Recorded as evidence not obtained.",
+        inputs={
+            "question_text": question_text,
+            "skipped": True,
+            "candidate_diversion": False,
+            "reason": (data.reason if data else "candidate_skipped") or "candidate_skipped",
+        }
+    )
+    db.add(decision_rec)
+    session.current_question_index += 1
+    session.followup_count = 0
+    db.commit()
+
+    # Ensure skipped question is in InterviewQuestion table for InterviewMemory and repetition prevention
+    existing_q = db.query(models.InterviewQuestion).filter(
+        models.InterviewQuestion.session_id == target_session_id,
+        models.InterviewQuestion.question_text == question_text
+    ).first()
+    if not existing_q:
+        prior_qs = db.query(models.InterviewQuestion).filter(
+            models.InterviewQuestion.session_id == target_session_id
+        ).all()
+        skipped_q_rec = models.InterviewQuestion(
+            session_id=session.id,
+            sequence_order=len(prior_qs) + 1,
+            question_text=question_text,
+            question_type="bank",
+            source="bank",
+            generated_reason="Candidate skipped question.",
+        )
+        db.add(skipped_q_rec)
+        db.commit()
+
+    # 4. Generate next question adaptively
+    answers = db.query(models.InterviewAnswer).filter(
+        models.InterviewAnswer.session_id == target_session_id
+    ).order_by(models.InterviewAnswer.id.asc()).all()
+
+    evaluations = []
+    for a in answers:
+        ev = db.query(models.AnswerEvaluation).filter(
+            models.AnswerEvaluation.answer_id == a.id
+        ).first()
+        if ev:
+            evaluations.append(ev)
+
+    claims = []
+    if session.resume_id:
+        claims = db.query(models.ResumeClaim).filter(
+            models.ResumeClaim.resume_id == session.resume_id
+        ).order_by(models.ResumeClaim.probe_priority.desc()).all()
+
+    questions_asked = db.query(models.InterviewQuestion).filter(
+        models.InterviewQuestion.session_id == target_session_id
+    ).order_by(models.InterviewQuestion.sequence_order.asc()).all()
+
+    decision_res = decide_next_question(
+        session=session,
+        answers=answers,
+        evaluations=evaluations,
+        claims=claims,
+        questions_asked=questions_asked,
+        db=db,
+    )
+
+    next_decision_rec = models.InterviewDecision(
+        session_id=session.id,
+        turn=len(questions_asked) + 1,
+        decision=decision_res.decision,
+        reason=decision_res.reason,
+        inputs=decision_res.inputs,
+    )
+    db.add(next_decision_rec)
+    db.flush()
+
+    if decision_res.decision == "COMPLETE_SESSION":
+        session.status = "completed"
+        db.commit()
+        return {
+            "skipped": True,
+            "done": True,
+            "message": "Interview session completed after skipped question",
+            "decision": {
+                "decision": decision_res.decision,
+                "reason": decision_res.reason,
+            }
+        }
+
+    q_rec = models.InterviewQuestion(
+        session_id=session.id,
+        sequence_order=len(questions_asked) + 1,
+        question_text=decision_res.question_text,
+        question_type=decision_res.question_type,
+        source=decision_res.source,
+        claim_id=decision_res.claim_id,
+        ladder_stage=decision_res.ladder_stage,
+        difficulty=decision_res.difficulty,
+        time_limit_seconds=decision_res.time_limit_seconds,
+        generated_reason=decision_res.reason,
+    )
+    db.add(q_rec)
+    session.current_question_index = len(questions_asked) + 1
+    db.commit()
+    db.refresh(q_rec)
+
+    return {
+        "skipped": True,
+        "done": False,
+        "question": {
+            "id": q_rec.id,
+            "question": q_rec.question_text,
+            "question_type": q_rec.question_type,
+            "source": q_rec.source,
+            "ladder_stage": q_rec.ladder_stage,
+            "claim_id": q_rec.claim_id,
+            "difficulty": q_rec.difficulty,
+            "time_limit_seconds": q_rec.time_limit_seconds,
+            "sequence_order": q_rec.sequence_order,
+            "generated_reason": q_rec.generated_reason,
+        },
+        "decision": {
+            "decision": next_decision_rec.decision,
+            "reason": next_decision_rec.reason,
+        }
     }
 
 
@@ -747,6 +974,8 @@ def complete_interview(
         "weights_used": session_score_data["weights_used"],
         "consistency_source": consistency_source,
         "claim_consistency": claim_consistency_res["claim_records"],
+        "score_confidence": session_score_data.get("score_confidence", "High"),
+        "confidence_explanation": session_score_data.get("confidence_explanation", ""),
         "subscores": {
             "communication": session_score_data["communication_score"],
             "technical": session_score_data["technical_score"],

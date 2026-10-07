@@ -28,8 +28,10 @@ function Interview() {
   const difficulty = location.state?.difficulty || savedState.difficulty || "medium";
   const targetRole = location.state?.targetRole || savedState.targetRole || "Software Engineer";
   const textOnly = Boolean(location.state?.textOnly ?? savedState.textOnly ?? false);
-  const isPracticeDrill = Boolean(location.state?.isPractice);
   const totalQuestionBudget = location.state?.questionCount || savedState.questionCount || 5;
+  const sessionPolicy = location.state?.sessionPolicy || savedState.sessionPolicy || "STANDARD";
+  const questionMode = location.state?.questionMode || savedState.questionMode || "ADAPTIVE";
+  const isPracticeDrill = Boolean(location.state?.isPracticeDrill || savedState.isPracticeDrill || currentMode === "drill");
 
   const initialQuestions = location.state?.questions || savedState.questions || [
     { id: 1, question: "Explain REST API architecture and how HTTP status codes are utilized." },
@@ -71,6 +73,7 @@ function Interview() {
   const [finalizationError, setFinalizationError] = useState(null);
   const [isFollowUp, setIsFollowUp] = useState(false);
   const [followUpQuestion, setFollowUpQuestion] = useState("");
+  const [showEndConfirm, setShowEndConfirm] = useState(false);
 
   // Sensor calculation refs
   const blinkRef = useRef(false);
@@ -384,8 +387,10 @@ function Interview() {
     }
   };
 
-  // Handle Answer Submission
+  // Handle Answer Submission with instant feedback and auto-advance
   const handleSubmitAnswer = async () => {
+    if (evaluating || loadingNext || submittingFinal) return;
+
     if (speechRecognizerRef.current && speechState === "listening") {
       try { speechRecognizerRef.current.stop(); } catch {}
       setSpeechState("stopped");
@@ -438,7 +443,42 @@ function Interview() {
         throw new Error("Answer recording failed on server.");
       }
 
-      setIsSubmitted(true);
+      // Automatically fetch next question without requiring manual second click
+      const nextRes = await apiFetch(`/interview/${sessionId}/next`, { method: "POST" });
+      if (nextRes.ok) {
+        const nextData = await nextRes.json();
+        if (nextData.done) {
+          await handleFinishInterview();
+          return;
+        }
+
+        if (nextData.question) {
+          const nextQ = {
+            id: nextData.question.id,
+            question: nextData.question.question || nextData.question.question_text,
+            caption: nextData.question.caption || null,
+            time_limit_seconds: nextData.question.time_limit_seconds || 90,
+            question_type: nextData.question.question_type || "technical",
+            difficulty: nextData.question.difficulty || difficulty,
+          };
+          setQuestions((prev) => [...prev, nextQ]);
+          setCurrentIndex((prev) => prev + 1);
+          setAnswer("");
+          setIsFollowUp(false);
+          setFollowUpQuestion("");
+          speechSegmentsRef.current = [];
+          currentSpeechStartRef.current = null;
+          return;
+        }
+      }
+
+      // Fallback: local queue progression or finish
+      if (currentIndex < questions.length - 1) {
+        setCurrentIndex((prev) => prev + 1);
+        setAnswer("");
+      } else {
+        await handleFinishInterview();
+      }
     } catch (err) {
       console.warn("Answer submission notice (preserving transcript):", err);
       setSubmitError("Your answer wasn't submitted due to a network issue. Your transcript is preserved.");
@@ -447,7 +487,79 @@ function Interview() {
     }
   };
 
-  // Proceed to next question via adaptive policy
+  // Handle Skip / I Don't Know
+  const handleSkipQuestion = async () => {
+    if (evaluating || loadingNext || submittingFinal) return;
+
+    if (speechRecognizerRef.current && speechState === "listening") {
+      try { speechRecognizerRef.current.stop(); } catch {}
+      setSpeechState("stopped");
+    }
+
+    setLoadingNext(true);
+    setSubmitError(null);
+
+    try {
+      const payload = {
+        session_id: Number(sessionId),
+        question_id: currentQ.id || currentIndex + 1,
+        question_text: isFollowUp ? followUpQuestion : currentQ.question,
+        reason: "candidate_skipped",
+      };
+
+      const res = await apiFetch(`/interview/${sessionId}/skip`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.done) {
+          await handleFinishInterview();
+          return;
+        }
+
+        if (data.question) {
+          const nextQ = {
+            id: data.question.id,
+            question: data.question.question || data.question.question_text,
+            caption: data.question.caption || null,
+            time_limit_seconds: data.question.time_limit_seconds || 90,
+            question_type: data.question.question_type || "technical",
+            difficulty: data.question.difficulty || difficulty,
+          };
+          setQuestions((prev) => [...prev, nextQ]);
+          setCurrentIndex((prev) => prev + 1);
+          setAnswer("");
+          setIsFollowUp(false);
+          setFollowUpQuestion("");
+          speechSegmentsRef.current = [];
+          currentSpeechStartRef.current = null;
+          return;
+        }
+      }
+
+      // Fallback
+      if (currentIndex < questions.length - 1) {
+        setCurrentIndex((prev) => prev + 1);
+        setAnswer("");
+      } else {
+        await handleFinishInterview();
+      }
+    } catch (err) {
+      console.warn("Skip question error:", err);
+      if (currentIndex < questions.length - 1) {
+        setCurrentIndex((prev) => prev + 1);
+        setAnswer("");
+      } else {
+        await handleFinishInterview();
+      }
+    } finally {
+      setLoadingNext(false);
+    }
+  };
+
+  // Proceed to next question via adaptive policy (fallback action)
   const handleProceed = async () => {
     speechSegmentsRef.current = [];
     currentSpeechStartRef.current = null;
@@ -594,7 +706,15 @@ function Interview() {
             {currentMode === "pressure" && <Badge variant="warning">Incident Timing (45s)</Badge>}
           </div>
           <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "2px" }}>
-            Question {currentIndex + 1} of {totalCount}
+            {(() => {
+              if (questionMode === "FIXED") {
+                return `Question ${currentIndex + 1} of ${totalQuestionBudget}`;
+              }
+              if (sessionPolicy === "FULL") {
+                return `Question ${currentIndex + 1} • Continuous Adaptive`;
+              }
+              return `Question ${currentIndex + 1} • Adaptive Interview`;
+            })()}
           </div>
         </div>
 
@@ -897,64 +1017,103 @@ function Interview() {
           />
 
           {/* Controls Bar */}
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "10px" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-start", gap: "10px" }}>
             {inputMode === "mic" && speechSupported ? (
               <Button
                 variant={speechState === "listening" ? "danger" : "secondary"}
                 size="sm"
                 onClick={toggleSpeechRecognition}
-                disabled={isSubmitted}
+                disabled={evaluating || loadingNext || submittingFinal}
               >
                 {speechState === "listening" ? "Stop Speaking" : "Start Speaking"}
               </Button>
             ) : <div />}
 
-            <div style={{ display: "flex", gap: "10px" }}>
-              {!isSubmitted ? (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "8px" }}>
+              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                 <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleSkipQuestion}
+                  disabled={evaluating || loadingNext || submittingFinal}
+                >
+                  {loadingNext ? "Skipping..." : "Skip / I Don't Know"}
+                </Button>
+                <Button
+                  type="button"
                   variant="primary"
                   onClick={handleSubmitAnswer}
                   loading={evaluating}
-                  disabled={!answer.trim()}
+                  disabled={!answer.trim() || evaluating || loadingNext || submittingFinal}
                 >
-                  Submit Answer →
+                  {evaluating ? "Submitting..." : "Submit Answer →"}
                 </Button>
-              ) : (
-                <Button
-                  variant="primary"
-                  onClick={handleProceed}
-                  loading={loadingNext || submittingFinal}
-                >
-                  {currentIndex < totalCount - 1 ? "Next Question →" : "Finish & View Report →"}
-                </Button>
-              )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowEndConfirm(true)}
+                disabled={evaluating || loadingNext || submittingFinal}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--text-muted)",
+                  fontSize: "12px",
+                  cursor: "pointer",
+                  padding: "4px 6px",
+                  textDecoration: "underline",
+                }}
+              >
+                End Interview
+              </button>
             </div>
           </div>
-
-          {/* Post-submission Transition Notice */}
-          {isSubmitted && (
-            <div
-              style={{
-                marginTop: "16px",
-                padding: "12px 14px",
-                borderRadius: "var(--radius-md)",
-                backgroundColor: "var(--success-bg)",
-                border: "1px solid var(--success-border)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <div style={{ fontSize: "13px", color: "var(--success-text)", fontWeight: "600" }}>
-                ✓ Response recorded
-              </div>
-              <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-                Click "{currentIndex < totalCount - 1 ? "Next Question" : "Finish"}" to continue
-              </span>
-            </div>
-          )}
         </Card>
       </div>
+
+      {/* End Interview Confirmation Modal */}
+      {showEndConfirm && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(15, 23, 42, 0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            padding: "16px",
+          }}
+        >
+          <Card style={{ maxWidth: "440px", width: "100%", padding: "24px", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2)" }}>
+            <h3 style={{ fontSize: "18px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "8px" }}>
+              End interview?
+            </h3>
+            <p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "20px", lineHeight: "1.5" }}>
+              Your completed answers will be evaluated and your report will be generated.
+            </p>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+              <Button
+                variant="secondary"
+                onClick={() => setShowEndConfirm(false)}
+                disabled={submittingFinal}
+              >
+                Continue Interview
+              </Button>
+              <Button
+                variant="primary"
+                onClick={async () => {
+                  setShowEndConfirm(false);
+                  await handleFinishInterview();
+                }}
+                loading={submittingFinal}
+              >
+                End Interview
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

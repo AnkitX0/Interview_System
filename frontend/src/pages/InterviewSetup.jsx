@@ -15,7 +15,9 @@ function InterviewSetup() {
 
   const [mode, setMode] = useState("technical");
   const [difficulty, setDifficulty] = useState("medium");
-  const [questionCount, setQuestionCount] = useState(3);
+  const [questionCount, setQuestionCount] = useState(5);
+  const [sessionPolicy, setSessionPolicy] = useState("SHORT"); // SHORT | STANDARD | DEEP | FULL
+  const [questionMode, setQuestionMode] = useState("ADAPTIVE"); // ADAPTIVE | FIXED | TIMED
   const [targetRole, setTargetRole] = useState(user?.profile?.target_role || "Software Engineer");
   const [mediaPreference, setMediaPreference] = useState("standard"); // "standard" (mic/camera) | "text_only"
   const [hardwareChecked, setHardwareChecked] = useState(false);
@@ -186,6 +188,8 @@ function InterviewSetup() {
         mode,
         difficulty,
         number_of_questions: questionCount,
+        session_policy: sessionPolicy,
+        question_mode: questionMode,
         resume_id: activeResume?.id || null,
         target_role: targetRole,
       };
@@ -210,6 +214,8 @@ function InterviewSetup() {
           mode,
           difficulty,
           targetRole,
+          sessionPolicy,
+          questionMode,
           questions: session.questions,
           questionCount: session.questions.length,
           textOnly: isTextOnly,
@@ -222,6 +228,8 @@ function InterviewSetup() {
           mode,
           difficulty,
           targetRole,
+          sessionPolicy,
+          questionMode,
           questions: session.questions,
           questionCount: session.questions.length,
           textOnly: isTextOnly,
@@ -372,7 +380,7 @@ function InterviewSetup() {
           )}
         </Card>
 
-        {/* Step 3: Difficulty & Length */}
+        {/* Step 3: Difficulty & Assessment Scope */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
           <Card>
             <label className="form-label" style={{ fontWeight: "600", marginBottom: "10px" }}>
@@ -405,24 +413,42 @@ function InterviewSetup() {
           <Card>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
               <label className="form-label" style={{ fontWeight: "600", margin: 0 }}>
-                Question Count
+                Assessment Scope & Adaptive Policy
               </label>
-              <span style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-primary)" }}>
-                {questionCount} questions (~{estimatedMins} min)
-              </span>
+              <Badge variant="info">{sessionPolicy}</Badge>
             </div>
-            <input
-              type="range"
-              min="2"
-              max="6"
-              value={questionCount}
-              onChange={(e) => setQuestionCount(Number(e.target.value))}
-              style={{ width: "100%", marginTop: "8px" }}
-            />
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "var(--text-muted)", marginTop: "4px" }}>
-              <span>2 (Brief)</span>
-              <span>4 (Standard)</span>
-              <span>6 (Comprehensive)</span>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "6px", marginBottom: "12px" }}>
+              {[
+                { id: "SHORT", label: "Short (5–7 Qs)", count: 5 },
+                { id: "STANDARD", label: "Standard (8–12 Qs)", count: 8 },
+                { id: "DEEP", label: "Deep (12–18 Qs)", count: 12 },
+                { id: "FULL", label: "Continuous Adaptive", count: 5 },
+              ].map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => {
+                    setSessionPolicy(p.id);
+                    setQuestionCount(p.count);
+                  }}
+                  style={{
+                    padding: "6px 8px",
+                    borderRadius: "var(--radius-sm)",
+                    border: sessionPolicy === p.id ? "1px solid var(--primary-600)" : "1px solid var(--border-default)",
+                    backgroundColor: sessionPolicy === p.id ? "var(--primary-50)" : "var(--bg-surface)",
+                    color: sessionPolicy === p.id ? "var(--primary-800)" : "var(--text-secondary)",
+                    fontSize: "11px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    textAlign: "center",
+                  }}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+              Starting budget: <strong>{questionCount} questions</strong> (adapts based on evidence sufficiency)
             </div>
           </Card>
         </div>

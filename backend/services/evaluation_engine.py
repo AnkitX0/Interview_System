@@ -7,7 +7,7 @@ from typing import Dict, Any, List, Optional
 import httpx
 from pydantic import ValidationError
 
-from backend.config import LLM_CONFIG
+from backend.config import LLM_CONFIG, GEMINI_MODEL
 from backend.schemas.schemas import DimensionEvaluation
 from backend.services.scoring_engine import evaluate_rubric_for_answer
 
@@ -105,7 +105,8 @@ Respond with valid JSON matching this exact structure:
 
 
 def _call_gemini(prompt: str, api_key: str) -> Optional[dict]:
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    model = GEMINI_MODEL or "gemini-flash-lite-latest"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
     headers = {"Content-Type": "application/json"}
     body = {
         "contents": [{"parts": [{"text": prompt}]}],
@@ -114,9 +115,9 @@ def _call_gemini(prompt: str, api_key: str) -> Optional[dict]:
             "responseMimeType": "application/json"
         }
     }
-    for attempt in range(LLM_CONFIG.get("max_retries", 1) + 1):
+    for attempt in range(LLM_CONFIG.get("max_retries", 0) + 1):
         try:
-            with httpx.Client(timeout=LLM_CONFIG.get("timeout_seconds", 5.0)) as client:
+            with httpx.Client(timeout=LLM_CONFIG.get("timeout_seconds", 2.0)) as client:
                 res = client.post(url, headers=headers, json=body)
                 if res.status_code == 200:
                     data = res.json()
@@ -126,6 +127,7 @@ def _call_gemini(prompt: str, api_key: str) -> Optional[dict]:
                         return json.loads(text_content)
         except Exception as e:
             logger.warning("Gemini attempt %d error: %s", attempt + 1, e)
+            break
     return None
 
 

@@ -1,0 +1,23 @@
+.git
+.gitignore
+node_modules
+frontend/node_modules
+frontend/dist
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.venv
+venv
+.env
+*.db-journal
+*.db-wal
+*.db-shm
+coverage
+dist
+screenshots
+playwright artifacts
+temporary files
+test caches
+scratch/

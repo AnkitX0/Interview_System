@@ -139,6 +139,12 @@ def get_session_report(
                 models.InterviewQuestion.question_text == ans.question_text
             ).first()
 
+        is_skipped = (ans.transcript or "").startswith("[SKIPPED]") or (ev and getattr(ev, "engine_used", "") == "skipped")
+        status = "skipped" if is_skipped else ("answered" if (ans.transcript and ans.transcript.strip()) else "unanswered")
+        if is_skipped:
+            weaknesses = ["Candidate did not provide evidence for this question."]
+            suggestions = ["Candidate skipped question. Review foundational concepts for this topic."]
+
         answer_evals.append({
             "answer_id": ans.id,
             "question_id": ans.question_id,
@@ -147,29 +153,31 @@ def get_session_report(
             "source": iq.source if iq else "bank",
             "ladder_stage": iq.ladder_stage if iq else None,
             "generated_reason": iq.generated_reason if iq else None,
-            "transcript": ans.transcript or "",
+            "is_skipped": is_skipped,
+            "status": status,
+            "transcript": "Candidate did not provide evidence for this question." if is_skipped else (ans.transcript or ""),
             "response_time": ans.response_time or 0.0,
             "wpm": ans.wpm or 0.0,
             "filler_count": ans.filler_count or 0,
             "voice_metrics": vm_data,
-            "overall_score": ev.overall_score if ev else 70.0,
-            "structure_score": ev.structure_score if ev else 70.0,
-            "technical_score": ev.technical_score if ev else 70.0,
-            "reasoning_score": ev.reasoning_score if ev else 70.0,
-            "star_score": ev.star_score if ev else 70.0,
-            "consistency_score": ev.consistency_score if ev else 75.0,
-            "dimensions": ev_eval.get("dimensions", {}),
-            "strengths": strengths,
+            "overall_score": None if is_skipped else (ev.overall_score if ev else 70.0),
+            "structure_score": None if is_skipped else (ev.structure_score if ev else 70.0),
+            "technical_score": None if is_skipped else (ev.technical_score if ev else 70.0),
+            "reasoning_score": None if is_skipped else (ev.reasoning_score if ev else 70.0),
+            "star_score": None if is_skipped else (ev.star_score if ev else 70.0),
+            "consistency_score": None if is_skipped else (ev.consistency_score if ev else 75.0),
+            "dimensions": {} if is_skipped else ev_eval.get("dimensions", {}),
+            "strengths": strengths if not is_skipped else [],
             "weaknesses": weaknesses,
-            "missing_concepts": missing_concepts,
+            "missing_concepts": missing_concepts if not is_skipped else ["Evidence not obtained"],
             "suggestions": suggestions,
             "engine_used": (ev.engine_used if ev and hasattr(ev, 'engine_used') and ev.engine_used else "rubric"),
             "prompt_version": (ev.prompt_version if ev and hasattr(ev, 'prompt_version') and ev.prompt_version else "v1.0"),
             "verification_risk": {
-                "score": ev.verification_risk_score if ev else None,
-                "level": ev.verification_risk_level if ev and ev.verification_risk_level else "not_computed",
-                "evidence": ev.verification_risk_evidence if ev and ev.verification_risk_evidence else [],
-                "explanation": ev.verification_risk_explanation if ev else None,
+                "score": None if is_skipped else (ev.verification_risk_score if ev else None),
+                "level": "not_computed" if is_skipped else (ev.verification_risk_level if ev and ev.verification_risk_level else "not_computed"),
+                "evidence": [] if is_skipped else (ev.verification_risk_evidence if ev and ev.verification_risk_evidence else []),
+                "explanation": "Skipped question - verification risk not computed." if is_skipped else (ev.verification_risk_explanation if ev else None),
                 "disclaimer": VERIFICATION_RISK_CONFIG["disclaimer"],
             }
         })
@@ -294,6 +302,9 @@ def get_session_report(
         else "legacy"
     )
 
+    computed_conf = "High" if len(answers) >= 6 else ("Moderate" if len(answers) >= 4 else "Low")
+    computed_expl = f"{computed_conf} assessment confidence based on {len(answers)} evaluated turns across multi-dimensional criteria."
+
     return {
         "session_id": session.id,
         "mode": session.mode,
@@ -302,6 +313,11 @@ def get_session_report(
         "created_at": session.created_at.isoformat() if session.created_at else None,
         "readiness_score": readiness,
         "status_label": status_label,
+        "assessment_confidence": computed_conf,
+        "confidence_explanation": computed_expl,
+        "question_mode": getattr(session, "question_mode", "ADAPTIVE") or "ADAPTIVE",
+        "session_policy": getattr(session, "session_policy", "STANDARD") or "STANDARD",
+        "interview_state": getattr(session, "interview_state", "FINISHED") or "FINISHED",
         "delivery_measured": delivery_measured,
         "weights_used": weights_used,
         "consistency_source": consistency_source,

@@ -11,6 +11,8 @@ class StartInterviewRequest(BaseModel):
     number_of_questions: int = 3
     resume_id: Optional[int] = None
     target_role: Optional[str] = "Software Engineer"
+    question_mode: Optional[str] = "ADAPTIVE"
+    session_policy: Optional[str] = None
 
 
 # ---------------------------
@@ -72,6 +74,16 @@ class AnswerInput(BaseModel):
     face_visibility_ratio: Optional[float] = None
     head_shift_count: Optional[int] = None
     frames_sampled: Optional[int] = None
+ 
+ 
+# ---------------------------
+# Skip Question Request
+# ---------------------------
+class SkipQuestionRequest(BaseModel):
+    session_id: Optional[int] = None
+    question_id: Optional[int] = None
+    question_text: Optional[str] = None
+    reason: Optional[str] = "candidate_skipped"
 
 
 # ---------------------------

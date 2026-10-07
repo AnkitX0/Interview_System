@@ -33,6 +33,8 @@ function normalizeReport(raw) {
     difficulty: raw.difficulty || "medium",
     readiness_score: typeof raw.readiness_score === "number" ? Math.round(raw.readiness_score) : 0,
     status_label: raw.status_label || (raw.readiness_score >= 80 ? "Job-Ready Candidate" : raw.readiness_score >= 65 ? "Near Interview-Ready" : "Requires Targeted Practice"),
+    score_confidence: raw.score_confidence || (raw.answers?.length >= 5 ? "High" : raw.answers?.length >= 3 ? "Moderate" : "Low"),
+    confidence_explanation: raw.confidence_explanation || (raw.answers?.length >= 5 ? "High assessment confidence based on comprehensive multi-turn evidence." : "Calibrated estimate based on evaluated turns."),
     isDeliveryMeasured,
     subscores: {
       technical: Math.round(raw.subscores?.technical || 0),
@@ -252,7 +254,12 @@ function Report() {
               <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)" }}>
                 Interview Readiness Score
               </span>
-              <Badge variant={scoreVariant}>{report.status_label}</Badge>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <Badge variant={scoreVariant}>{report.status_label}</Badge>
+                {report.score_confidence && (
+                  <Badge variant="neutral">Confidence: {report.score_confidence}</Badge>
+                )}
+              </div>
             </div>
 
             <div style={{ display: "flex", alignItems: "baseline", gap: "8px", margin: "8px 0" }}>
@@ -269,6 +276,11 @@ function Report() {
                 "Re-normalized formula: 37.5% Technical + 37.5% Communication + 25% Resume Consistency (camera was inactive)."
               )}
             </p>
+            {report.confidence_explanation && (
+              <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "4px", fontStyle: "italic" }}>
+                {report.confidence_explanation}
+              </p>
+            )}
           </div>
 
           <div style={{ borderTop: "1px solid var(--border-default)", paddingTop: "12px", marginTop: "16px", display: "flex", justifyContent: "space-between", fontSize: "12px", color: "var(--text-muted)" }}>
@@ -550,52 +562,73 @@ function Report() {
       {/* Tab 2: Question Reviews */}
       {activeTab === "questions" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          {report.answers && report.answers.map((ans, idx) => (
-            <Card key={idx}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
-                <div>
-                  <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: "var(--primary-700)" }}>
-                    Question {idx + 1}
-                  </span>
-                  <h4 style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)", marginTop: "2px" }}>
-                    {ans.question_text}
-                  </h4>
+          {report.answers && report.answers.map((ans, idx) => {
+            const isSkipped = ans.is_skipped || ans.status === "skipped" || (ans.transcript && ans.transcript.includes("[SKIPPED]"));
+
+            return (
+              <Card key={idx}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
+                  <div>
+                    <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: "var(--primary-700)" }}>
+                      Question {idx + 1}
+                    </span>
+                    <h4 style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)", marginTop: "2px" }}>
+                      {ans.question_text}
+                    </h4>
+                  </div>
+                  {isSkipped ? (
+                    <Badge variant="neutral">Skipped</Badge>
+                  ) : (
+                    <Badge variant={ans.overall_score >= 75 ? "success" : "neutral"}>
+                      Score: {Math.round(ans.overall_score || 0)}
+                    </Badge>
+                  )}
                 </div>
-                <Badge variant={ans.overall_score >= 75 ? "success" : "neutral"}>
-                  Score: {Math.round(ans.overall_score || 0)}
-                </Badge>
-              </div>
 
-              <div style={{ backgroundColor: "var(--slate-50)", padding: "12px 14px", borderRadius: "6px", marginBottom: "14px", fontSize: "13px", color: "var(--text-primary)", fontStyle: "italic", border: "1px solid var(--border-default)" }}>
-                "{ans.transcript || "No transcript recorded."}"
-              </div>
+                {isSkipped ? (
+                  <div style={{ backgroundColor: "var(--slate-50)", padding: "12px 14px", borderRadius: "6px", marginBottom: "14px", fontSize: "13px", color: "var(--text-secondary)", border: "1px solid var(--border-default)" }}>
+                    <div style={{ fontWeight: "600", color: "var(--text-primary)", marginBottom: "4px" }}>Status: Skipped</div>
+                    Candidate did not provide evidence for this question.
+                  </div>
+                ) : (
+                  <div style={{ backgroundColor: "var(--slate-50)", padding: "12px 14px", borderRadius: "6px", marginBottom: "14px", fontSize: "13px", color: "var(--text-primary)", fontStyle: "italic", border: "1px solid var(--border-default)" }}>
+                    "{ans.transcript || "No transcript recorded."}"
+                  </div>
+                )}
 
-              {/* Rubric Dimension Breakdown */}
-              {ans.dimensions && (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px", marginBottom: "12px" }}>
-                  {Object.entries(ans.dimensions).map(([dimKey, dimVal]) => (
-                    <div key={dimKey} style={{ padding: "8px 10px", borderRadius: "6px", border: "1px solid var(--border-default)", backgroundColor: "#ffffff" }}>
-                      <div style={{ fontSize: "11px", fontWeight: "600", textTransform: "capitalize", color: "var(--text-muted)" }}>
-                        {dimKey}
+                {/* Rubric Dimension Breakdown */}
+                {!isSkipped && ans.dimensions && Object.keys(ans.dimensions).length > 0 && (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px", marginBottom: "12px" }}>
+                    {Object.entries(ans.dimensions).map(([dimKey, dimVal]) => (
+                      <div key={dimKey} style={{ padding: "8px 10px", borderRadius: "6px", border: "1px solid var(--border-default)", backgroundColor: "#ffffff" }}>
+                        <div style={{ fontSize: "11px", fontWeight: "600", textTransform: "capitalize", color: "var(--text-muted)" }}>
+                          {dimKey}
+                        </div>
+                        <div style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>
+                          {Math.round(dimVal?.score || 0)}/100
+                        </div>
+                        <div style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "2px" }}>
+                          {dimVal?.explanation}
+                        </div>
                       </div>
-                      <div style={{ fontSize: "14px", fontWeight: "700", color: "var(--text-primary)" }}>
-                        {Math.round(dimVal?.score || 0)}/100
-                      </div>
-                      <div style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "2px" }}>
-                        {dimVal?.explanation}
-                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {isSkipped ? (
+                  <div style={{ fontSize: "12px", color: "var(--text-secondary)", backgroundColor: "var(--slate-100)", padding: "8px 12px", borderRadius: "6px" }}>
+                    <strong>Note:</strong> Candidate chose to skip this question. It was logged as an evidence gap rather than a technically incorrect answer.
+                  </div>
+                ) : (
+                  ans.suggestions && ans.suggestions.length > 0 && (
+                    <div style={{ fontSize: "12px", color: "var(--primary-800)", backgroundColor: "var(--primary-50)", padding: "8px 12px", borderRadius: "6px" }}>
+                      <strong>Suggestion:</strong> {ans.suggestions[0]}
                     </div>
-                  ))}
-                </div>
-              )}
-
-              {ans.suggestions && ans.suggestions.length > 0 && (
-                <div style={{ fontSize: "12px", color: "var(--primary-800)", backgroundColor: "var(--primary-50)", padding: "8px 12px", borderRadius: "6px" }}>
-                  <strong>Suggestion:</strong> {ans.suggestions[0]}
-                </div>
-              )}
-            </Card>
-          ))}
+                  )
+                )}
+              </Card>
+            );
+          })}
         </div>
       )}
 

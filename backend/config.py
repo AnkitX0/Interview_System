@@ -68,10 +68,10 @@ FILLER_WORDS: List[str] = [
     "you know", "sort of", "kind of", "i mean", "right"
 ]
 
-# External LLM configuration
+# External LLM configuration (optimized for low latency with instant deterministic fallback)
 LLM_CONFIG = {
-    "timeout_seconds": 5.0,
-    "max_retries": 1,
+    "timeout_seconds": 2.0,
+    "max_retries": 0,
     "temperature": 0.0,
     "prompt_version": "v1.0"
 }
@@ -86,7 +86,17 @@ import os
 import secrets
 import logging
 
+try:
+    import dotenv
+    dotenv.load_dotenv()
+except Exception:
+    pass
+
 _logger = logging.getLogger("interview_system.config")
+
+# External Gemini LLM Config
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 SECRET_KEY = os.getenv("SECRET_KEY") or os.getenv("AUTH_SECRET_KEY")
@@ -298,6 +308,75 @@ READINESS_CONFIDENCE_CONFIG = {
     "min_sessions_for_high": 7,
     "max_score_variance_for_high": 12.0,
     "trend_slope_threshold": 1.5,
+}
+
+# ---------------------------
+# Unlimited Adaptive Interview Policies & Dynamic States
+# ---------------------------
+INTERVIEW_STATES = [
+    "STARTING",          # Establish candidate baseline
+    "EXPLORING",         # Understand resume/project
+    "DEEP_DIVING",       # Investigate strong/important claims
+    "VERIFYING",         # Test whether claims are genuine
+    "CHALLENGING",       # Edge cases / trade-offs / incident pressure
+    "BALANCING",         # Cover missing interview dimensions
+    "FINAL_ASSESSMENT",  # Sufficient evidence collected
+    "FINISHED",          # Session completed
+]
+
+MAX_ADAPTIVE_SAFETY_CEILING: int = 25
+
+INTERVIEW_POLICY_CONFIG = {
+    "DRILL": {
+        "mode": "DRILL",
+        "minimum_questions": 3,
+        "maximum_questions": 3,
+        "minimum_evidence_dimensions": 2,
+        "minimum_topics": 1,
+        "minimum_resume_claims": 1,
+        "minimum_followups": 1,
+        "label": "Brief Targeted Drill (3 questions)",
+    },
+    "SHORT": {
+        "mode": "SHORT",
+        "minimum_questions": 5,
+        "maximum_questions": 7,
+        "minimum_evidence_dimensions": 3,
+        "minimum_topics": 2,
+        "minimum_resume_claims": 1,
+        "minimum_followups": 1,
+        "label": "Short Assessment (5-7 questions)",
+    },
+    "STANDARD": {
+        "mode": "STANDARD",
+        "minimum_questions": 8,
+        "maximum_questions": 12,
+        "minimum_evidence_dimensions": 4,
+        "minimum_topics": 3,
+        "minimum_resume_claims": 2,
+        "minimum_followups": 2,
+        "label": "Standard Assessment (8-12 questions)",
+    },
+    "DEEP": {
+        "mode": "DEEP",
+        "minimum_questions": 12,
+        "maximum_questions": 18,
+        "minimum_evidence_dimensions": 5,
+        "minimum_topics": 4,
+        "minimum_resume_claims": 3,
+        "minimum_followups": 3,
+        "label": "Deep Assessment (12-18 questions)",
+    },
+    "FULL": {
+        "mode": "FULL",
+        "minimum_questions": 5,
+        "maximum_questions": 25,
+        "minimum_evidence_dimensions": 5,
+        "minimum_topics": 4,
+        "minimum_resume_claims": 3,
+        "minimum_followups": 3,
+        "label": "Full Adaptive Assessment (Until Sufficient Evidence)",
+    },
 }
 
 
