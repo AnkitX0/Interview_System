@@ -12,10 +12,13 @@ from typing import Optional, Dict, Any, List
 from fastapi import APIRouter, Depends, HTTPException, Response, Request
 from sqlalchemy.orm import Session
 
+from datetime import datetime, timedelta, timezone
 from backend.database import get_db
 import backend.models as models
 from backend.schemas.schemas import (
     RegisterRequest,
+    VerifyEmailRequest,
+    ResendVerificationRequest,
     LoginRequest,
     UserProfileSchema,
     UserResponse,
@@ -28,19 +31,55 @@ from backend.services.auth_service import (
     validate_password_strength,
     create_access_token,
     enforce_rate_limit,
+    check_rate_limit,
+    generate_verification_token,
+    hash_verification_token,
     get_current_user,
 )
+from backend.services.email_service import send_verification_email
 from backend.config import (
     AUTH_COOKIE_NAME,
     ACCESS_TOKEN_EXPIRE_MINUTES,
     ENVIRONMENT,
     PRIVACY_POLICY_VERSION,
+    VERIFICATION_TOKEN_EXPIRE_MINUTES,
 )
 
 logger = logging.getLogger("interview_system.auth")
 router = APIRouter(tags=["Authentication"])
 
 EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+GMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@gmail\.com$")
+
+
+def validate_full_name(name: Optional[str]) -> Optional[str]:
+    """Validates full name for registration: required, trimmed, min 2 chars, contains letters."""
+    if not name or not name.strip():
+        return "Please enter your name."
+    trimmed = name.strip()
+    if len(trimmed) < 2:
+        return "Please enter your name."
+    if not any(c.isalpha() for c in trimmed):
+        return "Please enter your name."
+    return None
+
+
+def validate_gmail_address(email: str) -> Optional[str]:
+    """Validates that email is a syntactically valid address with domain @gmail.com strictly."""
+    if not email:
+        return "Please use a Gmail address."
+    clean = email.strip().lower()
+    if not EMAIL_REGEX.match(clean):
+        return "Please use a Gmail address."
+    parts = clean.split("@")
+    if len(parts) != 2:
+        return "Please use a Gmail address."
+    local_part, domain = parts
+    if not local_part or domain != "gmail.com":
+        return "Please use a Gmail address."
+    if not GMAIL_REGEX.match(clean):
+        return "Please use a Gmail address."
+    return None
 
 
 def _set_auth_cookie(response: Response, token: str) -> None:
@@ -66,9 +105,10 @@ def _clear_auth_cookie(response: Response) -> None:
     )
 
 
-def _build_profile_response(profile: Optional[models.UserProfile]) -> Optional[UserProfileSchema]:
+def _build_profile_response(profile: Optional[models.UserProfile], user: Optional[models.User] = None) -> Optional[UserProfileSchema]:
     if not profile:
         return None
+    full_name = user.full_name if user else (profile.user.full_name if getattr(profile, "user", None) else None)
     return UserProfileSchema(
         target_role=profile.target_role,
         domain=profile.domain,
@@ -79,6 +119,13 @@ def _build_profile_response(profile: Optional[models.UserProfile]) -> Optional[U
         target_companies=profile.target_companies or [],
         interview_goal=profile.interview_goal,
         weekly_practice_goal=profile.weekly_practice_goal,
+        phone=profile.phone,
+        location=profile.location,
+        bio=profile.bio,
+        degree=profile.degree,
+        skills_categorized=profile.skills_categorized or {},
+        professional_links=profile.professional_links or {},
+        full_name=full_name,
     )
 
 
@@ -86,36 +133,57 @@ def _build_profile_response(profile: Optional[models.UserProfile]) -> Optional[U
 def register(
     data: RegisterRequest,
     request: Request,
-    response: Response,
     db: Session = Depends(get_db)
 ):
     """
-    Registers a new user account with Argon2 password hashing.
-    Enforces password constraints and rate limiting.
-    Sets httpOnly session cookie on success.
+    Registers a new user account with strict Gmail validation, Argon2 password hashing,
+    and single-use cryptographic email ownership verification.
+    Does NOT issue authenticated session cookie until email is verified.
     """
     client_ip = request.client.host if request.client else "unknown"
-    enforce_rate_limit(f"register:{client_ip}", max_attempts=10, window_seconds=60)
+    enforce_rate_limit(f"register:{client_ip}", max_attempts=30, window_seconds=60)
 
+    # 1. Full name validation
+    name_error = validate_full_name(data.full_name)
+    if name_error:
+        raise HTTPException(status_code=400, detail=name_error)
+
+    # 2. Gmail validation
     clean_email = data.email.strip().lower()
-    if not EMAIL_REGEX.match(clean_email):
-        raise HTTPException(status_code=400, detail="Invalid email format")
+    gmail_error = validate_gmail_address(clean_email)
+    if gmail_error:
+        raise HTTPException(status_code=400, detail=gmail_error)
 
+    # 3. Password strength validation
     pwd_error = validate_password_strength(data.password)
     if pwd_error:
         raise HTTPException(status_code=400, detail=pwd_error)
 
-    # Check for existing email
+    # 4. Existing account check (prevents duplicate and enumeration)
     existing = db.query(models.User).filter(models.User.email == clean_email).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Email is already registered")
+        raise HTTPException(
+            status_code=400,
+            detail="If an account already exists for this address, please sign in or reset your password."
+        )
 
-    # Hash password and create user
+    # 5. Cryptographic single-use token generation
+    token = generate_verification_token()
+    token_hash = hash_verification_token(token)
+    now = datetime.now(timezone.utc)
+    expires_at = now + timedelta(minutes=VERIFICATION_TOKEN_EXPIRE_MINUTES)
+
+    # 6. Create user in pending verification state
+    clean_name = data.full_name.strip() if data.full_name else None
     hashed = hash_password(data.password)
     user = models.User(
         email=clean_email,
         password_hash=hashed,
-        full_name=data.full_name.strip() if data.full_name else None,
+        full_name=clean_name,
+        email_verified=False,
+        verification_token_hash=token_hash,
+        verification_expires_at=expires_at,
+        verification_sent_at=now,
     )
     db.add(user)
     db.flush()
@@ -126,17 +194,116 @@ def register(
     db.commit()
     db.refresh(user)
 
-    token = create_access_token(user.id)
-    _set_auth_cookie(response, token)
+    # 7. Send verification email (or capture in dev)
+    send_verification_email(clean_email, token, clean_name)
+
+    logger.info("New registration created for %s (verification pending)", clean_email)
 
     return {
-        "message": "Account registered successfully",
-        "user": {
-            "id": user.id,
-            "email": user.email,
-            "full_name": user.full_name,
-            "profile": _build_profile_response(profile),
-        }
+        "message": "Account created. Please check your email to verify your account.",
+        "email": clean_email,
+        "verification_required": True,
+    }
+
+
+@router.post("/auth/verify-email")
+def verify_email(
+    data: VerifyEmailRequest,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """
+    Verifies single-use email verification token.
+    Activates the pending user account upon successful verification.
+    """
+    client_ip = request.client.host if request.client else "unknown"
+    enforce_rate_limit(f"verify:{client_ip}", max_attempts=20, window_seconds=60)
+
+    raw_token = data.token.strip()
+    if not raw_token:
+        raise HTTPException(status_code=400, detail="This verification link is no longer valid.")
+
+    token_hash = hash_verification_token(raw_token)
+    user = db.query(models.User).filter(models.User.verification_token_hash == token_hash).first()
+
+    if not user:
+        raise HTTPException(status_code=400, detail="This verification link is no longer valid.")
+
+    if user.verification_used_at is not None:
+        if user.email_verified:
+            raise HTTPException(status_code=400, detail="This email address has already been verified.")
+        raise HTTPException(status_code=400, detail="This verification link is no longer valid.")
+
+    now = datetime.now(timezone.utc)
+    if user.verification_expires_at:
+        expires_at = user.verification_expires_at
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        if expires_at < now:
+            raise HTTPException(status_code=400, detail="Verification link expired.")
+
+    # Mark verified and record single-use timestamp
+    user.email_verified = True
+    user.verification_used_at = now
+    db.commit()
+
+    logger.info("Email verification succeeded for user id=%d (%s)", user.id, user.email)
+
+    return {
+        "message": "Email verified. Your account is ready.",
+        "email": user.email,
+        "verified": True,
+    }
+
+
+@router.post("/auth/resend-verification")
+def resend_verification(
+    data: ResendVerificationRequest,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """
+    Resends account verification email with strict 60-second rate limiting.
+    Uniform response to prevent user enumeration.
+    """
+    client_ip = request.client.host if request.client else "unknown"
+    enforce_rate_limit(f"resend_ip:{client_ip}", max_attempts=10, window_seconds=60)
+
+    clean_email = data.email.strip().lower()
+
+    user = db.query(models.User).filter(models.User.email == clean_email).first()
+    if user and not user.email_verified:
+        now = datetime.now(timezone.utc)
+        if user.verification_sent_at:
+            sent_at = user.verification_sent_at
+            if sent_at.tzinfo is None:
+                sent_at = sent_at.replace(tzinfo=timezone.utc)
+            if (now - sent_at).total_seconds() < 60:
+                raise HTTPException(
+                    status_code=429,
+                    detail="Please wait 60 seconds before requesting another verification email."
+                )
+
+        # Rate limit check per email address (1 resend every 60 seconds)
+        if not check_rate_limit(f"resend_email:{clean_email}", max_attempts=1, window_seconds=60):
+            raise HTTPException(
+                status_code=429,
+                detail="Please wait 60 seconds before requesting another verification email."
+            )
+
+        token = generate_verification_token()
+        user.verification_token_hash = hash_verification_token(token)
+        user.verification_expires_at = now + timedelta(minutes=VERIFICATION_TOKEN_EXPIRE_MINUTES)
+        user.verification_sent_at = now
+        user.verification_used_at = None
+        db.commit()
+
+        send_verification_email(clean_email, token, user.full_name)
+        logger.info("Resent verification email for %s", clean_email)
+
+    return {
+        "message": "Verification email sent. Please check your inbox.",
+        "sent": True,
     }
 
 
@@ -149,7 +316,7 @@ def login(
 ):
     """
     Authenticates user credentials and sets httpOnly session cookie.
-    Enforces rate limiting and uniform error reporting to prevent account enumeration.
+    Enforces rate limiting, email verification requirement, and uniform error reporting.
     """
     client_ip = request.client.host if request.client else "unknown"
     enforce_rate_limit(f"login:{client_ip}", max_attempts=10, window_seconds=60)
@@ -157,9 +324,16 @@ def login(
     clean_email = data.email.strip().lower()
     user = db.query(models.User).filter(models.User.email == clean_email).first()
 
-    # Uniform error response for any auth failure
+    # Uniform error response for credential mismatch
     if not user or not verify_password(data.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    # Reject unverified accounts
+    if user.email_verified is False:
+        raise HTTPException(
+            status_code=403,
+            detail="Please verify your email address before signing in. Check your inbox for the verification link."
+        )
 
     token = create_access_token(user.id)
     _set_auth_cookie(response, token)
@@ -207,7 +381,7 @@ def get_profile(user: models.User = Depends(get_current_user), db: Session = Dep
         db.commit()
         db.refresh(profile)
 
-    return _build_profile_response(profile)
+    return _build_profile_response(profile, user=user)
 
 
 @router.put("/profile")
@@ -222,15 +396,21 @@ def update_profile(
         profile = models.UserProfile(user_id=user.id)
         db.add(profile)
 
-    for field, val in data.model_dump(exclude_unset=True).items():
-        setattr(profile, field, val)
+    update_dict = data.model_dump(exclude_unset=True)
+    if "full_name" in update_dict and update_dict["full_name"] is not None:
+        user.full_name = update_dict.pop("full_name")
+
+    for field, val in update_dict.items():
+        if hasattr(profile, field):
+            setattr(profile, field, val)
 
     db.commit()
     db.refresh(profile)
+    db.refresh(user)
 
     return {
         "message": "Profile updated successfully",
-        "profile": _build_profile_response(profile)
+        "profile": _build_profile_response(profile, user=user)
     }
 
 
@@ -569,4 +749,34 @@ def delete_account(
         "message": "Account and all associated personal data permanently deleted.",
         "user_id": user_id,
     }
+
+
+if ENVIRONMENT != "production":
+    @router.get("/auth/dev/latest-verification-email")
+    def get_dev_verification_email(email: str):
+        """Development-only endpoint for automated test suites to inspect the local development mailbox."""
+        from backend.services.email_service import get_latest_dev_email, DEV_EMAIL_LOG
+        record = get_latest_dev_email(email)
+        if record:
+            return record
+
+        # Fallback to reading from dev_emails.log
+        try:
+            import os
+            if os.path.exists(DEV_EMAIL_LOG):
+                with open(DEV_EMAIL_LOG, "r", encoding="utf-8") as f:
+                    lines = f.readlines()
+                for line in reversed(lines):
+                    if f"TO: {email.lower()}" in line.lower():
+                        parts = line.strip().split(" | ")
+                        token = parts[1].replace("TOKEN: ", "").strip()
+                        link = parts[2].replace("LINK: ", "").strip()
+                        return {"to_email": email, "token": token, "verification_link": link}
+        except Exception:
+            pass
+
+        raise HTTPException(
+            status_code=404,
+            detail="No verification email found for this address in dev mailbox."
+        )
 

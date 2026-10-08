@@ -6,6 +6,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import VerifyEmail from "./pages/VerifyEmail";
 import ResumeUpload from "./pages/ResumeUpload";
 import Interview from "./pages/Interview";
 import Dashboard from "./pages/Dashboard";
@@ -15,19 +16,31 @@ import FixAnswer from "./pages/FixAnswer";
 import Progress from "./pages/Progress";
 import History from "./pages/History";
 import InterviewSetup from "./pages/InterviewSetup";
+import Profile from "./pages/Profile";
+import { ThemeProvider } from "./context/ThemeContext";
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Layout>
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <Layout>
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
 
             {/* Protected interview routes */}
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/resume"
               element={
@@ -115,6 +128,7 @@ function App() {
         </Layout>
       </Router>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
 

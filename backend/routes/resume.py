@@ -292,6 +292,38 @@ def reanalyze_resume(
     return _build_resume_detail_response(resume_record, db)
 
 
+@router.put("/{resume_id}")
+def update_resume_review(
+    resume_id: int,
+    data: Dict[str, Any],
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Updates candidate reviewed fields on a stored resume (name, skills, education, experience).
+    """
+    resume_record = db.query(models.Resume).filter(
+        models.Resume.id == resume_id,
+        models.Resume.user_id == user.id
+    ).first()
+    if not resume_record:
+        raise HTTPException(status_code=404, detail="Resume not found")
+
+    if "candidate_name" in data and data["candidate_name"]:
+        resume_record.candidate_name = data["candidate_name"]
+    if "skills" in data and isinstance(data["skills"], list):
+        resume_record.skills = json.dumps(data["skills"])
+    if "education" in data:
+        resume_record.education = data["education"]
+    if "experience" in data:
+        resume_record.experience = data["experience"]
+
+    db.commit()
+    db.refresh(resume_record)
+    return _build_resume_detail_response(resume_record, db)
+
+
+
 @router.delete("/{resume_id}")
 def delete_resume(
     resume_id: int,

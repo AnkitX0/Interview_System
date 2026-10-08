@@ -85,19 +85,8 @@ export function AuthProvider({ children }) {
       throw new Error(errorMsg);
     }
 
-    try {
-      const meRes = await apiFetch("/auth/me");
-      if (meRes.ok) {
-        const meData = await meRes.json();
-        setUser(meData);
-        return meData;
-      }
-    } catch {
-      // Fallback
-    }
-
-    setUser(data.user);
-    return data.user;
+    // New registrations require email verification before setting authenticated user session
+    return data;
   };
 
   const logout = async () => {

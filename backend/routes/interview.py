@@ -1,11 +1,13 @@
 import json
-from fastapi import APIRouter, Depends, HTTPException
+import base64
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
 import backend.models as models
 from backend.database import get_db
 from backend.crud import calculate_behavioral_score, calculate_delivery_score
+from backend.services.transcription_service import transcribe_audio_bytes, transcribe_complete_answer
 from backend.schemas.schemas import (
     AnswerInput,
     FollowUpRequest,
@@ -30,7 +32,144 @@ from backend.services.visual_metrics_service import (
 
 router = APIRouter(prefix="/interview", tags=["Interview"])
 
+MAX_AUDIO_UPLOAD_BYTES = 50 * 1024 * 1024  # 50 MB limit for complete answer audio
 
+
+# =========================
+# COMPLETE ANSWER TRANSCRIPTION (PRIMARY HIGH-ACCURACY PIPELINE)
+# =========================
+@router.post("/transcribe")
+async def transcribe_complete_recording_endpoint(
+    audio: UploadFile = File(...),
+    session_id: Optional[int] = Form(None),
+    language: Optional[str] = Form("en-IN"),
+    mode: Optional[str] = Form("verbatim"),
+    vocabulary: Optional[str] = Form(None),
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Primary authoritative speech-to-text endpoint for complete recorded interview answers.
+    Accepts full MediaRecorder audio Blob, constructs candidate-specific technical vocabulary,
+    transcribes using dedicated Gemini model, and returns structured result.
+    Audio processed purely in memory and immediately discarded (zero persistence).
+    """
+    audio_bytes = await audio.read()
+    if not audio_bytes or len(audio_bytes) < 100:
+        raise HTTPException(status_code=400, detail="Empty audio recording received")
+
+    if len(audio_bytes) > MAX_AUDIO_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="Audio file exceeds maximum 50MB limit")
+
+    mime_type = audio.content_type or "audio/webm"
+    if not mime_type.startswith("audio/") and mime_type not in ("video/webm", "application/octet-stream"):
+        raise HTTPException(status_code=415, detail=f"Unsupported audio format: {mime_type}")
+
+    # Build contextual technical vocabulary from candidate resume & interview session
+    dynamic_vocab: List[str] = []
+    if vocabulary:
+        dynamic_vocab.extend([v.strip() for v in vocabulary.split(",") if v.strip()])
+
+    if session_id:
+        session = db.query(models.InterviewSession).filter(
+            models.InterviewSession.id == session_id,
+            models.InterviewSession.user_id == user.id
+        ).first()
+        if session and session.target_role:
+            dynamic_vocab.append(session.target_role)
+
+    # Add candidate resume skills and project technologies
+    user_skills = db.query(models.ResumeSkill).join(models.Resume).filter(
+        models.Resume.user_id == user.id
+    ).all()
+    for s in user_skills:
+        if s.name and len(s.name) > 1:
+            dynamic_vocab.append(s.name)
+
+    user_projects = db.query(models.ResumeProject).join(models.Resume).filter(
+        models.Resume.user_id == user.id
+    ).all()
+    for p in user_projects:
+        if p.technologies and isinstance(p.technologies, list):
+            dynamic_vocab.extend([t for t in p.technologies if isinstance(t, str)])
+        if p.title and len(p.title) > 2:
+            dynamic_vocab.append(p.title)
+
+    result = transcribe_complete_answer(
+        audio_bytes=audio_bytes,
+        mime_type=mime_type,
+        vocabulary=dynamic_vocab,
+        language=language or "en-IN",
+        mode=mode or "verbatim",
+        normalize=False
+    )
+
+    return result
+
+
+@router.post("/transcribe-audio")
+async def transcribe_audio_endpoint(
+    audio: UploadFile = File(...),
+    vocabulary: Optional[str] = Form(None),
+    user: models.User = Depends(get_current_user),
+):
+    """
+    Backwards-compatible endpoint for short audio slices / streaming fallbacks.
+    Processed purely in memory and discarded immediately (zero persistence).
+    """
+    audio_bytes = await audio.read()
+    mime_type = audio.content_type or "audio/webm"
+    vocab_list = [v.strip() for v in vocabulary.split(",") if v.strip()] if vocabulary else None
+    result = transcribe_audio_bytes(audio_bytes=audio_bytes, mime_type=mime_type, vocabulary=vocab_list)
+    return result
+
+
+@router.websocket("/ws/transcribe")
+async def websocket_transcribe(websocket: WebSocket):
+    """
+    Persistent WebSocket streaming for real-time speech transcription chunks.
+    Receives binary audio frames, runs in-memory transcription, and returns text events.
+    """
+    await websocket.accept()
+    try:
+        while True:
+            message = await websocket.receive()
+            if "bytes" in message and message["bytes"]:
+                audio_bytes = message["bytes"]
+                result = transcribe_audio_bytes(audio_bytes=audio_bytes, mime_type="audio/webm")
+                await websocket.send_json({
+                    "type": "transcript",
+                    "text": result.get("transcript", ""),
+                    "engine": result.get("engine", "none"),
+                    "status": result.get("status", "success"),
+                    "final": True
+                })
+            elif "text" in message and message["text"]:
+                data = json.loads(message["text"])
+                if data.get("type") == "audio_b64" and data.get("data"):
+                    raw_b64 = data["data"]
+                    audio_bytes = base64.b64decode(raw_b64)
+                    result = transcribe_audio_bytes(
+                        audio_bytes=audio_bytes,
+                        mime_type=data.get("mime", "audio/webm"),
+                        vocabulary=data.get("vocabulary")
+                    )
+                    await websocket.send_json({
+                        "type": "transcript",
+                        "text": result.get("transcript", ""),
+                        "engine": result.get("engine", "none"),
+                        "status": result.get("status", "success"),
+                        "final": True
+                    })
+                elif data.get("type") == "ping":
+                    await websocket.send_json({"type": "pong"})
+    except WebSocketDisconnect:
+        pass
+    except Exception:
+        try:
+            await websocket.close()
+        except Exception:
+            pass
 
 
 # =========================
@@ -48,6 +187,8 @@ def start_interview(
     target_role = data.target_role or "Software Engineer"
 
     resume_skills = []
+    resume_projects = []
+    resume_claims = []
     if data.resume_id:
         resume = db.query(models.Resume).filter(
             models.Resume.id == data.resume_id,
@@ -60,6 +201,24 @@ def start_interview(
                 resume_skills = json.loads(resume.skills)
             except Exception:
                 resume_skills = [s.strip() for s in resume.skills.split(",") if s.strip()]
+        if resume and resume.projects:
+            for p in resume.projects:
+                resume_projects.append({
+                    "title": p.title,
+                    "description": p.description,
+                    "technologies": p.technologies or [],
+                    "bullets": p.bullets or [],
+                })
+        if resume and resume.claims:
+            for c in resume.claims:
+                resume_claims.append({
+                    "claim_text": c.claim_text,
+                    "claim_type": c.claim_type,
+                    "has_metric": c.has_metric,
+                    "probe_priority": c.probe_priority,
+                    "technologies": c.technologies or [],
+                    "reasons": c.reasons or [],
+                })
 
     policy_name = data.session_policy.upper() if data.session_policy else (
         "DRILL" if number_of_questions <= 3 else ("SHORT" if number_of_questions <= 5 else ("STANDARD" if number_of_questions <= 8 else "DEEP"))
@@ -85,14 +244,17 @@ def start_interview(
     db.commit()
     db.refresh(session)
 
-    # Select resume-aware dynamic questions
+    # Select resume-aware dynamic questions from persistent bank
     selected_questions = select_questions(
         db=db,
         mode=mode,
         difficulty=difficulty,
         count=number_of_questions,
         resume_skills=resume_skills,
-        target_role=target_role
+        target_role=target_role,
+        user_id=user.id,
+        resume_projects=resume_projects,
+        resume_claims=resume_claims
     )
 
     time_limit = 45 if mode == "pressure" else 90
@@ -284,6 +446,49 @@ def get_session_details(
     }
 
 
+@router.get("/{session_id}/turns")
+def get_session_turns(
+    session_id: int,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Authoritative source of truth for persisted interview turns."""
+    session = db.query(models.InterviewSession).filter(
+        models.InterviewSession.id == session_id,
+        models.InterviewSession.user_id == user.id
+    ).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+
+    answers = db.query(models.InterviewAnswer).filter(
+        models.InterviewAnswer.session_id == session_id
+    ).order_by(models.InterviewAnswer.id.asc()).all()
+
+    turns = []
+    for a in answers:
+        turns.append({
+            "turn_id": a.id,
+            "session_id": a.session_id,
+            "question_id": a.question_id,
+            "question_text": a.question_text,
+            "answer_text": a.transcript,
+            "answer_status": a.answer_status or "ANSWERED",
+            "evaluation_status": a.evaluation_status or "EVALUATED",
+            "score": a.score,
+            "topic": a.topic,
+            "category": a.category,
+            "resume_reference": a.resume_reference,
+            "created_at": a.created_at.isoformat() if a.created_at else None,
+        })
+
+    return {
+        "session_id": session.id,
+        "turns": turns,
+        "persisted_turn_count": len(turns),
+        "total_turns": len(turns)
+    }
+
+
 # =========================
 # SUBMIT ANSWER
 # =========================
@@ -335,21 +540,6 @@ def submit_answer(
     else:
         safe_wpm = 0.0
 
-    answer = models.InterviewAnswer(
-        session_id=target_session_id,
-        question_id=data.question_id,
-        question_text=question_text or "Interview Question",
-        transcript=raw_transcript,
-        response_time=resp_time,
-        duration_seconds=dur_seconds,
-        wpm=safe_wpm,
-        filler_count=max(0, data.filler_count or 0)
-    )
-
-    db.add(answer)
-    db.commit()
-    db.refresh(answer)
-
     # Evaluate answer using structured rubric
     category = session.mode if session.mode in ["Technical", "HR", "Behavioral", "Pressure"] else "Technical"
     evaluation = evaluate_answer(
@@ -361,6 +551,37 @@ def submit_answer(
         wpm=safe_wpm,
         filler_count=max(0, data.filler_count or 0)
     )
+
+    ans_status = "ANSWERED"
+    if not raw_transcript:
+        ans_status = "EMPTY"
+    elif len(raw_transcript.split()) < 3:
+        ans_status = "PARTIAL"
+
+    is_meaningful = ans_status == "ANSWERED"
+    eval_status = "EVALUATED" if is_meaningful else "NOT_APPLICABLE"
+    assigned_score = evaluation.get("overall_score") if is_meaningful else None
+
+    answer = models.InterviewAnswer(
+        session_id=target_session_id,
+        question_id=data.question_id,
+        question_text=question_text or "Interview Question",
+        transcript=raw_transcript,
+        response_time=resp_time,
+        duration_seconds=dur_seconds,
+        wpm=safe_wpm,
+        filler_count=max(0, data.filler_count or 0),
+        answer_status=ans_status,
+        evaluation_status=eval_status,
+        score=assigned_score,
+        topic=session.mode,
+        category=category,
+        resume_reference=None,
+    )
+
+    db.add(answer)
+    db.commit()
+    db.refresh(answer)
 
     # Fetch prior transcripts for repetition comparison
     prev_transcripts = [
@@ -449,6 +670,11 @@ def submit_answer(
     return {
         "message": "Answer stored and evaluated successfully",
         "answer_id": answer.id,
+        "turn_id": answer.id,
+        "session_id": session.id,
+        "persisted_turn_count": session.current_question_index,
+        "answer_status": answer.answer_status,
+        "evaluation_status": answer.evaluation_status,
         "score": evaluation["overall_score"],
         "dimensions": evaluation.get("dimensions", {}),
         "structure": evaluation.get("structure"),
@@ -468,6 +694,9 @@ def submit_answer(
         "consistency_score": evaluation["consistency_score"],
         "strengths": evaluation["strengths"],
         "weaknesses": evaluation["weaknesses"],
+        "what_went_well": evaluation.get("what_went_well", evaluation["strengths"]),
+        "what_was_missing": evaluation.get("what_was_missing", evaluation["weaknesses"]),
+        "overall_assessment": evaluation.get("overall_assessment"),
         "missing_concepts": evaluation["missing_concepts"],
         "suggestions": evaluation["suggestions"]
     }
@@ -524,7 +753,13 @@ def skip_question(
         response_time=0.0,
         duration_seconds=0.0,
         wpm=0.0,
-        filler_count=0
+        filler_count=0,
+        answer_status="SKIPPED",
+        evaluation_status="NOT_APPLICABLE",
+        score=None,
+        topic=session.mode,
+        category=session.mode,
+        resume_reference=None,
     )
     db.add(answer)
     db.commit()
@@ -533,14 +768,14 @@ def skip_question(
     # 2. Persist safe evaluation for skipped turn
     eval_record = models.AnswerEvaluation(
         answer_id=answer.id,
-        structure_score=40.0,
-        clarity_score=40.0,
-        depth_score=30.0,
-        technical_score=40.0,
-        reasoning_score=40.0,
-        star_score=40.0,
-        consistency_score=50.0,
-        overall_score=40.0,
+        structure_score=None,
+        clarity_score=None,
+        depth_score=None,
+        technical_score=None,
+        reasoning_score=None,
+        star_score=None,
+        consistency_score=None,
+        overall_score=None,
         strengths=json.dumps([]),
         weaknesses=json.dumps(["Candidate skipped question; evidence was not provided."]),
         missing_concepts=json.dumps(["Evidence not obtained"]),
@@ -640,6 +875,12 @@ def skip_question(
         return {
             "skipped": True,
             "done": True,
+            "turn_id": answer.id,
+            "session_id": session.id,
+            "persisted_turn_count": session.current_question_index,
+            "answer_status": "SKIPPED",
+            "evaluation_status": "NOT_APPLICABLE",
+            "score": None,
             "message": "Interview session completed after skipped question",
             "decision": {
                 "decision": decision_res.decision,
@@ -667,6 +908,12 @@ def skip_question(
     return {
         "skipped": True,
         "done": False,
+        "turn_id": answer.id,
+        "session_id": session.id,
+        "persisted_turn_count": session.current_question_index,
+        "answer_status": "SKIPPED",
+        "evaluation_status": "NOT_APPLICABLE",
+        "score": None,
         "question": {
             "id": q_rec.id,
             "question": q_rec.question_text,

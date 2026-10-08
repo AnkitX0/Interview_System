@@ -14,6 +14,11 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     password_hash = Column(String, nullable=False)
     full_name = Column(String, nullable=True)
+    email_verified = Column(Boolean, default=True, nullable=False)
+    verification_token_hash = Column(String, nullable=True)
+    verification_expires_at = Column(DateTime(timezone=True), nullable=True)
+    verification_used_at = Column(DateTime(timezone=True), nullable=True)
+    verification_sent_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
@@ -22,6 +27,8 @@ class User(Base):
     sessions = relationship("InterviewSession", back_populates="user", cascade="all, delete-orphan")
     consents = relationship("ConsentRecord", back_populates="user", cascade="all, delete-orphan")
     practice_recommendations = relationship("PracticeRecommendation", back_populates="user", cascade="all, delete-orphan")
+    question_exposures = relationship("QuestionExposureHistory", back_populates="user", cascade="all, delete-orphan")
+    practice_sessions = relationship("PracticeSession", back_populates="user", cascade="all, delete-orphan")
 
 
 class UserProfile(Base):
@@ -37,6 +44,12 @@ class UserProfile(Base):
     target_companies = Column(JSON, nullable=True)
     interview_goal = Column(String, nullable=True)
     weekly_practice_goal = Column(Integer, nullable=True)
+    phone = Column(String, nullable=True)
+    location = Column(String, nullable=True)
+    bio = Column(Text, nullable=True)
+    degree = Column(String, nullable=True)
+    skills_categorized = Column(JSON, nullable=True)
+    professional_links = Column(JSON, nullable=True)
 
     user = relationship("User", back_populates="profile")
 
@@ -201,6 +214,14 @@ class InterviewAnswer(Base):
     wpm = Column(Float, default=0.0)
     filler_count = Column(Integer, default=0)
 
+    # Turn Model Fields (Part 13)
+    answer_status = Column(String, default="ANSWERED")       # ANSWERED, SKIPPED, EMPTY, PARTIAL
+    evaluation_status = Column(String, default="EVALUATED")  # PENDING, EVALUATED, FAILED, NOT_APPLICABLE
+    score = Column(Float, nullable=True)
+    topic = Column(String, nullable=True)
+    category = Column(String, nullable=True)
+    resume_reference = Column(Text, nullable=True)
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     session = relationship("InterviewSession", back_populates="answers")
@@ -218,15 +239,15 @@ class AnswerEvaluation(Base):
     id = Column(Integer, primary_key=True)
     answer_id = Column(Integer, ForeignKey("interview_answers.id", ondelete="CASCADE"))
 
-    structure_score = Column(Float, default=70.0)
-    clarity_score = Column(Float, default=70.0)
-    depth_score = Column(Float, default=70.0)
-    technical_score = Column(Float, default=70.0)
-    reasoning_score = Column(Float, default=70.0)
-    star_score = Column(Float, default=70.0)
-    consistency_score = Column(Float, default=75.0)
+    structure_score = Column(Float, nullable=True, default=70.0)
+    clarity_score = Column(Float, nullable=True, default=70.0)
+    depth_score = Column(Float, nullable=True, default=70.0)
+    technical_score = Column(Float, nullable=True, default=70.0)
+    reasoning_score = Column(Float, nullable=True, default=70.0)
+    star_score = Column(Float, nullable=True, default=70.0)
+    consistency_score = Column(Float, nullable=True, default=75.0)
 
-    overall_score = Column(Float, default=70.0)
+    overall_score = Column(Float, nullable=True, default=70.0)
     strengths = Column(Text, default="[]")
     weaknesses = Column(Text, default="[]")
     missing_concepts = Column(Text, default="[]")
@@ -427,3 +448,58 @@ class PracticeRecommendation(Base):
 
     user = relationship("User", back_populates="practice_recommendations")
     source_session = relationship("InterviewSession")
+
+
+# -------------------------
+# Question Exposure History (Repetition Prevention)
+# -------------------------
+class QuestionExposureHistory(Base):
+    __tablename__ = "question_exposure_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    question_id = Column(String, nullable=False, index=True)
+    category = Column(String, nullable=False, index=True)
+    session_id = Column(Integer, ForeignKey("interview_sessions.id", ondelete="SET NULL"), nullable=True, index=True)
+    topic = Column(String, nullable=True)
+    answer_status = Column(String, nullable=True)  # STRONG | PARTIAL | WEAK | INSUFFICIENT | EMPTY | SKIPPED
+    score = Column(Float, nullable=True)
+    timestamp = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+    user = relationship("User", back_populates="question_exposures")
+    session = relationship("InterviewSession")
+
+
+# -------------------------
+# Practice Sessions & Turns
+# -------------------------
+class PracticeSession(Base):
+    __tablename__ = "practice_sessions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    category = Column(String, nullable=False, index=True)
+    target_role = Column(String, default="Software Engineer")
+    difficulty = Column(String, default="medium")
+    started_at = Column(DateTime(timezone=True), server_default=func.now())
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+
+    user = relationship("User", back_populates="practice_sessions")
+    turns = relationship("PracticeTurn", back_populates="session", cascade="all, delete-orphan")
+
+
+class PracticeTurn(Base):
+    __tablename__ = "practice_turns"
+
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(Integer, ForeignKey("practice_sessions.id", ondelete="CASCADE"), nullable=False, index=True)
+    question_id = Column(String, nullable=False)
+    question_text = Column(Text, nullable=False)
+    answer_text = Column(Text, nullable=True)
+    evaluation = Column(JSON, nullable=True)
+    score = Column(Float, nullable=True)
+    topic = Column(String, nullable=True)
+    resume_reference = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    session = relationship("PracticeSession", back_populates="turns")

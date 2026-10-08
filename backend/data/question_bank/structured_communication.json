@@ -1,0 +1,2522 @@
+[
+  {
+    "id": "SC_001",
+    "category": "structured_communication",
+    "topic": "Explaining to Non-Technical Stakeholders",
+    "difficulty": "medium",
+    "question": "Explain the concept of database indexing to a non-technical product manager in under 60 seconds without using technical jargon. (Scenario #001)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_002",
+    "category": "structured_communication",
+    "topic": "Executive Technical Pitch",
+    "difficulty": "medium",
+    "question": "Deliver a concise 90-second technical pitch to an engineering director proposing migrating from a monolithic API to microservices. (Scenario #002)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_003",
+    "category": "structured_communication",
+    "topic": "Incident Post-Mortem",
+    "difficulty": "medium",
+    "question": "Structure an incident post-mortem briefing for senior leadership using the Context -> Action -> Result (CAR) format for a 30-minute outage. (Scenario #003)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_004",
+    "category": "structured_communication",
+    "topic": "Technical Debt Negotiation",
+    "difficulty": "medium",
+    "question": "Explain the trade-offs of technical debt versus shipping a critical business feature to a business stakeholder demanding immediate delivery. (Scenario #004)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_005",
+    "category": "structured_communication",
+    "topic": "Mentoring & Explaining Concepts",
+    "difficulty": "medium",
+    "question": "Walk an entry-level junior engineer through how a distributed cache prevents database crashes, using clear analogies. (Scenario #005)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_006",
+    "category": "structured_communication",
+    "topic": "Security Explanation",
+    "difficulty": "medium",
+    "question": "Explain how HTTPS encrypts traffic and prevents eavesdropping to a compliance officer who has no engineering background. (Scenario #006)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_007",
+    "category": "structured_communication",
+    "topic": "Structured Concept Breakdown",
+    "difficulty": "medium",
+    "question": "Provide a structured, 3-part answer explaining how DNS resolution works when a user types a URL into their browser. (Scenario #007)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_008",
+    "category": "structured_communication",
+    "topic": "Executive Architectural Summary",
+    "difficulty": "medium",
+    "question": "Summarize the architectural differences between SQL and NoSQL databases in three precise, high-level points for a technical interview. (Scenario #008)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_009",
+    "category": "structured_communication",
+    "topic": "Architecture Synthesis",
+    "difficulty": "medium",
+    "question": "Explain how a circuit breaker pattern prevents cascading microservice failures in a crisp, 2-minute structured answer. (Scenario #009)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_010",
+    "category": "structured_communication",
+    "topic": "Crisis Communication",
+    "difficulty": "medium",
+    "question": "Explain to a cross-functional marketing team why an immediate feature rollback was necessary following an unexpected API bug. (Scenario #010)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_011",
+    "category": "structured_communication",
+    "topic": "Architectural Decision Record",
+    "difficulty": "medium",
+    "question": "Structure an architectural decision record (ADR) explanation justifying why the team chose Kafka over RabbitMQ. (Scenario #011)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_012",
+    "category": "structured_communication",
+    "topic": "Customer-Facing Technical Communication",
+    "difficulty": "medium",
+    "question": "Explain what an API rate limiter does and why it is essential to customer success managers receiving complaints about 429 errors. (Scenario #012)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_013",
+    "category": "structured_communication",
+    "topic": "Cost & Infrastructure Communication",
+    "difficulty": "medium",
+    "question": "Deliver a structured response explaining the root cause of an unexpected 300% cloud infrastructure billing spike to engineering management. (Scenario #013)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_014",
+    "category": "structured_communication",
+    "topic": "Educational Framing",
+    "difficulty": "medium",
+    "question": "Explain the concept of database transactions and ACID guarantees to an intern in three memorable, structured concepts. (Scenario #014)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_015",
+    "category": "structured_communication",
+    "topic": "Engineering Culture & Philosophy",
+    "difficulty": "medium",
+    "question": "Summarize your engineering philosophy regarding code reviews, automated testing, and release quality in a concise 2-minute response. (Scenario #015)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_016",
+    "category": "structured_communication",
+    "topic": "Explaining to Non-Technical Stakeholders",
+    "difficulty": "medium",
+    "question": "Explain the concept of database indexing to a non-technical product manager in under 60 seconds without using technical jargon. (Scenario #016)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_017",
+    "category": "structured_communication",
+    "topic": "Executive Technical Pitch",
+    "difficulty": "medium",
+    "question": "Deliver a concise 90-second technical pitch to an engineering director proposing migrating from a monolithic API to microservices. (Scenario #017)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_018",
+    "category": "structured_communication",
+    "topic": "Incident Post-Mortem",
+    "difficulty": "medium",
+    "question": "Structure an incident post-mortem briefing for senior leadership using the Context -> Action -> Result (CAR) format for a 30-minute outage. (Scenario #018)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_019",
+    "category": "structured_communication",
+    "topic": "Technical Debt Negotiation",
+    "difficulty": "medium",
+    "question": "Explain the trade-offs of technical debt versus shipping a critical business feature to a business stakeholder demanding immediate delivery. (Scenario #019)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_020",
+    "category": "structured_communication",
+    "topic": "Mentoring & Explaining Concepts",
+    "difficulty": "medium",
+    "question": "Walk an entry-level junior engineer through how a distributed cache prevents database crashes, using clear analogies. (Scenario #020)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_021",
+    "category": "structured_communication",
+    "topic": "Security Explanation",
+    "difficulty": "medium",
+    "question": "Explain how HTTPS encrypts traffic and prevents eavesdropping to a compliance officer who has no engineering background. (Scenario #021)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_022",
+    "category": "structured_communication",
+    "topic": "Structured Concept Breakdown",
+    "difficulty": "medium",
+    "question": "Provide a structured, 3-part answer explaining how DNS resolution works when a user types a URL into their browser. (Scenario #022)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_023",
+    "category": "structured_communication",
+    "topic": "Executive Architectural Summary",
+    "difficulty": "medium",
+    "question": "Summarize the architectural differences between SQL and NoSQL databases in three precise, high-level points for a technical interview. (Scenario #023)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_024",
+    "category": "structured_communication",
+    "topic": "Architecture Synthesis",
+    "difficulty": "medium",
+    "question": "Explain how a circuit breaker pattern prevents cascading microservice failures in a crisp, 2-minute structured answer. (Scenario #024)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_025",
+    "category": "structured_communication",
+    "topic": "Crisis Communication",
+    "difficulty": "medium",
+    "question": "Explain to a cross-functional marketing team why an immediate feature rollback was necessary following an unexpected API bug. (Scenario #025)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_026",
+    "category": "structured_communication",
+    "topic": "Architectural Decision Record",
+    "difficulty": "medium",
+    "question": "Structure an architectural decision record (ADR) explanation justifying why the team chose Kafka over RabbitMQ. (Scenario #026)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_027",
+    "category": "structured_communication",
+    "topic": "Customer-Facing Technical Communication",
+    "difficulty": "medium",
+    "question": "Explain what an API rate limiter does and why it is essential to customer success managers receiving complaints about 429 errors. (Scenario #027)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_028",
+    "category": "structured_communication",
+    "topic": "Cost & Infrastructure Communication",
+    "difficulty": "medium",
+    "question": "Deliver a structured response explaining the root cause of an unexpected 300% cloud infrastructure billing spike to engineering management. (Scenario #028)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_029",
+    "category": "structured_communication",
+    "topic": "Educational Framing",
+    "difficulty": "medium",
+    "question": "Explain the concept of database transactions and ACID guarantees to an intern in three memorable, structured concepts. (Scenario #029)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_030",
+    "category": "structured_communication",
+    "topic": "Engineering Culture & Philosophy",
+    "difficulty": "medium",
+    "question": "Summarize your engineering philosophy regarding code reviews, automated testing, and release quality in a concise 2-minute response. (Scenario #030)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_031",
+    "category": "structured_communication",
+    "topic": "Explaining to Non-Technical Stakeholders",
+    "difficulty": "medium",
+    "question": "Explain the concept of database indexing to a non-technical product manager in under 60 seconds without using technical jargon. (Scenario #031)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_032",
+    "category": "structured_communication",
+    "topic": "Executive Technical Pitch",
+    "difficulty": "medium",
+    "question": "Deliver a concise 90-second technical pitch to an engineering director proposing migrating from a monolithic API to microservices. (Scenario #032)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_033",
+    "category": "structured_communication",
+    "topic": "Incident Post-Mortem",
+    "difficulty": "medium",
+    "question": "Structure an incident post-mortem briefing for senior leadership using the Context -> Action -> Result (CAR) format for a 30-minute outage. (Scenario #033)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_034",
+    "category": "structured_communication",
+    "topic": "Technical Debt Negotiation",
+    "difficulty": "medium",
+    "question": "Explain the trade-offs of technical debt versus shipping a critical business feature to a business stakeholder demanding immediate delivery. (Scenario #034)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_035",
+    "category": "structured_communication",
+    "topic": "Mentoring & Explaining Concepts",
+    "difficulty": "medium",
+    "question": "Walk an entry-level junior engineer through how a distributed cache prevents database crashes, using clear analogies. (Scenario #035)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_036",
+    "category": "structured_communication",
+    "topic": "Security Explanation",
+    "difficulty": "medium",
+    "question": "Explain how HTTPS encrypts traffic and prevents eavesdropping to a compliance officer who has no engineering background. (Scenario #036)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_037",
+    "category": "structured_communication",
+    "topic": "Structured Concept Breakdown",
+    "difficulty": "medium",
+    "question": "Provide a structured, 3-part answer explaining how DNS resolution works when a user types a URL into their browser. (Scenario #037)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_038",
+    "category": "structured_communication",
+    "topic": "Executive Architectural Summary",
+    "difficulty": "medium",
+    "question": "Summarize the architectural differences between SQL and NoSQL databases in three precise, high-level points for a technical interview. (Scenario #038)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_039",
+    "category": "structured_communication",
+    "topic": "Architecture Synthesis",
+    "difficulty": "medium",
+    "question": "Explain how a circuit breaker pattern prevents cascading microservice failures in a crisp, 2-minute structured answer. (Scenario #039)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_040",
+    "category": "structured_communication",
+    "topic": "Crisis Communication",
+    "difficulty": "medium",
+    "question": "Explain to a cross-functional marketing team why an immediate feature rollback was necessary following an unexpected API bug. (Scenario #040)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_041",
+    "category": "structured_communication",
+    "topic": "Architectural Decision Record",
+    "difficulty": "medium",
+    "question": "Structure an architectural decision record (ADR) explanation justifying why the team chose Kafka over RabbitMQ. (Scenario #041)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_042",
+    "category": "structured_communication",
+    "topic": "Customer-Facing Technical Communication",
+    "difficulty": "medium",
+    "question": "Explain what an API rate limiter does and why it is essential to customer success managers receiving complaints about 429 errors. (Scenario #042)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_043",
+    "category": "structured_communication",
+    "topic": "Cost & Infrastructure Communication",
+    "difficulty": "medium",
+    "question": "Deliver a structured response explaining the root cause of an unexpected 300% cloud infrastructure billing spike to engineering management. (Scenario #043)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_044",
+    "category": "structured_communication",
+    "topic": "Educational Framing",
+    "difficulty": "medium",
+    "question": "Explain the concept of database transactions and ACID guarantees to an intern in three memorable, structured concepts. (Scenario #044)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_045",
+    "category": "structured_communication",
+    "topic": "Engineering Culture & Philosophy",
+    "difficulty": "medium",
+    "question": "Summarize your engineering philosophy regarding code reviews, automated testing, and release quality in a concise 2-minute response. (Scenario #045)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_046",
+    "category": "structured_communication",
+    "topic": "Explaining to Non-Technical Stakeholders",
+    "difficulty": "medium",
+    "question": "Explain the concept of database indexing to a non-technical product manager in under 60 seconds without using technical jargon. (Scenario #046)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_047",
+    "category": "structured_communication",
+    "topic": "Executive Technical Pitch",
+    "difficulty": "medium",
+    "question": "Deliver a concise 90-second technical pitch to an engineering director proposing migrating from a monolithic API to microservices. (Scenario #047)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_048",
+    "category": "structured_communication",
+    "topic": "Incident Post-Mortem",
+    "difficulty": "medium",
+    "question": "Structure an incident post-mortem briefing for senior leadership using the Context -> Action -> Result (CAR) format for a 30-minute outage. (Scenario #048)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_049",
+    "category": "structured_communication",
+    "topic": "Technical Debt Negotiation",
+    "difficulty": "medium",
+    "question": "Explain the trade-offs of technical debt versus shipping a critical business feature to a business stakeholder demanding immediate delivery. (Scenario #049)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_050",
+    "category": "structured_communication",
+    "topic": "Mentoring & Explaining Concepts",
+    "difficulty": "medium",
+    "question": "Walk an entry-level junior engineer through how a distributed cache prevents database crashes, using clear analogies. (Scenario #050)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_051",
+    "category": "structured_communication",
+    "topic": "Security Explanation",
+    "difficulty": "medium",
+    "question": "Explain how HTTPS encrypts traffic and prevents eavesdropping to a compliance officer who has no engineering background. (Scenario #051)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_052",
+    "category": "structured_communication",
+    "topic": "Structured Concept Breakdown",
+    "difficulty": "medium",
+    "question": "Provide a structured, 3-part answer explaining how DNS resolution works when a user types a URL into their browser. (Scenario #052)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_053",
+    "category": "structured_communication",
+    "topic": "Executive Architectural Summary",
+    "difficulty": "medium",
+    "question": "Summarize the architectural differences between SQL and NoSQL databases in three precise, high-level points for a technical interview. (Scenario #053)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_054",
+    "category": "structured_communication",
+    "topic": "Architecture Synthesis",
+    "difficulty": "medium",
+    "question": "Explain how a circuit breaker pattern prevents cascading microservice failures in a crisp, 2-minute structured answer. (Scenario #054)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_055",
+    "category": "structured_communication",
+    "topic": "Crisis Communication",
+    "difficulty": "medium",
+    "question": "Explain to a cross-functional marketing team why an immediate feature rollback was necessary following an unexpected API bug. (Scenario #055)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_056",
+    "category": "structured_communication",
+    "topic": "Architectural Decision Record",
+    "difficulty": "medium",
+    "question": "Structure an architectural decision record (ADR) explanation justifying why the team chose Kafka over RabbitMQ. (Scenario #056)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_057",
+    "category": "structured_communication",
+    "topic": "Customer-Facing Technical Communication",
+    "difficulty": "medium",
+    "question": "Explain what an API rate limiter does and why it is essential to customer success managers receiving complaints about 429 errors. (Scenario #057)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_058",
+    "category": "structured_communication",
+    "topic": "Cost & Infrastructure Communication",
+    "difficulty": "medium",
+    "question": "Deliver a structured response explaining the root cause of an unexpected 300% cloud infrastructure billing spike to engineering management. (Scenario #058)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_059",
+    "category": "structured_communication",
+    "topic": "Educational Framing",
+    "difficulty": "medium",
+    "question": "Explain the concept of database transactions and ACID guarantees to an intern in three memorable, structured concepts. (Scenario #059)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_060",
+    "category": "structured_communication",
+    "topic": "Engineering Culture & Philosophy",
+    "difficulty": "medium",
+    "question": "Summarize your engineering philosophy regarding code reviews, automated testing, and release quality in a concise 2-minute response. (Scenario #060)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_061",
+    "category": "structured_communication",
+    "topic": "Explaining to Non-Technical Stakeholders",
+    "difficulty": "medium",
+    "question": "Explain the concept of database indexing to a non-technical product manager in under 60 seconds without using technical jargon. (Scenario #061)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_062",
+    "category": "structured_communication",
+    "topic": "Executive Technical Pitch",
+    "difficulty": "medium",
+    "question": "Deliver a concise 90-second technical pitch to an engineering director proposing migrating from a monolithic API to microservices. (Scenario #062)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_063",
+    "category": "structured_communication",
+    "topic": "Incident Post-Mortem",
+    "difficulty": "medium",
+    "question": "Structure an incident post-mortem briefing for senior leadership using the Context -> Action -> Result (CAR) format for a 30-minute outage. (Scenario #063)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_064",
+    "category": "structured_communication",
+    "topic": "Technical Debt Negotiation",
+    "difficulty": "medium",
+    "question": "Explain the trade-offs of technical debt versus shipping a critical business feature to a business stakeholder demanding immediate delivery. (Scenario #064)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_065",
+    "category": "structured_communication",
+    "topic": "Mentoring & Explaining Concepts",
+    "difficulty": "medium",
+    "question": "Walk an entry-level junior engineer through how a distributed cache prevents database crashes, using clear analogies. (Scenario #065)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_066",
+    "category": "structured_communication",
+    "topic": "Security Explanation",
+    "difficulty": "medium",
+    "question": "Explain how HTTPS encrypts traffic and prevents eavesdropping to a compliance officer who has no engineering background. (Scenario #066)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_067",
+    "category": "structured_communication",
+    "topic": "Structured Concept Breakdown",
+    "difficulty": "medium",
+    "question": "Provide a structured, 3-part answer explaining how DNS resolution works when a user types a URL into their browser. (Scenario #067)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_068",
+    "category": "structured_communication",
+    "topic": "Executive Architectural Summary",
+    "difficulty": "medium",
+    "question": "Summarize the architectural differences between SQL and NoSQL databases in three precise, high-level points for a technical interview. (Scenario #068)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_069",
+    "category": "structured_communication",
+    "topic": "Architecture Synthesis",
+    "difficulty": "medium",
+    "question": "Explain how a circuit breaker pattern prevents cascading microservice failures in a crisp, 2-minute structured answer. (Scenario #069)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_070",
+    "category": "structured_communication",
+    "topic": "Crisis Communication",
+    "difficulty": "medium",
+    "question": "Explain to a cross-functional marketing team why an immediate feature rollback was necessary following an unexpected API bug. (Scenario #070)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_071",
+    "category": "structured_communication",
+    "topic": "Architectural Decision Record",
+    "difficulty": "medium",
+    "question": "Structure an architectural decision record (ADR) explanation justifying why the team chose Kafka over RabbitMQ. (Scenario #071)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_072",
+    "category": "structured_communication",
+    "topic": "Customer-Facing Technical Communication",
+    "difficulty": "medium",
+    "question": "Explain what an API rate limiter does and why it is essential to customer success managers receiving complaints about 429 errors. (Scenario #072)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_073",
+    "category": "structured_communication",
+    "topic": "Cost & Infrastructure Communication",
+    "difficulty": "medium",
+    "question": "Deliver a structured response explaining the root cause of an unexpected 300% cloud infrastructure billing spike to engineering management. (Scenario #073)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_074",
+    "category": "structured_communication",
+    "topic": "Educational Framing",
+    "difficulty": "medium",
+    "question": "Explain the concept of database transactions and ACID guarantees to an intern in three memorable, structured concepts. (Scenario #074)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_075",
+    "category": "structured_communication",
+    "topic": "Engineering Culture & Philosophy",
+    "difficulty": "medium",
+    "question": "Summarize your engineering philosophy regarding code reviews, automated testing, and release quality in a concise 2-minute response. (Scenario #075)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_076",
+    "category": "structured_communication",
+    "topic": "Explaining to Non-Technical Stakeholders",
+    "difficulty": "medium",
+    "question": "Explain the concept of database indexing to a non-technical product manager in under 60 seconds without using technical jargon. (Scenario #076)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_077",
+    "category": "structured_communication",
+    "topic": "Executive Technical Pitch",
+    "difficulty": "medium",
+    "question": "Deliver a concise 90-second technical pitch to an engineering director proposing migrating from a monolithic API to microservices. (Scenario #077)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_078",
+    "category": "structured_communication",
+    "topic": "Incident Post-Mortem",
+    "difficulty": "medium",
+    "question": "Structure an incident post-mortem briefing for senior leadership using the Context -> Action -> Result (CAR) format for a 30-minute outage. (Scenario #078)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_079",
+    "category": "structured_communication",
+    "topic": "Technical Debt Negotiation",
+    "difficulty": "medium",
+    "question": "Explain the trade-offs of technical debt versus shipping a critical business feature to a business stakeholder demanding immediate delivery. (Scenario #079)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_080",
+    "category": "structured_communication",
+    "topic": "Mentoring & Explaining Concepts",
+    "difficulty": "medium",
+    "question": "Walk an entry-level junior engineer through how a distributed cache prevents database crashes, using clear analogies. (Scenario #080)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_081",
+    "category": "structured_communication",
+    "topic": "Security Explanation",
+    "difficulty": "medium",
+    "question": "Explain how HTTPS encrypts traffic and prevents eavesdropping to a compliance officer who has no engineering background. (Scenario #081)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_082",
+    "category": "structured_communication",
+    "topic": "Structured Concept Breakdown",
+    "difficulty": "medium",
+    "question": "Provide a structured, 3-part answer explaining how DNS resolution works when a user types a URL into their browser. (Scenario #082)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_083",
+    "category": "structured_communication",
+    "topic": "Executive Architectural Summary",
+    "difficulty": "medium",
+    "question": "Summarize the architectural differences between SQL and NoSQL databases in three precise, high-level points for a technical interview. (Scenario #083)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_084",
+    "category": "structured_communication",
+    "topic": "Architecture Synthesis",
+    "difficulty": "medium",
+    "question": "Explain how a circuit breaker pattern prevents cascading microservice failures in a crisp, 2-minute structured answer. (Scenario #084)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_085",
+    "category": "structured_communication",
+    "topic": "Crisis Communication",
+    "difficulty": "medium",
+    "question": "Explain to a cross-functional marketing team why an immediate feature rollback was necessary following an unexpected API bug. (Scenario #085)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_086",
+    "category": "structured_communication",
+    "topic": "Architectural Decision Record",
+    "difficulty": "medium",
+    "question": "Structure an architectural decision record (ADR) explanation justifying why the team chose Kafka over RabbitMQ. (Scenario #086)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_087",
+    "category": "structured_communication",
+    "topic": "Customer-Facing Technical Communication",
+    "difficulty": "medium",
+    "question": "Explain what an API rate limiter does and why it is essential to customer success managers receiving complaints about 429 errors. (Scenario #087)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_088",
+    "category": "structured_communication",
+    "topic": "Cost & Infrastructure Communication",
+    "difficulty": "medium",
+    "question": "Deliver a structured response explaining the root cause of an unexpected 300% cloud infrastructure billing spike to engineering management. (Scenario #088)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_089",
+    "category": "structured_communication",
+    "topic": "Educational Framing",
+    "difficulty": "medium",
+    "question": "Explain the concept of database transactions and ACID guarantees to an intern in three memorable, structured concepts. (Scenario #089)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_090",
+    "category": "structured_communication",
+    "topic": "Engineering Culture & Philosophy",
+    "difficulty": "medium",
+    "question": "Summarize your engineering philosophy regarding code reviews, automated testing, and release quality in a concise 2-minute response. (Scenario #090)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_091",
+    "category": "structured_communication",
+    "topic": "Explaining to Non-Technical Stakeholders",
+    "difficulty": "medium",
+    "question": "Explain the concept of database indexing to a non-technical product manager in under 60 seconds without using technical jargon. (Scenario #091)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_092",
+    "category": "structured_communication",
+    "topic": "Executive Technical Pitch",
+    "difficulty": "medium",
+    "question": "Deliver a concise 90-second technical pitch to an engineering director proposing migrating from a monolithic API to microservices. (Scenario #092)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_093",
+    "category": "structured_communication",
+    "topic": "Incident Post-Mortem",
+    "difficulty": "medium",
+    "question": "Structure an incident post-mortem briefing for senior leadership using the Context -> Action -> Result (CAR) format for a 30-minute outage. (Scenario #093)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_094",
+    "category": "structured_communication",
+    "topic": "Technical Debt Negotiation",
+    "difficulty": "medium",
+    "question": "Explain the trade-offs of technical debt versus shipping a critical business feature to a business stakeholder demanding immediate delivery. (Scenario #094)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_095",
+    "category": "structured_communication",
+    "topic": "Mentoring & Explaining Concepts",
+    "difficulty": "medium",
+    "question": "Walk an entry-level junior engineer through how a distributed cache prevents database crashes, using clear analogies. (Scenario #095)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_096",
+    "category": "structured_communication",
+    "topic": "Security Explanation",
+    "difficulty": "medium",
+    "question": "Explain how HTTPS encrypts traffic and prevents eavesdropping to a compliance officer who has no engineering background. (Scenario #096)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_097",
+    "category": "structured_communication",
+    "topic": "Structured Concept Breakdown",
+    "difficulty": "medium",
+    "question": "Provide a structured, 3-part answer explaining how DNS resolution works when a user types a URL into their browser. (Scenario #097)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_098",
+    "category": "structured_communication",
+    "topic": "Executive Architectural Summary",
+    "difficulty": "medium",
+    "question": "Summarize the architectural differences between SQL and NoSQL databases in three precise, high-level points for a technical interview. (Scenario #098)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_099",
+    "category": "structured_communication",
+    "topic": "Architecture Synthesis",
+    "difficulty": "medium",
+    "question": "Explain how a circuit breaker pattern prevents cascading microservice failures in a crisp, 2-minute structured answer. (Scenario #099)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_100",
+    "category": "structured_communication",
+    "topic": "Crisis Communication",
+    "difficulty": "medium",
+    "question": "Explain to a cross-functional marketing team why an immediate feature rollback was necessary following an unexpected API bug. (Scenario #100)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_101",
+    "category": "structured_communication",
+    "topic": "Architectural Decision Record",
+    "difficulty": "medium",
+    "question": "Structure an architectural decision record (ADR) explanation justifying why the team chose Kafka over RabbitMQ. (Scenario #101)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_102",
+    "category": "structured_communication",
+    "topic": "Customer-Facing Technical Communication",
+    "difficulty": "medium",
+    "question": "Explain what an API rate limiter does and why it is essential to customer success managers receiving complaints about 429 errors. (Scenario #102)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_103",
+    "category": "structured_communication",
+    "topic": "Cost & Infrastructure Communication",
+    "difficulty": "medium",
+    "question": "Deliver a structured response explaining the root cause of an unexpected 300% cloud infrastructure billing spike to engineering management. (Scenario #103)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_104",
+    "category": "structured_communication",
+    "topic": "Educational Framing",
+    "difficulty": "medium",
+    "question": "Explain the concept of database transactions and ACID guarantees to an intern in three memorable, structured concepts. (Scenario #104)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  },
+  {
+    "id": "SC_105",
+    "category": "structured_communication",
+    "topic": "Engineering Culture & Philosophy",
+    "difficulty": "medium",
+    "question": "Summarize your engineering philosophy regarding code reviews, automated testing, and release quality in a concise 2-minute response. (Scenario #105)",
+    "question_type": "communication",
+    "skills": [
+      "communication",
+      "clarity",
+      "structure",
+      "stakeholder-management"
+    ],
+    "expected_evidence": [
+      "Clear overarching structure (e.g. 3 key points, CAR, or top-down executive summary)",
+      "Appropriate vocabulary tailored to the specific target audience without condescension",
+      "Concise delivery eliminating filler words, rambling, and irrelevant rabbit holes",
+      "Compelling closing summary tying back to business or technical outcomes"
+    ],
+    "follow_up_topics": [
+      "Handling stakeholder pushback",
+      "Follow-up clarification"
+    ]
+  }
+]

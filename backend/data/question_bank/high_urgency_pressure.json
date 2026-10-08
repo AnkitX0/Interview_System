@@ -1,0 +1,2522 @@
+[
+  {
+    "id": "HP_001",
+    "category": "high_urgency_pressure",
+    "topic": "Primary Database Disk Full",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: It's Black Friday. Your primary PostgreSQL database hits 100% disk utilization, and all write queries are failing with disk full errors. Walk through your immediate first 5 minutes of incident triage. (Scenario #001)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_002",
+    "category": "high_urgency_pressure",
+    "topic": "Latency Spike & Error Wave",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Production API p99 latency suddenly spikes from 80ms to 14,000ms, and your error rate jumps to 38%. The homepage is down. How do you isolate whether the root cause is DB, network, or application code? (Scenario #002)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_003",
+    "category": "high_urgency_pressure",
+    "topic": "Cache Crash & Thundering Herd",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your distributed Redis cache cluster crashes simultaneously. The resulting thundering herd causes your backend database connection pool to exhaust immediately. How do you recover? (Scenario #003)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_004",
+    "category": "high_urgency_pressure",
+    "topic": "Credential Leak Containment",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A security researcher discovers that production database credentials and AWS secret keys were committed to a public Git repository 2 hours ago. Walk through your emergency containment protocol. (Scenario #004)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_005",
+    "category": "high_urgency_pressure",
+    "topic": "Financial Data Inconsistency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Following a release 15 minutes ago, users report that money transfers are completing but balances are not deducting. The bug is ongoing. Do you rollback, hotfix, or pause services? Justify your decision. (Scenario #005)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_006",
+    "category": "high_urgency_pressure",
+    "topic": "Cascading Pod OOM Crashes",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your Kubernetes worker nodes are experiencing sequential OOM-Kills every 3 minutes across all service pods due to an unprofiled memory leak. How do you stabilize traffic right now? (Scenario #006)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_007",
+    "category": "high_urgency_pressure",
+    "topic": "Replication Desync Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A distributed replication pipeline desynchronizes: your read-replicas are returning stale data from 4 hours ago while primary accepts new writes. Customer read queries are failing. What do you do? (Scenario #007)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_008",
+    "category": "high_urgency_pressure",
+    "topic": "Third-Party Payment Degradation",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your third-party payment processing gateway starts returning HTTP 500 errors on 70% of transactions. Customers are repeatedly clicking submit and being charged multiple times. How do you mitigate? (Scenario #008)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_009",
+    "category": "high_urgency_pressure",
+    "topic": "Zero-Day Vulnerability Emergency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A critical zero-day remote code execution vulnerability (CVSS 10.0) is published for a library used in 40 of your microservices. How do you coordinate prioritization and immediate remediation under pressure? (Scenario #009)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_010",
+    "category": "high_urgency_pressure",
+    "topic": "Active-Active Split-Brain Crisis",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A network partition cuts off communication between your two primary data centers in an active-active deployment. Split-brain writes are suspected. What is your emergency decision? (Scenario #010)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_011",
+    "category": "high_urgency_pressure",
+    "topic": "Message Queue Backpressure Meltdown",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your background asynchronous message queue lag jumps from 500 messages to 4,500,000 messages in 20 minutes, exhausting broker disk. Workers are crashing on poison pill messages. How do you triage? (Scenario #011)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_012",
+    "category": "high_urgency_pressure",
+    "topic": "DNS Failure During Launch",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: During a major live product launch, DNS resolution for your primary API domain begins intermittently failing globally due to an authoritative nameserver DDoS attack. What immediate mitigation steps do you take? (Scenario #012)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_013",
+    "category": "high_urgency_pressure",
+    "topic": "Accidental Data Deletion Emergency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: An automated batch data cleanup script mistakenly executed `DROP TABLE` on a production customer table instead of staging. Point-in-time recovery will take 45 minutes. How do you handle incident communication and recovery? (Scenario #013)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_014",
+    "category": "high_urgency_pressure",
+    "topic": "Expired mTLS Certificate Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your service mesh proxies begin dropping 50% of mutual TLS (mTLS) traffic between microservices due to an unhandled root certificate expiration at midnight. How do you restore service communication? (Scenario #014)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_015",
+    "category": "high_urgency_pressure",
+    "topic": "Cloud Infrastructure Zone Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your cloud provider reports a major zone-wide compute outage affecting 60% of your production instances. Auto-scaling is failing due to cloud capacity exhaustion. How do you keep the core product alive? (Scenario #015)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_016",
+    "category": "high_urgency_pressure",
+    "topic": "Primary Database Disk Full",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: It's Black Friday. Your primary PostgreSQL database hits 100% disk utilization, and all write queries are failing with disk full errors. Walk through your immediate first 5 minutes of incident triage. (Scenario #016)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_017",
+    "category": "high_urgency_pressure",
+    "topic": "Latency Spike & Error Wave",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Production API p99 latency suddenly spikes from 80ms to 14,000ms, and your error rate jumps to 38%. The homepage is down. How do you isolate whether the root cause is DB, network, or application code? (Scenario #017)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_018",
+    "category": "high_urgency_pressure",
+    "topic": "Cache Crash & Thundering Herd",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your distributed Redis cache cluster crashes simultaneously. The resulting thundering herd causes your backend database connection pool to exhaust immediately. How do you recover? (Scenario #018)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_019",
+    "category": "high_urgency_pressure",
+    "topic": "Credential Leak Containment",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A security researcher discovers that production database credentials and AWS secret keys were committed to a public Git repository 2 hours ago. Walk through your emergency containment protocol. (Scenario #019)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_020",
+    "category": "high_urgency_pressure",
+    "topic": "Financial Data Inconsistency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Following a release 15 minutes ago, users report that money transfers are completing but balances are not deducting. The bug is ongoing. Do you rollback, hotfix, or pause services? Justify your decision. (Scenario #020)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_021",
+    "category": "high_urgency_pressure",
+    "topic": "Cascading Pod OOM Crashes",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your Kubernetes worker nodes are experiencing sequential OOM-Kills every 3 minutes across all service pods due to an unprofiled memory leak. How do you stabilize traffic right now? (Scenario #021)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_022",
+    "category": "high_urgency_pressure",
+    "topic": "Replication Desync Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A distributed replication pipeline desynchronizes: your read-replicas are returning stale data from 4 hours ago while primary accepts new writes. Customer read queries are failing. What do you do? (Scenario #022)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_023",
+    "category": "high_urgency_pressure",
+    "topic": "Third-Party Payment Degradation",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your third-party payment processing gateway starts returning HTTP 500 errors on 70% of transactions. Customers are repeatedly clicking submit and being charged multiple times. How do you mitigate? (Scenario #023)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_024",
+    "category": "high_urgency_pressure",
+    "topic": "Zero-Day Vulnerability Emergency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A critical zero-day remote code execution vulnerability (CVSS 10.0) is published for a library used in 40 of your microservices. How do you coordinate prioritization and immediate remediation under pressure? (Scenario #024)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_025",
+    "category": "high_urgency_pressure",
+    "topic": "Active-Active Split-Brain Crisis",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A network partition cuts off communication between your two primary data centers in an active-active deployment. Split-brain writes are suspected. What is your emergency decision? (Scenario #025)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_026",
+    "category": "high_urgency_pressure",
+    "topic": "Message Queue Backpressure Meltdown",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your background asynchronous message queue lag jumps from 500 messages to 4,500,000 messages in 20 minutes, exhausting broker disk. Workers are crashing on poison pill messages. How do you triage? (Scenario #026)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_027",
+    "category": "high_urgency_pressure",
+    "topic": "DNS Failure During Launch",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: During a major live product launch, DNS resolution for your primary API domain begins intermittently failing globally due to an authoritative nameserver DDoS attack. What immediate mitigation steps do you take? (Scenario #027)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_028",
+    "category": "high_urgency_pressure",
+    "topic": "Accidental Data Deletion Emergency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: An automated batch data cleanup script mistakenly executed `DROP TABLE` on a production customer table instead of staging. Point-in-time recovery will take 45 minutes. How do you handle incident communication and recovery? (Scenario #028)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_029",
+    "category": "high_urgency_pressure",
+    "topic": "Expired mTLS Certificate Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your service mesh proxies begin dropping 50% of mutual TLS (mTLS) traffic between microservices due to an unhandled root certificate expiration at midnight. How do you restore service communication? (Scenario #029)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_030",
+    "category": "high_urgency_pressure",
+    "topic": "Cloud Infrastructure Zone Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your cloud provider reports a major zone-wide compute outage affecting 60% of your production instances. Auto-scaling is failing due to cloud capacity exhaustion. How do you keep the core product alive? (Scenario #030)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_031",
+    "category": "high_urgency_pressure",
+    "topic": "Primary Database Disk Full",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: It's Black Friday. Your primary PostgreSQL database hits 100% disk utilization, and all write queries are failing with disk full errors. Walk through your immediate first 5 minutes of incident triage. (Scenario #031)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_032",
+    "category": "high_urgency_pressure",
+    "topic": "Latency Spike & Error Wave",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Production API p99 latency suddenly spikes from 80ms to 14,000ms, and your error rate jumps to 38%. The homepage is down. How do you isolate whether the root cause is DB, network, or application code? (Scenario #032)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_033",
+    "category": "high_urgency_pressure",
+    "topic": "Cache Crash & Thundering Herd",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your distributed Redis cache cluster crashes simultaneously. The resulting thundering herd causes your backend database connection pool to exhaust immediately. How do you recover? (Scenario #033)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_034",
+    "category": "high_urgency_pressure",
+    "topic": "Credential Leak Containment",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A security researcher discovers that production database credentials and AWS secret keys were committed to a public Git repository 2 hours ago. Walk through your emergency containment protocol. (Scenario #034)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_035",
+    "category": "high_urgency_pressure",
+    "topic": "Financial Data Inconsistency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Following a release 15 minutes ago, users report that money transfers are completing but balances are not deducting. The bug is ongoing. Do you rollback, hotfix, or pause services? Justify your decision. (Scenario #035)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_036",
+    "category": "high_urgency_pressure",
+    "topic": "Cascading Pod OOM Crashes",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your Kubernetes worker nodes are experiencing sequential OOM-Kills every 3 minutes across all service pods due to an unprofiled memory leak. How do you stabilize traffic right now? (Scenario #036)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_037",
+    "category": "high_urgency_pressure",
+    "topic": "Replication Desync Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A distributed replication pipeline desynchronizes: your read-replicas are returning stale data from 4 hours ago while primary accepts new writes. Customer read queries are failing. What do you do? (Scenario #037)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_038",
+    "category": "high_urgency_pressure",
+    "topic": "Third-Party Payment Degradation",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your third-party payment processing gateway starts returning HTTP 500 errors on 70% of transactions. Customers are repeatedly clicking submit and being charged multiple times. How do you mitigate? (Scenario #038)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_039",
+    "category": "high_urgency_pressure",
+    "topic": "Zero-Day Vulnerability Emergency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A critical zero-day remote code execution vulnerability (CVSS 10.0) is published for a library used in 40 of your microservices. How do you coordinate prioritization and immediate remediation under pressure? (Scenario #039)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_040",
+    "category": "high_urgency_pressure",
+    "topic": "Active-Active Split-Brain Crisis",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A network partition cuts off communication between your two primary data centers in an active-active deployment. Split-brain writes are suspected. What is your emergency decision? (Scenario #040)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_041",
+    "category": "high_urgency_pressure",
+    "topic": "Message Queue Backpressure Meltdown",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your background asynchronous message queue lag jumps from 500 messages to 4,500,000 messages in 20 minutes, exhausting broker disk. Workers are crashing on poison pill messages. How do you triage? (Scenario #041)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_042",
+    "category": "high_urgency_pressure",
+    "topic": "DNS Failure During Launch",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: During a major live product launch, DNS resolution for your primary API domain begins intermittently failing globally due to an authoritative nameserver DDoS attack. What immediate mitigation steps do you take? (Scenario #042)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_043",
+    "category": "high_urgency_pressure",
+    "topic": "Accidental Data Deletion Emergency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: An automated batch data cleanup script mistakenly executed `DROP TABLE` on a production customer table instead of staging. Point-in-time recovery will take 45 minutes. How do you handle incident communication and recovery? (Scenario #043)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_044",
+    "category": "high_urgency_pressure",
+    "topic": "Expired mTLS Certificate Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your service mesh proxies begin dropping 50% of mutual TLS (mTLS) traffic between microservices due to an unhandled root certificate expiration at midnight. How do you restore service communication? (Scenario #044)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_045",
+    "category": "high_urgency_pressure",
+    "topic": "Cloud Infrastructure Zone Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your cloud provider reports a major zone-wide compute outage affecting 60% of your production instances. Auto-scaling is failing due to cloud capacity exhaustion. How do you keep the core product alive? (Scenario #045)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_046",
+    "category": "high_urgency_pressure",
+    "topic": "Primary Database Disk Full",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: It's Black Friday. Your primary PostgreSQL database hits 100% disk utilization, and all write queries are failing with disk full errors. Walk through your immediate first 5 minutes of incident triage. (Scenario #046)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_047",
+    "category": "high_urgency_pressure",
+    "topic": "Latency Spike & Error Wave",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Production API p99 latency suddenly spikes from 80ms to 14,000ms, and your error rate jumps to 38%. The homepage is down. How do you isolate whether the root cause is DB, network, or application code? (Scenario #047)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_048",
+    "category": "high_urgency_pressure",
+    "topic": "Cache Crash & Thundering Herd",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your distributed Redis cache cluster crashes simultaneously. The resulting thundering herd causes your backend database connection pool to exhaust immediately. How do you recover? (Scenario #048)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_049",
+    "category": "high_urgency_pressure",
+    "topic": "Credential Leak Containment",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A security researcher discovers that production database credentials and AWS secret keys were committed to a public Git repository 2 hours ago. Walk through your emergency containment protocol. (Scenario #049)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_050",
+    "category": "high_urgency_pressure",
+    "topic": "Financial Data Inconsistency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Following a release 15 minutes ago, users report that money transfers are completing but balances are not deducting. The bug is ongoing. Do you rollback, hotfix, or pause services? Justify your decision. (Scenario #050)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_051",
+    "category": "high_urgency_pressure",
+    "topic": "Cascading Pod OOM Crashes",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your Kubernetes worker nodes are experiencing sequential OOM-Kills every 3 minutes across all service pods due to an unprofiled memory leak. How do you stabilize traffic right now? (Scenario #051)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_052",
+    "category": "high_urgency_pressure",
+    "topic": "Replication Desync Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A distributed replication pipeline desynchronizes: your read-replicas are returning stale data from 4 hours ago while primary accepts new writes. Customer read queries are failing. What do you do? (Scenario #052)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_053",
+    "category": "high_urgency_pressure",
+    "topic": "Third-Party Payment Degradation",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your third-party payment processing gateway starts returning HTTP 500 errors on 70% of transactions. Customers are repeatedly clicking submit and being charged multiple times. How do you mitigate? (Scenario #053)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_054",
+    "category": "high_urgency_pressure",
+    "topic": "Zero-Day Vulnerability Emergency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A critical zero-day remote code execution vulnerability (CVSS 10.0) is published for a library used in 40 of your microservices. How do you coordinate prioritization and immediate remediation under pressure? (Scenario #054)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_055",
+    "category": "high_urgency_pressure",
+    "topic": "Active-Active Split-Brain Crisis",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A network partition cuts off communication between your two primary data centers in an active-active deployment. Split-brain writes are suspected. What is your emergency decision? (Scenario #055)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_056",
+    "category": "high_urgency_pressure",
+    "topic": "Message Queue Backpressure Meltdown",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your background asynchronous message queue lag jumps from 500 messages to 4,500,000 messages in 20 minutes, exhausting broker disk. Workers are crashing on poison pill messages. How do you triage? (Scenario #056)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_057",
+    "category": "high_urgency_pressure",
+    "topic": "DNS Failure During Launch",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: During a major live product launch, DNS resolution for your primary API domain begins intermittently failing globally due to an authoritative nameserver DDoS attack. What immediate mitigation steps do you take? (Scenario #057)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_058",
+    "category": "high_urgency_pressure",
+    "topic": "Accidental Data Deletion Emergency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: An automated batch data cleanup script mistakenly executed `DROP TABLE` on a production customer table instead of staging. Point-in-time recovery will take 45 minutes. How do you handle incident communication and recovery? (Scenario #058)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_059",
+    "category": "high_urgency_pressure",
+    "topic": "Expired mTLS Certificate Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your service mesh proxies begin dropping 50% of mutual TLS (mTLS) traffic between microservices due to an unhandled root certificate expiration at midnight. How do you restore service communication? (Scenario #059)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_060",
+    "category": "high_urgency_pressure",
+    "topic": "Cloud Infrastructure Zone Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your cloud provider reports a major zone-wide compute outage affecting 60% of your production instances. Auto-scaling is failing due to cloud capacity exhaustion. How do you keep the core product alive? (Scenario #060)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_061",
+    "category": "high_urgency_pressure",
+    "topic": "Primary Database Disk Full",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: It's Black Friday. Your primary PostgreSQL database hits 100% disk utilization, and all write queries are failing with disk full errors. Walk through your immediate first 5 minutes of incident triage. (Scenario #061)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_062",
+    "category": "high_urgency_pressure",
+    "topic": "Latency Spike & Error Wave",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Production API p99 latency suddenly spikes from 80ms to 14,000ms, and your error rate jumps to 38%. The homepage is down. How do you isolate whether the root cause is DB, network, or application code? (Scenario #062)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_063",
+    "category": "high_urgency_pressure",
+    "topic": "Cache Crash & Thundering Herd",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your distributed Redis cache cluster crashes simultaneously. The resulting thundering herd causes your backend database connection pool to exhaust immediately. How do you recover? (Scenario #063)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_064",
+    "category": "high_urgency_pressure",
+    "topic": "Credential Leak Containment",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A security researcher discovers that production database credentials and AWS secret keys were committed to a public Git repository 2 hours ago. Walk through your emergency containment protocol. (Scenario #064)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_065",
+    "category": "high_urgency_pressure",
+    "topic": "Financial Data Inconsistency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Following a release 15 minutes ago, users report that money transfers are completing but balances are not deducting. The bug is ongoing. Do you rollback, hotfix, or pause services? Justify your decision. (Scenario #065)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_066",
+    "category": "high_urgency_pressure",
+    "topic": "Cascading Pod OOM Crashes",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your Kubernetes worker nodes are experiencing sequential OOM-Kills every 3 minutes across all service pods due to an unprofiled memory leak. How do you stabilize traffic right now? (Scenario #066)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_067",
+    "category": "high_urgency_pressure",
+    "topic": "Replication Desync Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A distributed replication pipeline desynchronizes: your read-replicas are returning stale data from 4 hours ago while primary accepts new writes. Customer read queries are failing. What do you do? (Scenario #067)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_068",
+    "category": "high_urgency_pressure",
+    "topic": "Third-Party Payment Degradation",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your third-party payment processing gateway starts returning HTTP 500 errors on 70% of transactions. Customers are repeatedly clicking submit and being charged multiple times. How do you mitigate? (Scenario #068)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_069",
+    "category": "high_urgency_pressure",
+    "topic": "Zero-Day Vulnerability Emergency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A critical zero-day remote code execution vulnerability (CVSS 10.0) is published for a library used in 40 of your microservices. How do you coordinate prioritization and immediate remediation under pressure? (Scenario #069)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_070",
+    "category": "high_urgency_pressure",
+    "topic": "Active-Active Split-Brain Crisis",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A network partition cuts off communication between your two primary data centers in an active-active deployment. Split-brain writes are suspected. What is your emergency decision? (Scenario #070)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_071",
+    "category": "high_urgency_pressure",
+    "topic": "Message Queue Backpressure Meltdown",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your background asynchronous message queue lag jumps from 500 messages to 4,500,000 messages in 20 minutes, exhausting broker disk. Workers are crashing on poison pill messages. How do you triage? (Scenario #071)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_072",
+    "category": "high_urgency_pressure",
+    "topic": "DNS Failure During Launch",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: During a major live product launch, DNS resolution for your primary API domain begins intermittently failing globally due to an authoritative nameserver DDoS attack. What immediate mitigation steps do you take? (Scenario #072)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_073",
+    "category": "high_urgency_pressure",
+    "topic": "Accidental Data Deletion Emergency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: An automated batch data cleanup script mistakenly executed `DROP TABLE` on a production customer table instead of staging. Point-in-time recovery will take 45 minutes. How do you handle incident communication and recovery? (Scenario #073)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_074",
+    "category": "high_urgency_pressure",
+    "topic": "Expired mTLS Certificate Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your service mesh proxies begin dropping 50% of mutual TLS (mTLS) traffic between microservices due to an unhandled root certificate expiration at midnight. How do you restore service communication? (Scenario #074)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_075",
+    "category": "high_urgency_pressure",
+    "topic": "Cloud Infrastructure Zone Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your cloud provider reports a major zone-wide compute outage affecting 60% of your production instances. Auto-scaling is failing due to cloud capacity exhaustion. How do you keep the core product alive? (Scenario #075)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_076",
+    "category": "high_urgency_pressure",
+    "topic": "Primary Database Disk Full",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: It's Black Friday. Your primary PostgreSQL database hits 100% disk utilization, and all write queries are failing with disk full errors. Walk through your immediate first 5 minutes of incident triage. (Scenario #076)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_077",
+    "category": "high_urgency_pressure",
+    "topic": "Latency Spike & Error Wave",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Production API p99 latency suddenly spikes from 80ms to 14,000ms, and your error rate jumps to 38%. The homepage is down. How do you isolate whether the root cause is DB, network, or application code? (Scenario #077)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_078",
+    "category": "high_urgency_pressure",
+    "topic": "Cache Crash & Thundering Herd",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your distributed Redis cache cluster crashes simultaneously. The resulting thundering herd causes your backend database connection pool to exhaust immediately. How do you recover? (Scenario #078)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_079",
+    "category": "high_urgency_pressure",
+    "topic": "Credential Leak Containment",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A security researcher discovers that production database credentials and AWS secret keys were committed to a public Git repository 2 hours ago. Walk through your emergency containment protocol. (Scenario #079)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_080",
+    "category": "high_urgency_pressure",
+    "topic": "Financial Data Inconsistency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Following a release 15 minutes ago, users report that money transfers are completing but balances are not deducting. The bug is ongoing. Do you rollback, hotfix, or pause services? Justify your decision. (Scenario #080)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_081",
+    "category": "high_urgency_pressure",
+    "topic": "Cascading Pod OOM Crashes",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your Kubernetes worker nodes are experiencing sequential OOM-Kills every 3 minutes across all service pods due to an unprofiled memory leak. How do you stabilize traffic right now? (Scenario #081)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_082",
+    "category": "high_urgency_pressure",
+    "topic": "Replication Desync Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A distributed replication pipeline desynchronizes: your read-replicas are returning stale data from 4 hours ago while primary accepts new writes. Customer read queries are failing. What do you do? (Scenario #082)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_083",
+    "category": "high_urgency_pressure",
+    "topic": "Third-Party Payment Degradation",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your third-party payment processing gateway starts returning HTTP 500 errors on 70% of transactions. Customers are repeatedly clicking submit and being charged multiple times. How do you mitigate? (Scenario #083)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_084",
+    "category": "high_urgency_pressure",
+    "topic": "Zero-Day Vulnerability Emergency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A critical zero-day remote code execution vulnerability (CVSS 10.0) is published for a library used in 40 of your microservices. How do you coordinate prioritization and immediate remediation under pressure? (Scenario #084)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_085",
+    "category": "high_urgency_pressure",
+    "topic": "Active-Active Split-Brain Crisis",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A network partition cuts off communication between your two primary data centers in an active-active deployment. Split-brain writes are suspected. What is your emergency decision? (Scenario #085)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_086",
+    "category": "high_urgency_pressure",
+    "topic": "Message Queue Backpressure Meltdown",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your background asynchronous message queue lag jumps from 500 messages to 4,500,000 messages in 20 minutes, exhausting broker disk. Workers are crashing on poison pill messages. How do you triage? (Scenario #086)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_087",
+    "category": "high_urgency_pressure",
+    "topic": "DNS Failure During Launch",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: During a major live product launch, DNS resolution for your primary API domain begins intermittently failing globally due to an authoritative nameserver DDoS attack. What immediate mitigation steps do you take? (Scenario #087)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_088",
+    "category": "high_urgency_pressure",
+    "topic": "Accidental Data Deletion Emergency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: An automated batch data cleanup script mistakenly executed `DROP TABLE` on a production customer table instead of staging. Point-in-time recovery will take 45 minutes. How do you handle incident communication and recovery? (Scenario #088)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_089",
+    "category": "high_urgency_pressure",
+    "topic": "Expired mTLS Certificate Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your service mesh proxies begin dropping 50% of mutual TLS (mTLS) traffic between microservices due to an unhandled root certificate expiration at midnight. How do you restore service communication? (Scenario #089)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_090",
+    "category": "high_urgency_pressure",
+    "topic": "Cloud Infrastructure Zone Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your cloud provider reports a major zone-wide compute outage affecting 60% of your production instances. Auto-scaling is failing due to cloud capacity exhaustion. How do you keep the core product alive? (Scenario #090)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_091",
+    "category": "high_urgency_pressure",
+    "topic": "Primary Database Disk Full",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: It's Black Friday. Your primary PostgreSQL database hits 100% disk utilization, and all write queries are failing with disk full errors. Walk through your immediate first 5 minutes of incident triage. (Scenario #091)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_092",
+    "category": "high_urgency_pressure",
+    "topic": "Latency Spike & Error Wave",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Production API p99 latency suddenly spikes from 80ms to 14,000ms, and your error rate jumps to 38%. The homepage is down. How do you isolate whether the root cause is DB, network, or application code? (Scenario #092)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_093",
+    "category": "high_urgency_pressure",
+    "topic": "Cache Crash & Thundering Herd",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your distributed Redis cache cluster crashes simultaneously. The resulting thundering herd causes your backend database connection pool to exhaust immediately. How do you recover? (Scenario #093)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_094",
+    "category": "high_urgency_pressure",
+    "topic": "Credential Leak Containment",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A security researcher discovers that production database credentials and AWS secret keys were committed to a public Git repository 2 hours ago. Walk through your emergency containment protocol. (Scenario #094)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_095",
+    "category": "high_urgency_pressure",
+    "topic": "Financial Data Inconsistency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Following a release 15 minutes ago, users report that money transfers are completing but balances are not deducting. The bug is ongoing. Do you rollback, hotfix, or pause services? Justify your decision. (Scenario #095)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_096",
+    "category": "high_urgency_pressure",
+    "topic": "Cascading Pod OOM Crashes",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your Kubernetes worker nodes are experiencing sequential OOM-Kills every 3 minutes across all service pods due to an unprofiled memory leak. How do you stabilize traffic right now? (Scenario #096)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_097",
+    "category": "high_urgency_pressure",
+    "topic": "Replication Desync Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A distributed replication pipeline desynchronizes: your read-replicas are returning stale data from 4 hours ago while primary accepts new writes. Customer read queries are failing. What do you do? (Scenario #097)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_098",
+    "category": "high_urgency_pressure",
+    "topic": "Third-Party Payment Degradation",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your third-party payment processing gateway starts returning HTTP 500 errors on 70% of transactions. Customers are repeatedly clicking submit and being charged multiple times. How do you mitigate? (Scenario #098)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_099",
+    "category": "high_urgency_pressure",
+    "topic": "Zero-Day Vulnerability Emergency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A critical zero-day remote code execution vulnerability (CVSS 10.0) is published for a library used in 40 of your microservices. How do you coordinate prioritization and immediate remediation under pressure? (Scenario #099)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_100",
+    "category": "high_urgency_pressure",
+    "topic": "Active-Active Split-Brain Crisis",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: A network partition cuts off communication between your two primary data centers in an active-active deployment. Split-brain writes are suspected. What is your emergency decision? (Scenario #100)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_101",
+    "category": "high_urgency_pressure",
+    "topic": "Message Queue Backpressure Meltdown",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your background asynchronous message queue lag jumps from 500 messages to 4,500,000 messages in 20 minutes, exhausting broker disk. Workers are crashing on poison pill messages. How do you triage? (Scenario #101)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_102",
+    "category": "high_urgency_pressure",
+    "topic": "DNS Failure During Launch",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: During a major live product launch, DNS resolution for your primary API domain begins intermittently failing globally due to an authoritative nameserver DDoS attack. What immediate mitigation steps do you take? (Scenario #102)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_103",
+    "category": "high_urgency_pressure",
+    "topic": "Accidental Data Deletion Emergency",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: An automated batch data cleanup script mistakenly executed `DROP TABLE` on a production customer table instead of staging. Point-in-time recovery will take 45 minutes. How do you handle incident communication and recovery? (Scenario #103)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_104",
+    "category": "high_urgency_pressure",
+    "topic": "Expired mTLS Certificate Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your service mesh proxies begin dropping 50% of mutual TLS (mTLS) traffic between microservices due to an unhandled root certificate expiration at midnight. How do you restore service communication? (Scenario #104)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  },
+  {
+    "id": "HP_105",
+    "category": "high_urgency_pressure",
+    "topic": "Cloud Infrastructure Zone Outage",
+    "difficulty": "hard",
+    "question": "EMERGENCY INCIDENT: Your cloud provider reports a major zone-wide compute outage affecting 60% of your production instances. Auto-scaling is failing due to cloud capacity exhaustion. How do you keep the core product alive? (Scenario #105)",
+    "question_type": "scenario",
+    "skills": [
+      "incident-response",
+      "troubleshooting",
+      "systems-under-pressure",
+      "prioritization"
+    ],
+    "expected_evidence": [
+      "Immediate containment and stop-the-bleeding mitigation prior to deep root cause analysis",
+      "Clear diagnostic methodology isolating network, compute, database, and third-party dependencies",
+      "Safe remediation steps avoiding actions that could worsen production data loss",
+      "Incident command communication, stakeholder updates, and post-stabilization prevention"
+    ],
+    "follow_up_topics": [
+      "Post-incident prevention",
+      "Secondary failure risks"
+    ]
+  }
+]

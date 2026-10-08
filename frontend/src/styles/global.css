@@ -31,16 +31,17 @@ body {
   outline-offset: 2px;
 }
 
-/* Headings */
+/* Headings - Vintage Editorial Hierarchy */
 h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-serif);
   color: var(--text-primary);
   font-weight: var(--font-semibold);
   line-height: var(--line-tight);
 }
 
-h1 { font-size: var(--text-3xl); letter-spacing: -0.02em; }
-h2 { font-size: var(--text-2xl); letter-spacing: -0.015em; }
-h3 { font-size: var(--text-xl); letter-spacing: -0.01em; }
+h1 { font-size: var(--text-3xl); letter-spacing: -0.015em; }
+h2 { font-size: var(--text-2xl); letter-spacing: -0.01em; }
+h3 { font-size: var(--text-xl); letter-spacing: -0.005em; }
 h4 { font-size: var(--text-lg); }
 p { color: var(--text-secondary); line-height: var(--line-relaxed); }
 
@@ -100,21 +101,23 @@ a:hover {
 }
 
 .btn-primary {
-  background-color: var(--slate-900);
-  color: var(--text-inverse);
-  border-color: var(--slate-900);
+  background-color: var(--primary-600);
+  color: #ffffff;
+  border-color: var(--primary-600);
+  font-weight: 600;
 }
 .btn-primary:hover:not(:disabled) {
-  background-color: var(--slate-800);
-  border-color: var(--slate-800);
+  background-color: var(--primary-700);
+  border-color: var(--primary-700);
+  color: #ffffff;
 }
 .btn-primary:active:not(:disabled) {
-  background-color: var(--slate-950);
+  background-color: var(--primary-800);
 }
 
 .btn-accent {
   background-color: var(--primary-600);
-  color: var(--text-inverse);
+  color: #ffffff;
   border-color: var(--primary-600);
 }
 .btn-accent:hover:not(:disabled) {
@@ -126,9 +129,10 @@ a:hover {
   background-color: var(--bg-surface);
   color: var(--text-primary);
   border-color: var(--border-default);
+  font-weight: 500;
 }
 .btn-secondary:hover:not(:disabled) {
-  background-color: var(--slate-50);
+  background-color: var(--bg-subtle);
   border-color: var(--border-strong);
 }
 

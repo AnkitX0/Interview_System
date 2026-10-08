@@ -26,33 +26,73 @@ Base = declarative_base()
 
 
 def init_db():
-    """Initializes the database schema using Alembic versioned migrations."""
+    """Initializes the database schema using Alembic versioned migrations and creates any missing tables."""
+    import backend.models  # Ensure all model tables are registered with Base.metadata
+
     root_dir = os.path.dirname(BASE_DIR)
     ini_path = os.path.join(root_dir, "alembic.ini")
     if os.path.exists(ini_path):
         from alembic.config import Config
         from alembic import command
-        from alembic.script import ScriptDirectory
-        from alembic.migration import MigrationContext
 
         alembic_cfg = Config(ini_path)
         alembic_cfg.set_main_option("sqlalchemy.url", DATABASE_URL)
 
-        # Fast idempotent check: if DB is already at head, skip upgrade
         try:
-            with engine.connect() as conn:
-                ctx = MigrationContext.configure(conn)
-                current_rev = ctx.get_current_revision()
-                script = ScriptDirectory.from_config(alembic_cfg)
-                head_rev = script.get_current_head()
-                if current_rev and current_rev == head_rev:
-                    return
+            command.upgrade(alembic_cfg, "head")
         except Exception:
             pass
 
-        command.upgrade(alembic_cfg, "head")
-    else:
-        Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+
+    # Automatically add new columns if existing SQLite DB was created earlier
+    if DATABASE_URL.startswith("sqlite"):
+        try:
+            with engine.connect() as conn:
+                # 1. user_profile columns
+                existing_up = [r[1] for r in conn.exec_driver_sql("PRAGMA table_info(user_profile)").fetchall()]
+                up_cols = {
+                    "phone": "VARCHAR",
+                    "location": "VARCHAR",
+                    "bio": "TEXT",
+                    "degree": "VARCHAR",
+                    "skills_categorized": "JSON",
+                    "professional_links": "JSON",
+                }
+                for col, col_type in up_cols.items():
+                    if col not in existing_up:
+                        conn.exec_driver_sql(f"ALTER TABLE user_profile ADD COLUMN {col} {col_type}")
+
+                # 2. interview_answers columns
+                existing_ia = [r[1] for r in conn.exec_driver_sql("PRAGMA table_info(interview_answers)").fetchall()]
+                ia_cols = {
+                    "answer_status": "VARCHAR DEFAULT 'ANSWERED'",
+                    "evaluation_status": "VARCHAR DEFAULT 'EVALUATED'",
+                    "score": "FLOAT",
+                    "topic": "VARCHAR",
+                    "category": "VARCHAR",
+                    "resume_reference": "TEXT",
+                }
+                for col, col_def in ia_cols.items():
+                    if col not in existing_ia:
+                        conn.exec_driver_sql(f"ALTER TABLE interview_answers ADD COLUMN {col} {col_def}")
+
+                # 3. users email verification columns
+                existing_u = [r[1] for r in conn.exec_driver_sql("PRAGMA table_info(users)").fetchall()]
+                u_cols = {
+                    "email_verified": "BOOLEAN DEFAULT 1",
+                    "verification_token_hash": "VARCHAR",
+                    "verification_expires_at": "DATETIME",
+                    "verification_used_at": "DATETIME",
+                    "verification_sent_at": "DATETIME",
+                }
+                for col, col_def in u_cols.items():
+                    if col not in existing_u:
+                        conn.exec_driver_sql(f"ALTER TABLE users ADD COLUMN {col} {col_def}")
+
+                conn.commit()
+        except Exception:
+            pass
 
 
 def get_db():

@@ -137,9 +137,17 @@ class ImproveAnswerRequest(BaseModel):
 # Authentication & Profile Schemas
 # ---------------------------
 class RegisterRequest(BaseModel):
-    email: str = Field(..., min_length=5, description="User email address")
-    password: str = Field(..., min_length=10, description="Password (at least 10 characters)")
+    email: str = Field(..., min_length=5, description="User Gmail address")
+    password: str = Field(..., min_length=8, description="Password (at least 8 characters)")
     full_name: Optional[str] = Field(None, description="User full name")
+
+
+class VerifyEmailRequest(BaseModel):
+    token: str = Field(..., min_length=1, description="Single-use email verification token")
+
+
+class ResendVerificationRequest(BaseModel):
+    email: str = Field(..., min_length=5, description="User Gmail address")
 
 
 class LoginRequest(BaseModel):
@@ -157,6 +165,13 @@ class UserProfileSchema(BaseModel):
     target_companies: Optional[List[str]] = None
     interview_goal: Optional[str] = None
     weekly_practice_goal: Optional[int] = None
+    phone: Optional[str] = None
+    location: Optional[str] = None
+    bio: Optional[str] = None
+    degree: Optional[str] = None
+    skills_categorized: Optional[Dict[str, List[str]]] = None
+    professional_links: Optional[Dict[str, str]] = None
+    full_name: Optional[str] = None
 
 
 class UserResponse(BaseModel):

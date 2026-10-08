@@ -129,9 +129,9 @@ function Dashboard() {
   const deliveryScore = dimensions.delivery ?? 0;
   const resumeScore = dimensions.resume_consistency ?? 0;
 
-  // Chart data
+  // Chart data: ONLY completed and evaluated sessions with actual evidence
   const chartData = readinessHistory
-    .filter((s) => s.readiness_score !== null)
+    .filter((s) => s.readiness_score !== null && s.readiness_score > 0)
     .slice(-8)
     .map((s, idx) => ({
       index: idx + 1,
@@ -146,15 +146,15 @@ function Dashboard() {
       <div style={{ marginBottom: "28px", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-end", gap: "16px" }}>
         <div>
           <h1 style={{ fontSize: "26px", fontWeight: "700", color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
-            Welcome back{user?.full_name ? `, ${user.full_name}` : ""}
+            Good morning{user?.full_name ? `, ${user.full_name}` : ""}
           </h1>
           <p style={{ fontSize: "14px", color: "var(--text-secondary)", marginTop: "4px" }}>
-            Prepare systematically for your next career interview.
+            Let's make today's interview practice count.
           </p>
         </div>
         <div style={{ display: "flex", gap: "10px" }}>
           <Button variant="secondary" onClick={() => navigate("/practice")}>
-            Browse Drills
+            Browse Practice Hub
           </Button>
           <Button variant="primary" onClick={() => navigate("/setup")}>
             New Interview

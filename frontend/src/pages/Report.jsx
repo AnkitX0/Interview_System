@@ -319,10 +319,18 @@ function Report() {
             </div>
 
             <div style={{ display: "flex", alignItems: "baseline", gap: "8px", margin: "12px 0" }}>
-              <span style={{ fontSize: "52px", fontWeight: "800", color: isZeroEvidence ? "#94a3b8" : "#0f172a", lineHeight: 1 }}>
-                {readinessScore}
-              </span>
-              <span style={{ fontSize: "20px", color: "#94a3b8", fontWeight: "500" }}>/ 100</span>
+              {isZeroEvidence ? (
+                <span style={{ fontSize: "36px", fontWeight: "800", color: "#94a3b8", lineHeight: 1 }}>
+                  Not assessed
+                </span>
+              ) : (
+                <>
+                  <span style={{ fontSize: "52px", fontWeight: "800", color: "#0f172a", lineHeight: 1 }}>
+                    {readinessScore}
+                  </span>
+                  <span style={{ fontSize: "20px", color: "#94a3b8", fontWeight: "500" }}>/ 100</span>
+                </>
+              )}
             </div>
 
             <p style={{ fontSize: "13px", color: "#475569", lineHeight: "1.5" }}>
@@ -391,7 +399,7 @@ function Report() {
           </div>
 
           <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: "12px", marginTop: "16px", fontSize: "11px", color: "#64748b" }}>
-            Evidence-Gated Assessment Engine [rubric + Gemini synthesis]
+            Interview feedback based on what you actually answered
           </div>
         </Card>
       </div>
@@ -532,11 +540,7 @@ function Report() {
                       {ans.strong_answer_should_cover && ans.strong_answer_should_cover.length > 0 ? (
                         ans.strong_answer_should_cover.map((c, cIdx) => <li key={cIdx} style={{ marginBottom: "4px" }}>{c}</li>)
                       ) : (
-                        <>
-                          <li style={{ marginBottom: "4px" }}>Core conceptual definition and purpose</li>
-                          <li style={{ marginBottom: "4px" }}>Concrete technical mechanisms and protocols</li>
-                          <li style={{ marginBottom: "4px" }}>Production constraints and engineering trade-offs</li>
-                        </>
+                        <li style={{ marginBottom: "4px", fontStyle: "italic" }}>Key technical mechanisms and trade-offs for this specific question.</li>
                       )}
                     </ul>
                   </div>
@@ -551,10 +555,7 @@ function Report() {
                         {ans.missing_points && ans.missing_points.length > 0 ? (
                           ans.missing_points.map((m, mIdx) => <li key={mIdx} style={{ marginBottom: "4px" }}>{m}</li>)
                         ) : (
-                          <>
-                            <li style={{ marginBottom: "4px" }}>Specific implementation metrics and throughput numbers</li>
-                            <li style={{ marginBottom: "4px" }}>Alternative architectural trade-offs evaluated</li>
-                          </>
+                          <li style={{ marginBottom: "4px", fontStyle: "italic" }}>No major conceptual gaps identified for this response.</li>
                         )}
                       </ul>
                     </div>

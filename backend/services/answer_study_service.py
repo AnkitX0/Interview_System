@@ -346,7 +346,7 @@ def generate_study_comparison_for_answer(
         "}"
     )
 
-    llm_res = call_gemini_json(prompt, timeout=3.5)
+    llm_res = call_gemini_json(prompt, timeout=12.0)
     if llm_res:
         try:
             parsed = StudyAnalysisOutput(**llm_res)
@@ -366,31 +366,40 @@ def generate_study_comparison_for_answer(
     matched_topic = _find_matching_topic(question_text)
     topic_info = TOPIC_EXPECTATIONS.get(matched_topic, {}) if matched_topic else {}
 
+    clean_subject = re.sub(r"^(explain|describe|how do you|what is the difference between|what is|how would you|what are)\s+", "", question_text, flags=re.IGNORECASE).strip().rstrip("?.")
+    if not clean_subject:
+        clean_subject = "the asked system concept"
+
     missing_points = []
     lower_ans = raw_text.lower()
-    if not any(k in lower_ans for k in ["because", "due to", "tradeoff", "therefore"]):
-        missing_points.append("Lacks technical justification and causal trade-offs.")
-    if not any(k in lower_ans for k in ["latency", "throughput", "scale", "performance", "%", "ms"]):
-        missing_points.append("Did not quantify scale, latency limits, or performance metrics.")
+    if not any(k in lower_ans for k in ["because", "due to", "tradeoff", "trade-off", "therefore"]):
+        missing_points.append(f"Lacks technical rationale and trade-offs for {clean_subject}.")
+    if not any(k in lower_ans for k in ["latency", "throughput", "scale", "performance", "%", "ms", "qps", "benchmark"]):
+        missing_points.append(f"Did not quantify scale, latency thresholds, or performance metrics for {clean_subject}.")
     if len(raw_text.split()) < 40:
-        missing_points.append("Response is brief; misses edge cases and failure mode recovery.")
+        missing_points.append(f"Response is brief; misses edge cases and failure mode recovery when operating {clean_subject}.")
     if not missing_points:
-        missing_points.append("Could further articulate alternative architectural approaches considered.")
+        missing_points.append(f"Could further articulate alternative architectural approaches to {clean_subject}.")
+
+    fallback_should_cover = topic_info.get("should_cover") or [
+        f"Precise architectural definition and operational principles of {clean_subject}",
+        f"Concrete implementation mechanisms and execution lifecycle for {clean_subject}",
+        f"Scalability constraints, performance trade-offs, and failure recovery modes",
+        f"Verification methodology and production telemetry metrics"
+    ]
+
+    fallback_improved = topic_info.get("improved") or (
+        f"To deliver a high-scoring answer on '{clean_subject}', first define the architectural foundation and primary operational role. "
+        f"Follow with technical specifics—such as data flow, concurrency, or protocol behavior. "
+        f"Conclude by demonstrating engineering maturity through edge cases, failure recovery, and quantified performance indicators."
+    )
 
     return {
         "answer_status": status,
         "status_label": f"{status.title()} Answer",
-        "strong_answer_should_cover": topic_info.get("should_cover", [
-            "Core architectural mechanism and protocol behavior",
-            "Data flow and state transition guarantees",
-            "Operational trade-offs and performance implications",
-            "Failure mode mitigation and resilience patterns"
-        ]),
+        "strong_answer_should_cover": fallback_should_cover,
         "missing_points": missing_points,
-        "improved_answer": topic_info.get(
-            "improved",
-            f"Structure your response to {question_text[:50]}... by stating the core mechanism first, explaining the system trade-offs, and verifying reliability with concrete engineering metrics."
-        ),
+        "improved_answer": fallback_improved,
         "resume_connection": _derive_grounded_resume_connection(question_text, resume_skills, resume_projects),
-        "practice_prompt": topic_info.get("practice", f"Explain how you would handle production edge cases for: {question_text}")
+        "practice_prompt": topic_info.get("practice", f"Deep-dive drill: How would you architect and benchmark {clean_subject} under extreme scale?")
     }

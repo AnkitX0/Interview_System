@@ -1,0 +1,2522 @@
+[
+  {
+    "id": "PCD_001",
+    "category": "project_claim_defense",
+    "topic": "Architecture Ownership",
+    "difficulty": "hard",
+    "question": "Walk through the core architecture of your project {project_name}. What was your personal contribution versus the existing foundation?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_002",
+    "category": "project_claim_defense",
+    "topic": "Technology Selection",
+    "difficulty": "medium",
+    "question": "In {project_name}, you utilized {technology_name}. What technical constraints or evaluation criteria led you to choose it over alternatives?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_003",
+    "category": "project_claim_defense",
+    "topic": "Metric Validation",
+    "difficulty": "hard",
+    "question": "You mentioned optimizing performance in your project. How did you baseline, measure, and isolate that metric from noisy background variables?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_004",
+    "category": "project_claim_defense",
+    "topic": "Debugging & Root Cause",
+    "difficulty": "hard",
+    "question": "What was the single most difficult production bug or distributed race condition you encountered in {project_name}, and how did you debug it?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_005",
+    "category": "project_claim_defense",
+    "topic": "Data Architecture",
+    "difficulty": "hard",
+    "question": "How did you handle database schema modeling and data migrations in {project_name} without causing downtime or corrupting historical data?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_006",
+    "category": "project_claim_defense",
+    "topic": "Resilience Implementation",
+    "difficulty": "medium",
+    "question": "What error handling and failure recovery mechanisms did you personally implement in {project_name} for downstream service failures?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_007",
+    "category": "project_claim_defense",
+    "topic": "Security Architecture",
+    "difficulty": "medium",
+    "question": "Walk through how authentication and authorization are enforced end-to-end in {project_name}. Where are tokens validated?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_008",
+    "category": "project_claim_defense",
+    "topic": "Testing & Quality",
+    "difficulty": "medium",
+    "question": "What was the automated testing strategy for {project_name}? How did you balance unit tests, integration tests, and mock fidelity?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_009",
+    "category": "project_claim_defense",
+    "topic": "Scalability Limits",
+    "difficulty": "hard",
+    "question": "In {project_name}, how would your system architecture behave if active concurrent users multiplied by 10x overnight?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_010",
+    "category": "project_claim_defense",
+    "topic": "Refactoring & Lessons Learned",
+    "difficulty": "medium",
+    "question": "What technical compromise or trade-off in {project_name} do you now view as technical debt, and how would you refactor it?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_011",
+    "category": "project_claim_defense",
+    "topic": "DevOps & Deployment",
+    "difficulty": "medium",
+    "question": "How did you manage environment configuration, secrets, and deployment pipelines (CI/CD) for {project_name}?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_012",
+    "category": "project_claim_defense",
+    "topic": "Consistency & Transactions",
+    "difficulty": "hard",
+    "question": "In {project_name}, how did you ensure data consistency across multiple write operations or external API interactions?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_013",
+    "category": "project_claim_defense",
+    "topic": "Observability",
+    "difficulty": "medium",
+    "question": "What logging, metrics, and observability did you instrument into {project_name} to detect silent failures in production?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_014",
+    "category": "project_claim_defense",
+    "topic": "Caching Mechanics",
+    "difficulty": "medium",
+    "question": "Explain how caching was implemented in {project_name}. What cache invalidation strategy and TTL policies did you configure?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_015",
+    "category": "project_claim_defense",
+    "topic": "Production Incident Triage",
+    "difficulty": "hard",
+    "question": "If a user reported intermittent 504 Gateway Timeouts in {project_name}, walk through your exact step-by-step diagnostic workflow.",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_016",
+    "category": "project_claim_defense",
+    "topic": "Async Worker Architecture",
+    "difficulty": "hard",
+    "question": "How did you manage background asynchronous task processing in {project_name}? How did you handle worker retries and task deduplication?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_017",
+    "category": "project_claim_defense",
+    "topic": "Database Optimization",
+    "difficulty": "medium",
+    "question": "What database indexing strategy did you choose for {project_name}, and how did you prevent N+1 query problems in object-relational queries?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_018",
+    "category": "project_claim_defense",
+    "topic": "Traffic Management",
+    "difficulty": "medium",
+    "question": "How did you implement API rate limiting and abuse prevention in {project_name} to protect critical endpoints from degradation?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_019",
+    "category": "project_claim_defense",
+    "topic": "Third-Party Resilience",
+    "difficulty": "medium",
+    "question": "What strategy did you use in {project_name} when interacting with third-party external APIs that could intermittently time out or fail?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_020",
+    "category": "project_claim_defense",
+    "topic": "Data Privacy & Compliance",
+    "difficulty": "medium",
+    "question": "How did your architecture in {project_name} ensure sensitive candidate or customer data remained compliant, encrypted, and sanitized?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_021",
+    "category": "project_claim_defense",
+    "topic": "Network Serialization",
+    "difficulty": "medium",
+    "question": "What payload serialization format did you select in {project_name}, and how did you minimize network transfer latency?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_022",
+    "category": "project_claim_defense",
+    "topic": "Memory Profiling",
+    "difficulty": "hard",
+    "question": "Did you encounter any memory leaks or high garbage collection pauses in {project_name}? How did you profile heap allocations?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_023",
+    "category": "project_claim_defense",
+    "topic": "Concurrency & Locking",
+    "difficulty": "hard",
+    "question": "In {project_name}, how did you ensure thread safety and avoid race conditions when multiple requests accessed shared mutable state?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_024",
+    "category": "project_claim_defense",
+    "topic": "Cost Engineering",
+    "difficulty": "easy",
+    "question": "How did you monitor cloud infrastructure costs and resource utilization for {project_name} to prevent unexpected bill spikes?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_025",
+    "category": "project_claim_defense",
+    "topic": "Webhook Architecture",
+    "difficulty": "medium",
+    "question": "How did you ensure reliable webhook deliveries and handle idempotent processing for webhooks incoming to {project_name}?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_026",
+    "category": "project_claim_defense",
+    "topic": "Graceful Shutdown",
+    "difficulty": "medium",
+    "question": "Describe the graceful shutdown procedure in {project_name}. How did your services drain in-flight TCP connections during redeployments?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_027",
+    "category": "project_claim_defense",
+    "topic": "Release Engineering",
+    "difficulty": "medium",
+    "question": "Did you implement feature flags or canary deployments in {project_name}? How did you decouple deployment from feature release?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_028",
+    "category": "project_claim_defense",
+    "topic": "Distributed Tracing",
+    "difficulty": "medium",
+    "question": "How did you propagate distributed correlation IDs across microservice boundaries or asynchronous queues in {project_name}?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_029",
+    "category": "project_claim_defense",
+    "topic": "Connection Pooling",
+    "difficulty": "medium",
+    "question": "How did you size and configure the database connection pool in {project_name} to balance throughput against memory saturation?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_030",
+    "category": "project_claim_defense",
+    "topic": "Client Synchronization",
+    "difficulty": "hard",
+    "question": "If {project_name} supports mobile or intermittent clients, how did you handle offline data caching and conflict synchronization?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_031",
+    "category": "project_claim_defense",
+    "topic": "Deployment Strategy",
+    "difficulty": "medium",
+    "question": "Walk through the zero-downtime deployment strategy you configured for {project_name}. How did rolling updates handle health checks?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_032",
+    "category": "project_claim_defense",
+    "topic": "Input Sanitization",
+    "difficulty": "medium",
+    "question": "How did you sanitize and validate complex user inputs in {project_name} to prevent SQL injection, XSS, and prototype pollution?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_033",
+    "category": "project_claim_defense",
+    "topic": "API Lifecycle",
+    "difficulty": "medium",
+    "question": "How did you manage API versioning in {project_name} to ensure breaking schema changes did not disrupt historical client applications?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_034",
+    "category": "project_claim_defense",
+    "topic": "Disaster Recovery",
+    "difficulty": "medium",
+    "question": "What disaster recovery or automated backup strategy did you establish for the primary persistence tier in {project_name}?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_035",
+    "category": "project_claim_defense",
+    "topic": "Schema Evolution",
+    "difficulty": "hard",
+    "question": "How did you design event schemas in {project_name} to ensure backward and forward compatibility as new fields were introduced?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_036",
+    "category": "project_claim_defense",
+    "topic": "Batch Processing",
+    "difficulty": "hard",
+    "question": "For long-running batch workflows in {project_name}, how did you track intermediate progress and handle mid-execution worker crashes?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_037",
+    "category": "project_claim_defense",
+    "topic": "Cold-Start Optimization",
+    "difficulty": "medium",
+    "question": "How did you measure and optimize cold-start latencies in {project_name} when spinning up new service or container instances?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_038",
+    "category": "project_claim_defense",
+    "topic": "Storage Architecture",
+    "difficulty": "medium",
+    "question": "Explain how large file uploads and downloads were handled in {project_name}. Did you use chunked streaming or pre-signed URLs?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_039",
+    "category": "project_claim_defense",
+    "topic": "Distributed Locking",
+    "difficulty": "hard",
+    "question": "Did you utilize distributed locking in {project_name}? What mechanism guaranteed lock expiration if a worker node died unexpectedly?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_040",
+    "category": "project_claim_defense",
+    "topic": "Audit Logging",
+    "difficulty": "medium",
+    "question": "How did you construct audit trails in {project_name} to ensure critical security and financial actions could not be tampered with?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_041",
+    "category": "project_claim_defense",
+    "topic": "Real-Time Scaling",
+    "difficulty": "hard",
+    "question": "If {project_name} incorporated WebSockets or real-time streams, how did you scale socket connections across multiple backend server replicas?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_042",
+    "category": "project_claim_defense",
+    "topic": "Secrets Management",
+    "difficulty": "easy",
+    "question": "How did you manage application secrets and cryptographic keys in {project_name} without checking them into version control?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_043",
+    "category": "project_claim_defense",
+    "topic": "Service Discovery",
+    "difficulty": "medium",
+    "question": "What service discovery and load balancing mechanism did you establish between frontend proxies and backend services in {project_name}?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_044",
+    "category": "project_claim_defense",
+    "topic": "HTTP Caching",
+    "difficulty": "medium",
+    "question": "How did you configure HTTP caching headers (Cache-Control, ETag) in {project_name} to reduce unnecessary round-trip load?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_045",
+    "category": "project_claim_defense",
+    "topic": "Replication Consistency",
+    "difficulty": "hard",
+    "question": "Did {project_name} employ database read replicas? How did your application handle read-your-writes consistency after immediate writes?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_046",
+    "category": "project_claim_defense",
+    "topic": "Queue Reliability",
+    "difficulty": "medium",
+    "question": "How did you monitor and alert on dead-letter queues (DLQ) in {project_name} when asynchronous message processing failed repeatedly?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_047",
+    "category": "project_claim_defense",
+    "topic": "Contract Testing",
+    "difficulty": "medium",
+    "question": "What API contract testing or end-to-end regression validation did you implement between client and server teams in {project_name}?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_048",
+    "category": "project_claim_defense",
+    "topic": "Metrics Cardinality",
+    "difficulty": "medium",
+    "question": "How did you monitor system metrics in {project_name} without running into high-cardinality monitoring storage explosions?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_049",
+    "category": "project_claim_defense",
+    "topic": "Partitioning Strategy",
+    "difficulty": "hard",
+    "question": "If {project_name} stored high-volume time-series or event data, did you use table partitioning or shard pruning to accelerate queries?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_050",
+    "category": "project_claim_defense",
+    "topic": "Web Security Headers",
+    "difficulty": "medium",
+    "question": "Explain your Cross-Origin Resource Sharing (CORS) and Content Security Policy (CSP) configurations in {project_name}.",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_051",
+    "category": "project_claim_defense",
+    "topic": "Supply Chain Security",
+    "difficulty": "easy",
+    "question": "What was the dependency management strategy in {project_name}? How did you audit third-party libraries for zero-day vulnerabilities?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_052",
+    "category": "project_claim_defense",
+    "topic": "Session Management",
+    "difficulty": "medium",
+    "question": "In {project_name}, how did you handle stateful session management across horizontal autoscaling web server replicas?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_053",
+    "category": "project_claim_defense",
+    "topic": "Code Quality Automation",
+    "difficulty": "easy",
+    "question": "What automated linting, formatting, and static analysis gates were enforced in the {project_name} pull request lifecycle?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_054",
+    "category": "project_claim_defense",
+    "topic": "Code Architecture",
+    "difficulty": "medium",
+    "question": "How did you structure domain entities and service layers in {project_name} to prevent leaky abstractions and tight coupling?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_055",
+    "category": "project_claim_defense",
+    "topic": "Operational Dashboards",
+    "difficulty": "medium",
+    "question": "What metrics did you display on production operational dashboards for {project_name} to monitor overall system health at a glance?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_056",
+    "category": "project_claim_defense",
+    "topic": "Transaction Scoping",
+    "difficulty": "medium",
+    "question": "How did you ensure database transactions in {project_name} remained brief to avoid lock contention on high-traffic tables?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_057",
+    "category": "project_claim_defense",
+    "topic": "Multi-Tenancy Isolation",
+    "difficulty": "hard",
+    "question": "Did {project_name} implement multi-tenancy? How was tenant data physically or logically isolated to prevent cross-tenant data leaks?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_058",
+    "category": "project_claim_defense",
+    "topic": "Load Testing",
+    "difficulty": "hard",
+    "question": "How did you benchmark the maximum throughput (RPS) of {project_name} prior to opening the system to public production traffic?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_059",
+    "category": "project_claim_defense",
+    "topic": "Structured Logging",
+    "difficulty": "medium",
+    "question": "What logging format and structured logging fields did you standardize across services in {project_name} for centralized log indexing?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_060",
+    "category": "project_claim_defense",
+    "topic": "Autoscaling Management",
+    "difficulty": "hard",
+    "question": "In {project_name}, how did you manage database connection spikes during sudden autoscaling events without overloading the database?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_061",
+    "category": "project_claim_defense",
+    "topic": "Error Sanitization",
+    "difficulty": "easy",
+    "question": "How did you handle user-facing error messages in {project_name} without exposing internal stack traces or sensitive architecture details?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_062",
+    "category": "project_claim_defense",
+    "topic": "Search Synchronization",
+    "difficulty": "hard",
+    "question": "Did {project_name} use full-text search indexing? How were search indexes kept in sync with the primary relational database?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_063",
+    "category": "project_claim_defense",
+    "topic": "Migration Rollbacks",
+    "difficulty": "medium",
+    "question": "What automated database migration rollback procedures did you prepare in {project_name} in case a migration failed midway?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_064",
+    "category": "project_claim_defense",
+    "topic": "Batch API Design",
+    "difficulty": "medium",
+    "question": "How did you design API endpoints in {project_name} to support bulk batch processing without running into HTTP timeout constraints?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_065",
+    "category": "project_claim_defense",
+    "topic": "Deprecation Management",
+    "difficulty": "easy",
+    "question": "What strategy did you use in {project_name} for tracking and resolving deprecation of dependencies or API endpoints?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_066",
+    "category": "project_claim_defense",
+    "topic": "JSON Parsing Optimization",
+    "difficulty": "medium",
+    "question": "How did you prevent memory consumption spikes during large JSON response parsing or generation in {project_name}?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_067",
+    "category": "project_claim_defense",
+    "topic": "Timezone Architecture",
+    "difficulty": "easy",
+    "question": "In {project_name}, how did you handle timezone conversions and date-time arithmetic accurately across distributed client locations?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_068",
+    "category": "project_claim_defense",
+    "topic": "Test Coverage Policy",
+    "difficulty": "easy",
+    "question": "What automated code coverage targets did you enforce in {project_name}, and what critical code paths were prioritized for coverage?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_069",
+    "category": "project_claim_defense",
+    "topic": "DNS Architecture",
+    "difficulty": "medium",
+    "question": "How did you configure DNS TTL and health check failover for the public domain hosting {project_name}?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_070",
+    "category": "project_claim_defense",
+    "topic": "Authentication Defense",
+    "difficulty": "medium",
+    "question": "What strategies did you use in {project_name} to protect against distributed brute-force credential stuffing attacks?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_071",
+    "category": "project_claim_defense",
+    "topic": "Engineering Culture",
+    "difficulty": "easy",
+    "question": "How did your team conduct code reviews and architecture review meetings for major feature changes in {project_name}?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_072",
+    "category": "project_claim_defense",
+    "topic": "Microservice Dependencies",
+    "difficulty": "hard",
+    "question": "If {project_name} used microservices, how did you prevent circular synchronous HTTP call dependencies across services?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_073",
+    "category": "project_claim_defense",
+    "topic": "Frontend Performance",
+    "difficulty": "medium",
+    "question": "What telemetry did you collect in {project_name} regarding client-side performance, page load times, and API response latencies?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_074",
+    "category": "project_claim_defense",
+    "topic": "Data Integrity",
+    "difficulty": "medium",
+    "question": "How did you design database foreign keys and cascading delete rules in {project_name} to avoid orphan records or table locking?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_075",
+    "category": "project_claim_defense",
+    "topic": "Notification Resilience",
+    "difficulty": "medium",
+    "question": "What fallback mechanisms were implemented in {project_name} when an external notification service (Email/SMS) suffered an outage?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_076",
+    "category": "project_claim_defense",
+    "topic": "Chaos Engineering",
+    "difficulty": "hard",
+    "question": "How did you test disaster recovery scenarios (e.g. database server sudden power-off) for {project_name}?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_077",
+    "category": "project_claim_defense",
+    "topic": "Resource Allocation",
+    "difficulty": "medium",
+    "question": "Did {project_name} use container orchestration? How were container CPU and memory resource requests and limits configured?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_078",
+    "category": "project_claim_defense",
+    "topic": "Financial Invariants",
+    "difficulty": "hard",
+    "question": "What strategy did you implement in {project_name} to handle race conditions during account balance or inventory deductions?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_079",
+    "category": "project_claim_defense",
+    "topic": "TLS Configuration",
+    "difficulty": "medium",
+    "question": "How did you configure HTTPS and TLS cipher suites for {project_name} to pass strict industry security scans?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_080",
+    "category": "project_claim_defense",
+    "topic": "Post-Mortem Process",
+    "difficulty": "medium",
+    "question": "What process did you follow in {project_name} to triage, fix, and post-mortem a critical regression discovered post-deployment?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_081",
+    "category": "project_claim_defense",
+    "topic": "Third-Party Script Impact",
+    "difficulty": "easy",
+    "question": "How did you validate that third-party analytics and tracking scripts in {project_name} did not degrade core user interaction latency?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_082",
+    "category": "project_claim_defense",
+    "topic": "Async Database Pools",
+    "difficulty": "medium",
+    "question": "What strategy did you use in {project_name} for database connection pooling under asynchronous frameworks (e.g. FastAPI / Node.js)?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_083",
+    "category": "project_claim_defense",
+    "topic": "Covering Indexes",
+    "difficulty": "hard",
+    "question": "How did you structure database queries in {project_name} to take advantage of index covering scans and index-only lookups?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_084",
+    "category": "project_claim_defense",
+    "topic": "CI Security Scanning",
+    "difficulty": "easy",
+    "question": "What automated vulnerability scanning tools were integrated into the continuous integration pipeline for {project_name}?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_085",
+    "category": "project_claim_defense",
+    "topic": "Event Delivery Guarantees",
+    "difficulty": "hard",
+    "question": "How did you ensure reliable delivery of distributed domain events in {project_name} despite network partitions?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_086",
+    "category": "project_claim_defense",
+    "topic": "Locking Strategy",
+    "difficulty": "hard",
+    "question": "What criteria did you use to choose between optimistic locking (version column) and pessimistic locking in {project_name}?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_087",
+    "category": "project_claim_defense",
+    "topic": "Cache Warming",
+    "difficulty": "medium",
+    "question": "How did you minimize cold cache latency and warm up critical caches before routing user traffic in {project_name}?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_088",
+    "category": "project_claim_defense",
+    "topic": "Payment Idempotency",
+    "difficulty": "medium",
+    "question": "In {project_name}, what strategy did you use to prevent duplicate payment submissions when a user double-clicks the checkout button?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_089",
+    "category": "project_claim_defense",
+    "topic": "Infrastructure Selection",
+    "difficulty": "medium",
+    "question": "How did you evaluate and select the cloud hosting environment (AWS, GCP, bare metal) for deploying {project_name}?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_090",
+    "category": "project_claim_defense",
+    "topic": "DORA Metrics",
+    "difficulty": "easy",
+    "question": "What automated metrics did you track in {project_name} to measure developer deployment frequency and lead time for changes?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_091",
+    "category": "project_claim_defense",
+    "topic": "Pagination Architecture",
+    "difficulty": "medium",
+    "question": "How did you manage pagination for large database datasets in {project_name} (keyset / cursor pagination vs offset pagination)?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_092",
+    "category": "project_claim_defense",
+    "topic": "Worker Memory Management",
+    "difficulty": "hard",
+    "question": "What strategy did you use in {project_name} to detect and mitigate memory leaks in background daemon workers?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_093",
+    "category": "project_claim_defense",
+    "topic": "Config Management",
+    "difficulty": "easy",
+    "question": "How did you structure configuration management in {project_name} across local, staging, and production environments?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_094",
+    "category": "project_claim_defense",
+    "topic": "Plan Regression Monitoring",
+    "difficulty": "hard",
+    "question": "What telemetry alerted your team to database query execution plan regressions in {project_name}?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_095",
+    "category": "project_claim_defense",
+    "topic": "Socket Settings",
+    "difficulty": "medium",
+    "question": "How did you manage database connection timeouts and socket keepalive settings in {project_name} across corporate firewalls?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_096",
+    "category": "project_claim_defense",
+    "topic": "Access Logging",
+    "difficulty": "easy",
+    "question": "In {project_name}, how did you ensure consistent logging of HTTP status codes, request durations, and request paths?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_097",
+    "category": "project_claim_defense",
+    "topic": "Secure File Downloads",
+    "difficulty": "medium",
+    "question": "What strategy did you use in {project_name} to securely handle file downloads containing sensitive customer reports?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_098",
+    "category": "project_claim_defense",
+    "topic": "Workload Prioritization",
+    "difficulty": "hard",
+    "question": "How did you validate that background jobs in {project_name} did not starve real-time interactive user queries of database capacity?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_099",
+    "category": "project_claim_defense",
+    "topic": "Domain Isolation",
+    "difficulty": "medium",
+    "question": "What design patterns did you use in {project_name} to isolate business domain logic from third-party vendor SDKs?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_100",
+    "category": "project_claim_defense",
+    "topic": "Vendor SLA Tracking",
+    "difficulty": "easy",
+    "question": "How did you monitor external service SLA compliance when calling third-party dependencies from {project_name}?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_101",
+    "category": "project_claim_defense",
+    "topic": "Alerting Strategy",
+    "difficulty": "medium",
+    "question": "What automated alerts did you configure for {project_name} to notify on-call engineers about rising HTTP 5xx error rates?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_102",
+    "category": "project_claim_defense",
+    "topic": "Backup Testing",
+    "difficulty": "hard",
+    "question": "How did you ensure that database backups for {project_name} could be restored successfully within target recovery time objectives?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_103",
+    "category": "project_claim_defense",
+    "topic": "Canary Triggers",
+    "difficulty": "hard",
+    "question": "What automated rollback triggers were configured in {project_name} during automated progressive canary rollouts?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_104",
+    "category": "project_claim_defense",
+    "topic": "Disk IOPS Management",
+    "difficulty": "hard",
+    "question": "How did you measure and optimize database disk I/O IOPS utilization in {project_name} during peak traffic hours?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  },
+  {
+    "id": "PCD_105",
+    "category": "project_claim_defense",
+    "topic": "Architectural Reflection",
+    "difficulty": "medium",
+    "question": "Reflecting on the entire development lifecycle of {project_name}, what key architectural decision would you make differently today and why?",
+    "question_type": "resume_defense",
+    "skills": [
+      "project-defense",
+      "resume-verification",
+      "engineering-ownership"
+    ],
+    "requires_resume_context": true,
+    "expected_evidence": [
+      "Clear statement of personal contribution and implementation ownership",
+      "Accurate technical explanation matching resume claims without exaggeration",
+      "Concrete metrics, tooling, and system trade-offs encountered during execution",
+      "Honest discussion of project constraints, bugs, and lessons learned"
+    ],
+    "follow_up_topics": [
+      "Specific implementation details",
+      "Alternative technical decisions"
+    ]
+  }
+]

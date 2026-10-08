@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../utils/api";
 import { Button } from "./ui/Button";
 
 export function AccountModal({ isOpen, onClose, initialTab = "profile" }) {
+  const navigate = useNavigate();
   const { user, updateProfile, logout } = useAuth();
   const [activeTab, setActiveTab] = useState(initialTab);
   const [profileForm, setProfileForm] = useState({
@@ -234,7 +236,42 @@ export function AccountModal({ isOpen, onClose, initialTab = "profile" }) {
           )}
 
           {activeTab === "profile" && (
-            <form onSubmit={handleProfileSubmit}>
+            <div>
+              <div
+                style={{
+                  marginBottom: "16px",
+                  padding: "10px 14px",
+                  backgroundColor: "var(--primary-50)",
+                  border: "1px solid var(--primary-200)",
+                  borderRadius: "6px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ fontSize: "12px", color: "var(--primary-900)" }}>
+                  Manage verified biodata, education & developer links
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    navigate("/profile");
+                  }}
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: "700",
+                    color: "var(--primary-700)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  Open Full Profile →
+                </button>
+              </div>
+
+              <form onSubmit={handleProfileSubmit}>
               <div className="form-group">
                 <label className="form-label">Full Name</label>
                 <input
@@ -276,6 +313,7 @@ export function AccountModal({ isOpen, onClose, initialTab = "profile" }) {
                 <Button type="submit" variant="primary" loading={isSaving}>Save Changes</Button>
               </div>
             </form>
+          </div>
           )}
 
           {activeTab === "privacy" && (

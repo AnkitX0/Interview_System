@@ -1,0 +1,2437 @@
+[
+  {
+    "id": "TR_001",
+    "category": "tradeoff_reasoning",
+    "topic": "Data Architecture",
+    "difficulty": "medium",
+    "question": "When designing a multi-tenant SaaS backend, under what specific access patterns would you select a relational SQL database (e.g. PostgreSQL) versus a document-based NoSQL database (e.g. MongoDB)? Where does the boundary break down?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "system-design",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "ACID transactions and strict relational foreign key constraints",
+      "Flexible schema evolution and polymorphic data structures",
+      "Complex multi-table analytical joins vs single-document atomic operations",
+      "Sharding complexity: relational horizontal sharding vs native document partitioning"
+    ],
+    "follow_up_topics": [
+      "Cost implications",
+      "Failure mode comparison",
+      "Operational monitoring"
+    ]
+  },
+  {
+    "id": "TR_002",
+    "category": "tradeoff_reasoning",
+    "topic": "System Architecture",
+    "difficulty": "hard",
+    "question": "Under what organizational and technical conditions is a modular monolith strictly superior to microservices? At what concrete inflection point does migrating to microservices justify the operational overhead?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "system-design",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "Team size, communication boundaries (Conway's Law), and independent deployment velocity",
+      "Network latency, serialization overhead, and partial failure modes in microservices",
+      "Database sharing vs database-per-service data isolation",
+      "Operational complexity: distributed tracing, observability, CI/CD pipelines, and service discovery"
+    ],
+    "follow_up_topics": [
+      "Cost implications",
+      "Failure mode comparison",
+      "Operational monitoring"
+    ]
+  },
+  {
+    "id": "TR_003",
+    "category": "tradeoff_reasoning",
+    "topic": "Integration Patterns",
+    "difficulty": "medium",
+    "question": "Compare synchronous request-response (REST/gRPC) with asynchronous event-driven messaging (Kafka/RabbitMQ) for inter-service communication. What latency, coupling, and error-handling trade-offs emerge?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "system-design",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "Temporal coupling: caller blocked waiting for downstream availability vs decoupled fire-and-forget",
+      "Immediate error response and transaction boundaries in synchronous calls",
+      "Buffering, backpressure handling, and burst smoothing in asynchronous queues",
+      "Eventual consistency and complex distributed debugging in event-driven systems"
+    ],
+    "follow_up_topics": [
+      "Cost implications",
+      "Failure mode comparison",
+      "Operational monitoring"
+    ]
+  },
+  {
+    "id": "TR_004",
+    "category": "tradeoff_reasoning",
+    "topic": "Distributed Systems",
+    "difficulty": "hard",
+    "question": "Evaluate the trade-offs between Strong Consistency (linearizability) and Eventual Consistency in a globally distributed shopping cart and inventory system. How do you handle race conditions when stock is scarce?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "system-design",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "Performance latency: cross-datacenter synchronous replication rounds vs local fast writes",
+      "User experience during network partitions: stale reads vs total request failure",
+      "Inventory reservation: pessimistic locking / 2PC vs optimistic reservation with compensating refunds",
+      "Read-your-writes and monotonic read guarantees"
+    ],
+    "follow_up_topics": [
+      "Cost implications",
+      "Failure mode comparison",
+      "Operational monitoring"
+    ]
+  },
+  {
+    "id": "TR_005",
+    "category": "tradeoff_reasoning",
+    "topic": "Caching Strategies",
+    "difficulty": "medium",
+    "question": "Compare Cache-Aside with Write-Through and Write-Behind caching. In what write-heavy scenarios does Write-Behind risk catastrophic data loss, and how can that risk be bounded?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "system-design",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "Cache-Aside simplicity and resilience when cache crashes",
+      "Write-Through eliminating stale cache reads on update",
+      "Write-Behind asynchronous write batching and write coalescing reducing DB load",
+      "Data loss risk in Write-Behind if cache crashes before dirty buffer flushes to DB; battery-backed/replicated cache mitigation"
+    ],
+    "follow_up_topics": [
+      "Cost implications",
+      "Failure mode comparison",
+      "Operational monitoring"
+    ]
+  },
+  {
+    "id": "TR_006",
+    "category": "tradeoff_reasoning",
+    "topic": "Real-Time Communication",
+    "difficulty": "hard",
+    "question": "You need to provide real-time updates for an order tracking dashboard. Contrast Polling, Long-Polling, Server-Sent Events (SSE), and WebSockets across connection overhead, firewall traversal, and bidirectional needs.",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "system-design",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "Polling HTTP request overhead and unnecessary server load",
+      "Long-Polling connection holding and immediate reconnection churn",
+      "SSE lightweight unidirectional HTTP stream with native browser reconnection and proxy support",
+      "WebSockets full-duplex TCP connection with binary framing, but requiring custom heartbeat and sticky load balancing"
+    ],
+    "follow_up_topics": [
+      "Cost implications",
+      "Failure mode comparison",
+      "Operational monitoring"
+    ]
+  },
+  {
+    "id": "TR_007",
+    "category": "tradeoff_reasoning",
+    "topic": "Concurrency",
+    "difficulty": "medium",
+    "question": "Contrast Optimistic Locking (version column check) with Pessimistic Locking (`SELECT FOR UPDATE`) for an airline seat reservation system. What happens to throughput and latency as concurrent seat contention spikes?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "system-design",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "Pessimistic locking serialized throughput and lock wait timeouts",
+      "Optimistic locking zero-lock read speed but cascading retry storm under high contention",
+      "Deadlock vulnerability in pessimistic locking with multiple resource updates",
+      "Hybrid approach: optimistic reservation with time-bounded temporary hold"
+    ],
+    "follow_up_topics": [
+      "Cost implications",
+      "Failure mode comparison",
+      "Operational monitoring"
+    ]
+  },
+  {
+    "id": "TR_008",
+    "category": "tradeoff_reasoning",
+    "topic": "Database Design",
+    "difficulty": "hard",
+    "question": "When should a relational database schema be intentionally denormalized? What are the write amplification, storage, and anomaly risks of maintaining precomputed aggregates and duplicated columns?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "system-design",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "3NF eliminating data redundancy and update anomalies",
+      "Denormalization eliminating expensive multi-table joins on high-frequency read queries",
+      "Write amplification: updating a single entity requiring cascading updates across denormalized tables",
+      "Reconciliation pipelines to detect and repair data divergence"
+    ],
+    "follow_up_topics": [
+      "Cost implications",
+      "Failure mode comparison",
+      "Operational monitoring"
+    ]
+  },
+  {
+    "id": "TR_009",
+    "category": "tradeoff_reasoning",
+    "topic": "Frontend Architecture",
+    "difficulty": "medium",
+    "question": "Compare Server-Side Rendering (SSR) with Single-Page Applications (SPA) for a modern content and dashboard web application. Evaluate SEO, Time-to-First-Byte (TTFB), Time-to-Interactive (TTI), and server hosting costs.",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "system-design",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "SPA static asset CDN distribution and zero server rendering CPU cost",
+      "SPA slow initial bundle load, delayed TTI, and client-side hydration penalty",
+      "SSR fast initial HTML delivery and optimal SEO indexing",
+      "SSR increased origin server load, complex state hydration, and higher compute costs"
+    ],
+    "follow_up_topics": [
+      "Cost implications",
+      "Failure mode comparison",
+      "Operational monitoring"
+    ]
+  },
+  {
+    "id": "TR_010",
+    "category": "tradeoff_reasoning",
+    "topic": "Observability",
+    "difficulty": "hard",
+    "question": "Compare Push-based telemetry (e.g. StatsD / Datadog agent) with Pull-based scraping (e.g. Prometheus). How do they handle network firewalls, short-lived ephemeral batch jobs, and server overload during metric storms?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "system-design",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "Prometheus pull: central server controls scrape cadence and detects crashed targets via missing heartbeat",
+      "Pull difficulty reaching private network targets without proxies or gateways",
+      "Push model natively handling serverless / short-lived batch jobs (Pushgateway requirement for pull)",
+      "Risk of push model overwhelming monitoring backend during sudden traffic spikes"
+    ],
+    "follow_up_topics": [
+      "Cost implications",
+      "Failure mode comparison",
+      "Operational monitoring"
+    ]
+  },
+  {
+    "id": "TR_011",
+    "category": "tradeoff_reasoning",
+    "topic": "Authentication & Security",
+    "difficulty": "medium",
+    "question": "Compare stateless JWT tokens stored in browser cookies with server-side sessions stored in Redis. What security, revocation, and scalability trade-offs should guide the decision for a banking web portal?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "system-design",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "Stateless JWT eliminating database lookup on every API request",
+      "Inability to instantly revoke stolen JWTs without maintaining server-side blacklists",
+      "Server-side sessions providing instantaneous single-click revocation and session destruction",
+      "Redis session storage scaling bottleneck and cross-datacenter replication requirements"
+    ],
+    "follow_up_topics": [
+      "Cost implications",
+      "Failure mode comparison",
+      "Operational monitoring"
+    ]
+  },
+  {
+    "id": "TR_012",
+    "category": "tradeoff_reasoning",
+    "topic": "Cloud Infrastructure",
+    "difficulty": "hard",
+    "question": "Evaluate the trade-offs between self-hosting PostgreSQL on Kubernetes or EC2 versus using AWS RDS or Google Cloud Spanner. When does cloud vendor lock-in and pricing eclipse the operational cost of managing DB instances?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "system-design",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "Managed services handling automated backups, point-in-time recovery, OS patching, and failover",
+      "Cloud cost multiplier: managed DB compute and IOPS pricing versus raw compute instances",
+      "Kernel tuning and custom extension limitations on managed database services",
+      "True multi-region distributed databases (Spanner) providing guarantees unachievable on vanilla PostgreSQL"
+    ],
+    "follow_up_topics": [
+      "Cost implications",
+      "Failure mode comparison",
+      "Operational monitoring"
+    ]
+  },
+  {
+    "id": "TR_013",
+    "category": "tradeoff_reasoning",
+    "topic": "Web Architecture",
+    "difficulty": "medium",
+    "question": "Under what team organizational structure does a Micro-Frontend architecture provide genuine advantages over a monolithic frontend codebase? What performance penalties (bundle duplication, CSS collisions) must be managed?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "system-design",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "Independent deployment velocity across autonomous cross-functional feature teams",
+      "Bundle size bloat caused by duplicated framework runtimes (e.g. multiple React versions)",
+      "Shared design system consistency and cross-micro-frontend communication complexity",
+      "Module federation and iframe isolation performance trade-offs"
+    ],
+    "follow_up_topics": [
+      "Cost implications",
+      "Failure mode comparison",
+      "Operational monitoring"
+    ]
+  },
+  {
+    "id": "TR_014",
+    "category": "tradeoff_reasoning",
+    "topic": "Engineering Practices",
+    "difficulty": "hard",
+    "question": "In a microservices organization, what are the hidden trade-offs of publishing shared internal libraries (SDKs, models) versus allowing services to duplicate small amounts of domain logic?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "system-design",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "Shared libraries enforcing uniform serialization and boilerplate reduction",
+      "Tight dependency coupling: upgrading a shared library forcing lockstep redeployment of 50 microservices",
+      "Diamond dependency conflicts and transitive dependency vulnerabilities",
+      "Semantic versioning discipline and contract testing (Pact)"
+    ],
+    "follow_up_topics": [
+      "Cost implications",
+      "Failure mode comparison",
+      "Operational monitoring"
+    ]
+  },
+  {
+    "id": "TR_015",
+    "category": "tradeoff_reasoning",
+    "topic": "DevOps & Deployment",
+    "difficulty": "medium",
+    "question": "Contrast Blue-Green deployments with Canary releases and Rolling Updates. How do each handle database schema compatibility during the transition, and what are their infrastructure cost differences?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "system-design",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "Blue-Green requiring 100% duplicate infrastructure capacity during deployment window",
+      "Blue-Green instantaneous cutover with simple rollback via router switch",
+      "Canary routing 1-5% of real user traffic to new version to detect errors in production with minimal blast radius",
+      "Rolling updates requiring zero additional infrastructure but exposing dual versions simultaneously"
+    ],
+    "follow_up_topics": [
+      "Cost implications",
+      "Failure mode comparison",
+      "Operational monitoring"
+    ]
+  },
+  {
+    "id": "TR_016",
+    "category": "tradeoff_reasoning",
+    "topic": "API Design",
+    "difficulty": "hard",
+    "question": "Why is client-side pagination and filtering anti-pattern for large datasets? Under what specific low-cardinality circumstances is downloading full datasets to client memory justified?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "system-design",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "Database-side pagination (offset/keyset) minimizing network bandwidth and DB memory usage",
+      "Offset pagination degradation on deep offsets (`OFFSET 100000`) requiring sequential scan",
+      "Keyset (cursor) pagination providing O(1) performance using indexed columns",
+      "Client-side filtering acceptable only for small static reference data (< 1000 records)"
+    ],
+    "follow_up_topics": [
+      "Cost implications",
+      "Failure mode comparison",
+      "Operational monitoring"
+    ]
+  },
+  {
+    "id": "TR_017",
+    "category": "tradeoff_reasoning",
+    "topic": "Data Modeling",
+    "difficulty": "medium",
+    "question": "Compare Soft Deletes (e.g. `is_deleted = true`) with Hard Deletes paired with an immutable audit log table. How do soft deletes degrade index efficiency, unique constraints, and query complexity over time?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "system-design",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "Soft deletes polluting B-Tree indexes with dead rows, requiring partial indexes",
+      "Unique constraints broken by soft deleted records (cannot re-create same email/slug without composite unique keys)",
+      "Query bug risks: missing `WHERE is_deleted = false` causing catastrophic data leaks",
+      "Hard deletes with CDC or database triggers streaming deleted rows to append-only audit tables"
+    ],
+    "follow_up_topics": [
+      "Cost implications",
+      "Failure mode comparison",
+      "Operational monitoring"
+    ]
+  },
+  {
+    "id": "TR_018",
+    "category": "tradeoff_reasoning",
+    "topic": "System Architecture",
+    "difficulty": "hard",
+    "question": "Contrast Orchestrator-based Sagas with Choreographed (event-driven) Sagas. How do they compare in operational observability, circular dependency risk, and coupling?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "system-design",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "Choreography: services react to domain events without centralized coordinator; low initial coupling",
+      "Choreography: severe observability challenges; hard to trace distributed workflow state; circular event storms",
+      "Orchestration: centralized state machine coordinates steps and compensation; high observability and clear flow",
+      "Orchestrator becomes potential single point of failure or bottleneck if unpartitioned"
+    ],
+    "follow_up_topics": [
+      "Cost implications",
+      "Failure mode comparison",
+      "Operational monitoring"
+    ]
+  },
+  {
+    "id": "TR_019",
+    "category": "tradeoff_reasoning",
+    "topic": "Cloud Architecture",
+    "difficulty": "medium",
+    "question": "Evaluate running compute at the CDN edge (Cloudflare Workers, Lambda@Edge) versus in a centralized cloud region. For an AI-assisted search API, which processing steps belong at the edge and which must remain centralized?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "system-design",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "Edge delivering sub-20ms TTFB for geo-distributed users and caching static/hybrid content",
+      "Edge runtime limitations: memory limits, execution time caps, lack of persistent local state",
+      "Centralized backend necessary for heavy ML model inference, GPU clusters, and primary database transactions",
+      "Hybrid model: edge handles authentication, geo-routing, request caching, and payload transformation"
+    ],
+    "follow_up_topics": [
+      "Cost implications",
+      "Failure mode comparison",
+      "Operational monitoring"
+    ]
+  },
+  {
+    "id": "TR_020",
+    "category": "tradeoff_reasoning",
+    "topic": "Protocols & Serialization",
+    "difficulty": "hard",
+    "question": "Compare JSON over HTTP/1.1 with Protocol Buffers over gRPC for internal service-to-service communication. What are the CPU serialization, network bandwidth, and developer debugging trade-offs?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "system-design",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "JSON human-readable, schema-optional, but high CPU parsing overhead and verbose payload size",
+      "Protobuf binary encoding with variable-length integers (varints) achieving 5x-10x compression and faster parsing",
+      "Strict schema contracts via .proto files preventing breaking changes through field number versioning",
+      "Debugging trade-off: binary payloads require tooling (grpcurl, Postman gRPC) vs simple curl"
+    ],
+    "follow_up_topics": [
+      "Cost implications",
+      "Failure mode comparison",
+      "Operational monitoring"
+    ]
+  },
+  {
+    "id": "TR_021",
+    "category": "tradeoff_reasoning",
+    "topic": "Architecture",
+    "difficulty": "hard",
+    "question": "Compare Event Sourcing (storing immutable state transitions) with traditional CRUD updates. What are the auditability benefits versus the snapshotting and schema migration complexities?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "system-design"
+    ],
+    "expected_evidence": [
+      "Detailed comparison of Option A vs Option B strengths",
+      "Explicit engineering trade-offs (latency, cost, complexity, reliability)",
+      "Concrete boundary conditions determining when each option is optimal",
+      "Failure modes and operational recovery considerations"
+    ],
+    "follow_up_topics": [
+      "Operational maintenance",
+      "Failure scenario handling"
+    ]
+  },
+  {
+    "id": "TR_022",
+    "category": "tradeoff_reasoning",
+    "topic": "SaaS Architecture",
+    "difficulty": "hard",
+    "question": "Compare physically isolated single-tenant databases with shared multi-tenant databases with `tenant_id` columns. Evaluate data isolation compliance versus cloud infrastructure cost.",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "system-design"
+    ],
+    "expected_evidence": [
+      "Detailed comparison of Option A vs Option B strengths",
+      "Explicit engineering trade-offs (latency, cost, complexity, reliability)",
+      "Concrete boundary conditions determining when each option is optimal",
+      "Failure modes and operational recovery considerations"
+    ],
+    "follow_up_topics": [
+      "Operational maintenance",
+      "Failure scenario handling"
+    ]
+  },
+  {
+    "id": "TR_023",
+    "category": "tradeoff_reasoning",
+    "topic": "Language Design",
+    "difficulty": "hard",
+    "question": "Compare dynamically typed languages (Python, JavaScript) with statically typed languages (Go, Java, TypeScript) for large backend engineering organizations over a 5-year lifecycle.",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "system-design"
+    ],
+    "expected_evidence": [
+      "Detailed comparison of Option A vs Option B strengths",
+      "Explicit engineering trade-offs (latency, cost, complexity, reliability)",
+      "Concrete boundary conditions determining when each option is optimal",
+      "Failure modes and operational recovery considerations"
+    ],
+    "follow_up_topics": [
+      "Operational maintenance",
+      "Failure scenario handling"
+    ]
+  },
+  {
+    "id": "TR_024",
+    "category": "tradeoff_reasoning",
+    "topic": "Infrastructure",
+    "difficulty": "hard",
+    "question": "Under what database workload constraints is vertical scaling (larger cloud instances) preferred over horizontal sharding or read replicas? Where does vertical scaling hit a hard ceiling?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "system-design"
+    ],
+    "expected_evidence": [
+      "Detailed comparison of Option A vs Option B strengths",
+      "Explicit engineering trade-offs (latency, cost, complexity, reliability)",
+      "Concrete boundary conditions determining when each option is optimal",
+      "Failure modes and operational recovery considerations"
+    ],
+    "follow_up_topics": [
+      "Operational maintenance",
+      "Failure scenario handling"
+    ]
+  },
+  {
+    "id": "TR_025",
+    "category": "tradeoff_reasoning",
+    "topic": "Databases",
+    "difficulty": "hard",
+    "question": "Contrast synchronous multi-AZ database replication with asynchronous read replicas across write latency, recovery point objective (RPO), and recovery time objective (RTO).",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "system-design"
+    ],
+    "expected_evidence": [
+      "Detailed comparison of Option A vs Option B strengths",
+      "Explicit engineering trade-offs (latency, cost, complexity, reliability)",
+      "Concrete boundary conditions determining when each option is optimal",
+      "Failure modes and operational recovery considerations"
+    ],
+    "follow_up_topics": [
+      "Operational maintenance",
+      "Failure scenario handling"
+    ]
+  },
+  {
+    "id": "TR_026",
+    "category": "tradeoff_reasoning",
+    "topic": "Caching",
+    "difficulty": "hard",
+    "question": "Compare in-memory caching (Redis RAM) with local NVMe SSD caching for petabyte-scale read-heavy asset delivery. How do cost per gigabyte and latency percentiles compare?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "system-design"
+    ],
+    "expected_evidence": [
+      "Detailed comparison of Option A vs Option B strengths",
+      "Explicit engineering trade-offs (latency, cost, complexity, reliability)",
+      "Concrete boundary conditions determining when each option is optimal",
+      "Failure modes and operational recovery considerations"
+    ],
+    "follow_up_topics": [
+      "Operational maintenance",
+      "Failure scenario handling"
+    ]
+  },
+  {
+    "id": "TR_027",
+    "category": "tradeoff_reasoning",
+    "topic": "API Design",
+    "difficulty": "hard",
+    "question": "Compare GraphQL with REST APIs for mobile applications fetching deeply nested relational data. How do over-fetching prevention and request batching compare with HTTP caching complexity?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "system-design"
+    ],
+    "expected_evidence": [
+      "Detailed comparison of Option A vs Option B strengths",
+      "Explicit engineering trade-offs (latency, cost, complexity, reliability)",
+      "Concrete boundary conditions determining when each option is optimal",
+      "Failure modes and operational recovery considerations"
+    ],
+    "follow_up_topics": [
+      "Operational maintenance",
+      "Failure scenario handling"
+    ]
+  },
+  {
+    "id": "TR_028",
+    "category": "tradeoff_reasoning",
+    "topic": "Infrastructure",
+    "difficulty": "hard",
+    "question": "Compare running latency-critical trading or database engines on bare-metal hardware versus containerized on Kubernetes. Evaluate kernel namespace isolation overhead versus orchestration flexibility.",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "system-design"
+    ],
+    "expected_evidence": [
+      "Detailed comparison of Option A vs Option B strengths",
+      "Explicit engineering trade-offs (latency, cost, complexity, reliability)",
+      "Concrete boundary conditions determining when each option is optimal",
+      "Failure modes and operational recovery considerations"
+    ],
+    "follow_up_topics": [
+      "Operational maintenance",
+      "Failure scenario handling"
+    ]
+  },
+  {
+    "id": "TR_029",
+    "category": "tradeoff_reasoning",
+    "topic": "Messaging",
+    "difficulty": "hard",
+    "question": "Compare RabbitMQ's smart-broker dumb-consumer model with Kafka's dumb-broker smart-consumer commit-log model across message routing flexibility, retention, and throughput.",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "system-design"
+    ],
+    "expected_evidence": [
+      "Detailed comparison of Option A vs Option B strengths",
+      "Explicit engineering trade-offs (latency, cost, complexity, reliability)",
+      "Concrete boundary conditions determining when each option is optimal",
+      "Failure modes and operational recovery considerations"
+    ],
+    "follow_up_topics": [
+      "Operational maintenance",
+      "Failure scenario handling"
+    ]
+  },
+  {
+    "id": "TR_030",
+    "category": "tradeoff_reasoning",
+    "topic": "Architecture",
+    "difficulty": "hard",
+    "question": "Compare database-per-service with a shared database instance partitioned by separate schemas. What security and independent scaling benefits emerge versus cross-service transactional pain?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "system-design"
+    ],
+    "expected_evidence": [
+      "Detailed comparison of Option A vs Option B strengths",
+      "Explicit engineering trade-offs (latency, cost, complexity, reliability)",
+      "Concrete boundary conditions determining when each option is optimal",
+      "Failure modes and operational recovery considerations"
+    ],
+    "follow_up_topics": [
+      "Operational maintenance",
+      "Failure scenario handling"
+    ]
+  },
+  {
+    "id": "TR_031",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #31), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_032",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #32), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_033",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #33), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_034",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #34), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_035",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #35), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_036",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #36), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_037",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #37), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_038",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #38), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_039",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #39), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_040",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #40), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_041",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #41), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_042",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #42), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_043",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #43), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_044",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #44), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_045",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #45), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_046",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #46), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_047",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #47), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_048",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #48), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_049",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #49), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_050",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #50), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_051",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #51), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_052",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #52), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_053",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #53), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_054",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #54), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_055",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #55), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_056",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #56), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_057",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #57), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_058",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #58), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_059",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #59), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_060",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #60), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_061",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #61), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_062",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #62), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_063",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #63), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_064",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #64), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_065",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #65), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_066",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #66), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_067",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #67), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_068",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #68), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_069",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #69), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_070",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #70), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_071",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #71), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_072",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #72), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_073",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #73), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_074",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #74), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_075",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #75), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_076",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #76), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_077",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #77), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_078",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #78), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_079",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #79), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_080",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #80), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_081",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #81), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_082",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #82), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_083",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #83), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_084",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #84), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_085",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #85), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_086",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #86), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_087",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #87), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_088",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #88), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_089",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #89), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_090",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #90), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_091",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #91), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_092",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #92), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_093",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #93), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_094",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #94), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_095",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #95), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_096",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #96), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_097",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #97), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_098",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #98), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_099",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #99), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_100",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #100), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_101",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #101), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_102",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #102), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_103",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #103), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_104",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "medium",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #104), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  },
+  {
+    "id": "TR_105",
+    "category": "tradeoff_reasoning",
+    "topic": "System Design Decisions",
+    "difficulty": "hard",
+    "question": "When evaluating architectural decisions in distributed systems (Decision #105), how do you balance immediate implementation velocity against long-term operational maintenance and scalability ceilings?",
+    "question_type": "tradeoff",
+    "skills": [
+      "architecture",
+      "tradeoffs",
+      "engineering-management"
+    ],
+    "expected_evidence": [
+      "Quantified trade-off criteria (cost, latency, throughput, complexity)",
+      "Identification of technical debt and maintenance ceilings",
+      "Risk mitigation strategies during architectural transitions",
+      "Observability metrics required to validate the chosen path"
+    ],
+    "follow_up_topics": [
+      "Long-term maintainability",
+      "Migration complexity"
+    ]
+  }
+]

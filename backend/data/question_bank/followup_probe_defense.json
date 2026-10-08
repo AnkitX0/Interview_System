@@ -1,0 +1,2522 @@
+[
+  {
+    "id": "FP_001",
+    "category": "followup_probe_defense",
+    "topic": "Architecture Decision",
+    "difficulty": "hard",
+    "question": "Why did you choose that specific design over the standard industry default? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #001).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_002",
+    "category": "followup_probe_defense",
+    "topic": "Failure Handling",
+    "difficulty": "hard",
+    "question": "What happens to your system state if the primary worker crashes midway through executing that operation? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #002).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_003",
+    "category": "followup_probe_defense",
+    "topic": "Scalability Limits",
+    "difficulty": "medium",
+    "question": "How does your proposed architecture behave when incoming traffic volume spikes by 10x in under 60 seconds? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #003).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_004",
+    "category": "followup_probe_defense",
+    "topic": "Empirical Evidence",
+    "difficulty": "hard",
+    "question": "What telemetry metrics or concrete benchmarks did you rely on to validate that performance claim? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #004).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_005",
+    "category": "followup_probe_defense",
+    "topic": "Alternative Rejection",
+    "difficulty": "hard",
+    "question": "Which alternative architectural designs did you evaluate, and what specific flaw caused you to reject them? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #005).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_006",
+    "category": "followup_probe_defense",
+    "topic": "Reliability Vulnerabilities",
+    "difficulty": "medium",
+    "question": "What single point of failure (SPOF) still exists in that design, and why have you accepted that risk? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #006).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_007",
+    "category": "followup_probe_defense",
+    "topic": "Partial Failure Modes",
+    "difficulty": "hard",
+    "question": "How do you detect and recover from partial write failures when updating both a database and a cache? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #007).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_008",
+    "category": "followup_probe_defense",
+    "topic": "Latency Degradation",
+    "difficulty": "hard",
+    "question": "If network latency between your microservices degrades by 300ms, how does your system gracefully degrade? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #008).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_009",
+    "category": "followup_probe_defense",
+    "topic": "Technical Debt",
+    "difficulty": "medium",
+    "question": "What compromise or shortcut did you take in that implementation that you would re-architect today? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #009).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_010",
+    "category": "followup_probe_defense",
+    "topic": "Design Defense",
+    "difficulty": "hard",
+    "question": "How would you defend that design against a principal engineer claiming it introduces unnecessary operational complexity? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #010).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_011",
+    "category": "followup_probe_defense",
+    "topic": "Concurrency & Race Conditions",
+    "difficulty": "hard",
+    "question": "What happens when two concurrent requests attempt to modify that exact resource at the same millisecond? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #011).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_012",
+    "category": "followup_probe_defense",
+    "topic": "Cascading Failure Prevention",
+    "difficulty": "medium",
+    "question": "How do you prevent a downstream dependency failure from causing a cascading failure across your entire system? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #012).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_013",
+    "category": "followup_probe_defense",
+    "topic": "Disaster Recovery",
+    "difficulty": "hard",
+    "question": "What is your data recovery procedure if a faulty migration corrupts 5% of customer records in production? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #013).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_014",
+    "category": "followup_probe_defense",
+    "topic": "Idempotency Verification",
+    "difficulty": "hard",
+    "question": "How did you ensure that your asynchronous background job is strictly idempotent upon retries? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #014).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_015",
+    "category": "followup_probe_defense",
+    "topic": "Edge Defense",
+    "difficulty": "medium",
+    "question": "If an upstream service sends malformed or malicious payloads at 5,000 RPS, where does your system reject it? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #015).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_016",
+    "category": "followup_probe_defense",
+    "topic": "Query Plan Defense",
+    "difficulty": "hard",
+    "question": "Why is that database query index optimal? Walk through how the query planner utilizes the index tree. Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #016).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_017",
+    "category": "followup_probe_defense",
+    "topic": "Security Posture",
+    "difficulty": "hard",
+    "question": "How does your authentication layer handle token revocation when a compromised account is flagged immediately? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #017).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_018",
+    "category": "followup_probe_defense",
+    "topic": "Backpressure Handling",
+    "difficulty": "medium",
+    "question": "What happens when your message broker partition experiences consumer lag of over 1,000,000 messages? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #018).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_019",
+    "category": "followup_probe_defense",
+    "topic": "Resource Contention",
+    "difficulty": "hard",
+    "question": "How do you verify that your database connection pool does not become exhausted during traffic spikes? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #019).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_020",
+    "category": "followup_probe_defense",
+    "topic": "Runtime Health",
+    "difficulty": "hard",
+    "question": "What memory limit or garbage collection pause time thresholds did you set, and what triggered them? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #020).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_021",
+    "category": "followup_probe_defense",
+    "topic": "Architecture Decision",
+    "difficulty": "medium",
+    "question": "Why did you choose that specific design over the standard industry default? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #021).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_022",
+    "category": "followup_probe_defense",
+    "topic": "Failure Handling",
+    "difficulty": "hard",
+    "question": "What happens to your system state if the primary worker crashes midway through executing that operation? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #022).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_023",
+    "category": "followup_probe_defense",
+    "topic": "Scalability Limits",
+    "difficulty": "hard",
+    "question": "How does your proposed architecture behave when incoming traffic volume spikes by 10x in under 60 seconds? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #023).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_024",
+    "category": "followup_probe_defense",
+    "topic": "Empirical Evidence",
+    "difficulty": "medium",
+    "question": "What telemetry metrics or concrete benchmarks did you rely on to validate that performance claim? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #024).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_025",
+    "category": "followup_probe_defense",
+    "topic": "Alternative Rejection",
+    "difficulty": "hard",
+    "question": "Which alternative architectural designs did you evaluate, and what specific flaw caused you to reject them? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #025).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_026",
+    "category": "followup_probe_defense",
+    "topic": "Reliability Vulnerabilities",
+    "difficulty": "hard",
+    "question": "What single point of failure (SPOF) still exists in that design, and why have you accepted that risk? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #026).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_027",
+    "category": "followup_probe_defense",
+    "topic": "Partial Failure Modes",
+    "difficulty": "medium",
+    "question": "How do you detect and recover from partial write failures when updating both a database and a cache? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #027).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_028",
+    "category": "followup_probe_defense",
+    "topic": "Latency Degradation",
+    "difficulty": "hard",
+    "question": "If network latency between your microservices degrades by 300ms, how does your system gracefully degrade? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #028).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_029",
+    "category": "followup_probe_defense",
+    "topic": "Technical Debt",
+    "difficulty": "hard",
+    "question": "What compromise or shortcut did you take in that implementation that you would re-architect today? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #029).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_030",
+    "category": "followup_probe_defense",
+    "topic": "Design Defense",
+    "difficulty": "medium",
+    "question": "How would you defend that design against a principal engineer claiming it introduces unnecessary operational complexity? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #030).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_031",
+    "category": "followup_probe_defense",
+    "topic": "Concurrency & Race Conditions",
+    "difficulty": "hard",
+    "question": "What happens when two concurrent requests attempt to modify that exact resource at the same millisecond? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #031).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_032",
+    "category": "followup_probe_defense",
+    "topic": "Cascading Failure Prevention",
+    "difficulty": "hard",
+    "question": "How do you prevent a downstream dependency failure from causing a cascading failure across your entire system? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #032).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_033",
+    "category": "followup_probe_defense",
+    "topic": "Disaster Recovery",
+    "difficulty": "medium",
+    "question": "What is your data recovery procedure if a faulty migration corrupts 5% of customer records in production? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #033).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_034",
+    "category": "followup_probe_defense",
+    "topic": "Idempotency Verification",
+    "difficulty": "hard",
+    "question": "How did you ensure that your asynchronous background job is strictly idempotent upon retries? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #034).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_035",
+    "category": "followup_probe_defense",
+    "topic": "Edge Defense",
+    "difficulty": "hard",
+    "question": "If an upstream service sends malformed or malicious payloads at 5,000 RPS, where does your system reject it? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #035).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_036",
+    "category": "followup_probe_defense",
+    "topic": "Query Plan Defense",
+    "difficulty": "medium",
+    "question": "Why is that database query index optimal? Walk through how the query planner utilizes the index tree. Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #036).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_037",
+    "category": "followup_probe_defense",
+    "topic": "Security Posture",
+    "difficulty": "hard",
+    "question": "How does your authentication layer handle token revocation when a compromised account is flagged immediately? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #037).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_038",
+    "category": "followup_probe_defense",
+    "topic": "Backpressure Handling",
+    "difficulty": "hard",
+    "question": "What happens when your message broker partition experiences consumer lag of over 1,000,000 messages? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #038).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_039",
+    "category": "followup_probe_defense",
+    "topic": "Resource Contention",
+    "difficulty": "medium",
+    "question": "How do you verify that your database connection pool does not become exhausted during traffic spikes? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #039).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_040",
+    "category": "followup_probe_defense",
+    "topic": "Runtime Health",
+    "difficulty": "hard",
+    "question": "What memory limit or garbage collection pause time thresholds did you set, and what triggered them? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #040).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_041",
+    "category": "followup_probe_defense",
+    "topic": "Architecture Decision",
+    "difficulty": "hard",
+    "question": "Why did you choose that specific design over the standard industry default? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #041).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_042",
+    "category": "followup_probe_defense",
+    "topic": "Failure Handling",
+    "difficulty": "medium",
+    "question": "What happens to your system state if the primary worker crashes midway through executing that operation? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #042).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_043",
+    "category": "followup_probe_defense",
+    "topic": "Scalability Limits",
+    "difficulty": "hard",
+    "question": "How does your proposed architecture behave when incoming traffic volume spikes by 10x in under 60 seconds? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #043).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_044",
+    "category": "followup_probe_defense",
+    "topic": "Empirical Evidence",
+    "difficulty": "hard",
+    "question": "What telemetry metrics or concrete benchmarks did you rely on to validate that performance claim? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #044).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_045",
+    "category": "followup_probe_defense",
+    "topic": "Alternative Rejection",
+    "difficulty": "medium",
+    "question": "Which alternative architectural designs did you evaluate, and what specific flaw caused you to reject them? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #045).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_046",
+    "category": "followup_probe_defense",
+    "topic": "Reliability Vulnerabilities",
+    "difficulty": "hard",
+    "question": "What single point of failure (SPOF) still exists in that design, and why have you accepted that risk? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #046).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_047",
+    "category": "followup_probe_defense",
+    "topic": "Partial Failure Modes",
+    "difficulty": "hard",
+    "question": "How do you detect and recover from partial write failures when updating both a database and a cache? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #047).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_048",
+    "category": "followup_probe_defense",
+    "topic": "Latency Degradation",
+    "difficulty": "medium",
+    "question": "If network latency between your microservices degrades by 300ms, how does your system gracefully degrade? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #048).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_049",
+    "category": "followup_probe_defense",
+    "topic": "Technical Debt",
+    "difficulty": "hard",
+    "question": "What compromise or shortcut did you take in that implementation that you would re-architect today? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #049).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_050",
+    "category": "followup_probe_defense",
+    "topic": "Design Defense",
+    "difficulty": "hard",
+    "question": "How would you defend that design against a principal engineer claiming it introduces unnecessary operational complexity? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #050).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_051",
+    "category": "followup_probe_defense",
+    "topic": "Concurrency & Race Conditions",
+    "difficulty": "medium",
+    "question": "What happens when two concurrent requests attempt to modify that exact resource at the same millisecond? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #051).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_052",
+    "category": "followup_probe_defense",
+    "topic": "Cascading Failure Prevention",
+    "difficulty": "hard",
+    "question": "How do you prevent a downstream dependency failure from causing a cascading failure across your entire system? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #052).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_053",
+    "category": "followup_probe_defense",
+    "topic": "Disaster Recovery",
+    "difficulty": "hard",
+    "question": "What is your data recovery procedure if a faulty migration corrupts 5% of customer records in production? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #053).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_054",
+    "category": "followup_probe_defense",
+    "topic": "Idempotency Verification",
+    "difficulty": "medium",
+    "question": "How did you ensure that your asynchronous background job is strictly idempotent upon retries? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #054).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_055",
+    "category": "followup_probe_defense",
+    "topic": "Edge Defense",
+    "difficulty": "hard",
+    "question": "If an upstream service sends malformed or malicious payloads at 5,000 RPS, where does your system reject it? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #055).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_056",
+    "category": "followup_probe_defense",
+    "topic": "Query Plan Defense",
+    "difficulty": "hard",
+    "question": "Why is that database query index optimal? Walk through how the query planner utilizes the index tree. Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #056).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_057",
+    "category": "followup_probe_defense",
+    "topic": "Security Posture",
+    "difficulty": "medium",
+    "question": "How does your authentication layer handle token revocation when a compromised account is flagged immediately? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #057).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_058",
+    "category": "followup_probe_defense",
+    "topic": "Backpressure Handling",
+    "difficulty": "hard",
+    "question": "What happens when your message broker partition experiences consumer lag of over 1,000,000 messages? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #058).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_059",
+    "category": "followup_probe_defense",
+    "topic": "Resource Contention",
+    "difficulty": "hard",
+    "question": "How do you verify that your database connection pool does not become exhausted during traffic spikes? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #059).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_060",
+    "category": "followup_probe_defense",
+    "topic": "Runtime Health",
+    "difficulty": "medium",
+    "question": "What memory limit or garbage collection pause time thresholds did you set, and what triggered them? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #060).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_061",
+    "category": "followup_probe_defense",
+    "topic": "Architecture Decision",
+    "difficulty": "hard",
+    "question": "Why did you choose that specific design over the standard industry default? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #061).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_062",
+    "category": "followup_probe_defense",
+    "topic": "Failure Handling",
+    "difficulty": "hard",
+    "question": "What happens to your system state if the primary worker crashes midway through executing that operation? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #062).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_063",
+    "category": "followup_probe_defense",
+    "topic": "Scalability Limits",
+    "difficulty": "medium",
+    "question": "How does your proposed architecture behave when incoming traffic volume spikes by 10x in under 60 seconds? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #063).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_064",
+    "category": "followup_probe_defense",
+    "topic": "Empirical Evidence",
+    "difficulty": "hard",
+    "question": "What telemetry metrics or concrete benchmarks did you rely on to validate that performance claim? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #064).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_065",
+    "category": "followup_probe_defense",
+    "topic": "Alternative Rejection",
+    "difficulty": "hard",
+    "question": "Which alternative architectural designs did you evaluate, and what specific flaw caused you to reject them? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #065).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_066",
+    "category": "followup_probe_defense",
+    "topic": "Reliability Vulnerabilities",
+    "difficulty": "medium",
+    "question": "What single point of failure (SPOF) still exists in that design, and why have you accepted that risk? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #066).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_067",
+    "category": "followup_probe_defense",
+    "topic": "Partial Failure Modes",
+    "difficulty": "hard",
+    "question": "How do you detect and recover from partial write failures when updating both a database and a cache? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #067).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_068",
+    "category": "followup_probe_defense",
+    "topic": "Latency Degradation",
+    "difficulty": "hard",
+    "question": "If network latency between your microservices degrades by 300ms, how does your system gracefully degrade? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #068).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_069",
+    "category": "followup_probe_defense",
+    "topic": "Technical Debt",
+    "difficulty": "medium",
+    "question": "What compromise or shortcut did you take in that implementation that you would re-architect today? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #069).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_070",
+    "category": "followup_probe_defense",
+    "topic": "Design Defense",
+    "difficulty": "hard",
+    "question": "How would you defend that design against a principal engineer claiming it introduces unnecessary operational complexity? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #070).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_071",
+    "category": "followup_probe_defense",
+    "topic": "Concurrency & Race Conditions",
+    "difficulty": "hard",
+    "question": "What happens when two concurrent requests attempt to modify that exact resource at the same millisecond? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #071).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_072",
+    "category": "followup_probe_defense",
+    "topic": "Cascading Failure Prevention",
+    "difficulty": "medium",
+    "question": "How do you prevent a downstream dependency failure from causing a cascading failure across your entire system? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #072).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_073",
+    "category": "followup_probe_defense",
+    "topic": "Disaster Recovery",
+    "difficulty": "hard",
+    "question": "What is your data recovery procedure if a faulty migration corrupts 5% of customer records in production? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #073).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_074",
+    "category": "followup_probe_defense",
+    "topic": "Idempotency Verification",
+    "difficulty": "hard",
+    "question": "How did you ensure that your asynchronous background job is strictly idempotent upon retries? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #074).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_075",
+    "category": "followup_probe_defense",
+    "topic": "Edge Defense",
+    "difficulty": "medium",
+    "question": "If an upstream service sends malformed or malicious payloads at 5,000 RPS, where does your system reject it? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #075).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_076",
+    "category": "followup_probe_defense",
+    "topic": "Query Plan Defense",
+    "difficulty": "hard",
+    "question": "Why is that database query index optimal? Walk through how the query planner utilizes the index tree. Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #076).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_077",
+    "category": "followup_probe_defense",
+    "topic": "Security Posture",
+    "difficulty": "hard",
+    "question": "How does your authentication layer handle token revocation when a compromised account is flagged immediately? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #077).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_078",
+    "category": "followup_probe_defense",
+    "topic": "Backpressure Handling",
+    "difficulty": "medium",
+    "question": "What happens when your message broker partition experiences consumer lag of over 1,000,000 messages? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #078).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_079",
+    "category": "followup_probe_defense",
+    "topic": "Resource Contention",
+    "difficulty": "hard",
+    "question": "How do you verify that your database connection pool does not become exhausted during traffic spikes? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #079).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_080",
+    "category": "followup_probe_defense",
+    "topic": "Runtime Health",
+    "difficulty": "hard",
+    "question": "What memory limit or garbage collection pause time thresholds did you set, and what triggered them? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #080).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_081",
+    "category": "followup_probe_defense",
+    "topic": "Architecture Decision",
+    "difficulty": "medium",
+    "question": "Why did you choose that specific design over the standard industry default? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #081).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_082",
+    "category": "followup_probe_defense",
+    "topic": "Failure Handling",
+    "difficulty": "hard",
+    "question": "What happens to your system state if the primary worker crashes midway through executing that operation? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #082).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_083",
+    "category": "followup_probe_defense",
+    "topic": "Scalability Limits",
+    "difficulty": "hard",
+    "question": "How does your proposed architecture behave when incoming traffic volume spikes by 10x in under 60 seconds? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #083).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_084",
+    "category": "followup_probe_defense",
+    "topic": "Empirical Evidence",
+    "difficulty": "medium",
+    "question": "What telemetry metrics or concrete benchmarks did you rely on to validate that performance claim? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #084).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_085",
+    "category": "followup_probe_defense",
+    "topic": "Alternative Rejection",
+    "difficulty": "hard",
+    "question": "Which alternative architectural designs did you evaluate, and what specific flaw caused you to reject them? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #085).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_086",
+    "category": "followup_probe_defense",
+    "topic": "Reliability Vulnerabilities",
+    "difficulty": "hard",
+    "question": "What single point of failure (SPOF) still exists in that design, and why have you accepted that risk? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #086).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_087",
+    "category": "followup_probe_defense",
+    "topic": "Partial Failure Modes",
+    "difficulty": "medium",
+    "question": "How do you detect and recover from partial write failures when updating both a database and a cache? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #087).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_088",
+    "category": "followup_probe_defense",
+    "topic": "Latency Degradation",
+    "difficulty": "hard",
+    "question": "If network latency between your microservices degrades by 300ms, how does your system gracefully degrade? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #088).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_089",
+    "category": "followup_probe_defense",
+    "topic": "Technical Debt",
+    "difficulty": "hard",
+    "question": "What compromise or shortcut did you take in that implementation that you would re-architect today? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #089).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_090",
+    "category": "followup_probe_defense",
+    "topic": "Design Defense",
+    "difficulty": "medium",
+    "question": "How would you defend that design against a principal engineer claiming it introduces unnecessary operational complexity? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #090).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_091",
+    "category": "followup_probe_defense",
+    "topic": "Concurrency & Race Conditions",
+    "difficulty": "hard",
+    "question": "What happens when two concurrent requests attempt to modify that exact resource at the same millisecond? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #091).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_092",
+    "category": "followup_probe_defense",
+    "topic": "Cascading Failure Prevention",
+    "difficulty": "hard",
+    "question": "How do you prevent a downstream dependency failure from causing a cascading failure across your entire system? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #092).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_093",
+    "category": "followup_probe_defense",
+    "topic": "Disaster Recovery",
+    "difficulty": "medium",
+    "question": "What is your data recovery procedure if a faulty migration corrupts 5% of customer records in production? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #093).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_094",
+    "category": "followup_probe_defense",
+    "topic": "Idempotency Verification",
+    "difficulty": "hard",
+    "question": "How did you ensure that your asynchronous background job is strictly idempotent upon retries? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #094).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_095",
+    "category": "followup_probe_defense",
+    "topic": "Edge Defense",
+    "difficulty": "hard",
+    "question": "If an upstream service sends malformed or malicious payloads at 5,000 RPS, where does your system reject it? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #095).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_096",
+    "category": "followup_probe_defense",
+    "topic": "Query Plan Defense",
+    "difficulty": "medium",
+    "question": "Why is that database query index optimal? Walk through how the query planner utilizes the index tree. Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #096).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_097",
+    "category": "followup_probe_defense",
+    "topic": "Security Posture",
+    "difficulty": "hard",
+    "question": "How does your authentication layer handle token revocation when a compromised account is flagged immediately? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #097).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_098",
+    "category": "followup_probe_defense",
+    "topic": "Backpressure Handling",
+    "difficulty": "hard",
+    "question": "What happens when your message broker partition experiences consumer lag of over 1,000,000 messages? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #098).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_099",
+    "category": "followup_probe_defense",
+    "topic": "Resource Contention",
+    "difficulty": "medium",
+    "question": "How do you verify that your database connection pool does not become exhausted during traffic spikes? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #099).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_100",
+    "category": "followup_probe_defense",
+    "topic": "Runtime Health",
+    "difficulty": "hard",
+    "question": "What memory limit or garbage collection pause time thresholds did you set, and what triggered them? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #100).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_101",
+    "category": "followup_probe_defense",
+    "topic": "Architecture Decision",
+    "difficulty": "hard",
+    "question": "Why did you choose that specific design over the standard industry default? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #101).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_102",
+    "category": "followup_probe_defense",
+    "topic": "Failure Handling",
+    "difficulty": "medium",
+    "question": "What happens to your system state if the primary worker crashes midway through executing that operation? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #102).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_103",
+    "category": "followup_probe_defense",
+    "topic": "Scalability Limits",
+    "difficulty": "hard",
+    "question": "How does your proposed architecture behave when incoming traffic volume spikes by 10x in under 60 seconds? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #103).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_104",
+    "category": "followup_probe_defense",
+    "topic": "Empirical Evidence",
+    "difficulty": "hard",
+    "question": "What telemetry metrics or concrete benchmarks did you rely on to validate that performance claim? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #104).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  },
+  {
+    "id": "FP_105",
+    "category": "followup_probe_defense",
+    "topic": "Alternative Rejection",
+    "difficulty": "medium",
+    "question": "Which alternative architectural designs did you evaluate, and what specific flaw caused you to reject them? Elaborate with concrete mechanisms, error states, and production trade-offs (Probe #105).",
+    "question_type": "probe",
+    "skills": [
+      "interview-defense",
+      "critical-thinking",
+      "system-internals"
+    ],
+    "expected_evidence": [
+      "Unambiguous direct answer addressing the interviewer's specific challenge",
+      "Root engineering cause or architectural justification",
+      "Explicit handling of failure modes, edge cases, and edge-of-envelope scenarios",
+      "Personal ownership and concrete technical specifics rather than hand-waving"
+    ],
+    "follow_up_topics": [
+      "Edge cases",
+      "Extreme scale behavior",
+      "Failure mitigation"
+    ]
+  }
+]

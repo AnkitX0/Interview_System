@@ -1,0 +1,2522 @@
+[
+  {
+    "id": "BS_001",
+    "category": "behavioral_scenarios",
+    "topic": "Disagreement & Conflict",
+    "difficulty": "medium",
+    "question": "Tell me about a time you strongly disagreed with a senior engineer or tech lead on an architectural decision. How did you resolve the disagreement? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #001)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_002",
+    "category": "behavioral_scenarios",
+    "topic": "Failure & Accountability",
+    "difficulty": "medium",
+    "question": "Describe a situation where a critical production outage or major bug was caused by code you wrote. How did you take ownership and fix it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #002)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_003",
+    "category": "behavioral_scenarios",
+    "topic": "Deadlines & Prioritization",
+    "difficulty": "medium",
+    "question": "Tell me about a time you were faced with a tight project deadline and realized you could not complete all features in time. How did you prioritize? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #003)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_004",
+    "category": "behavioral_scenarios",
+    "topic": "Mentorship & Teamwork",
+    "difficulty": "medium",
+    "question": "Describe a time you had to mentor or unblock a struggling teammate while simultaneously managing your own tight delivery commitments. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #004)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_005",
+    "category": "behavioral_scenarios",
+    "topic": "Navigating Ambiguity",
+    "difficulty": "medium",
+    "question": "Tell me about an ambiguous project where the requirements were vague or constantly shifting. How did you establish clarity and deliver? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #005)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_006",
+    "category": "behavioral_scenarios",
+    "topic": "Receiving Feedback",
+    "difficulty": "medium",
+    "question": "Describe a time you received difficult constructive feedback during a performance review. How did you process it and what changed? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #006)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_007",
+    "category": "behavioral_scenarios",
+    "topic": "Decision Making Under Pressure",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to make a high-stakes technical decision under incomplete information and tight time constraints. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #007)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_008",
+    "category": "behavioral_scenarios",
+    "topic": "Advocating for Quality",
+    "difficulty": "medium",
+    "question": "Describe a situation where you identified significant technical debt that was slowing down team velocity. How did you advocate for fixing it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #008)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_009",
+    "category": "behavioral_scenarios",
+    "topic": "Cross-Functional Collaboration",
+    "difficulty": "medium",
+    "question": "Tell me about a time you worked with a cross-functional partner (e.g. Product, Design, QA) who had conflicting goals. How did you collaborate? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #009)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_010",
+    "category": "behavioral_scenarios",
+    "topic": "Learning from Failure",
+    "difficulty": "medium",
+    "question": "Describe a time a project you led or contributed to failed to achieve its intended business or technical outcome. What did you learn? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #010)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_011",
+    "category": "behavioral_scenarios",
+    "topic": "Adaptability & Rapid Learning",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to quickly learn an unfamiliar technology, language, or system to solve an urgent production problem. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #011)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_012",
+    "category": "behavioral_scenarios",
+    "topic": "Influence Without Authority",
+    "difficulty": "medium",
+    "question": "Describe a time you successfully convinced skeptical stakeholders or peers to adopt a new engineering standard, process, or tool. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #012)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_013",
+    "category": "behavioral_scenarios",
+    "topic": "Speed vs Quality Balance",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to balance shipping a feature quickly to meet a business deadline versus adhering to engineering best practices. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #013)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_014",
+    "category": "behavioral_scenarios",
+    "topic": "Continuous Improvement",
+    "difficulty": "medium",
+    "question": "Describe a situation where you noticed a team process was broken or inefficient. How did you take initiative to improve it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #014)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_015",
+    "category": "behavioral_scenarios",
+    "topic": "Peer Accountability",
+    "difficulty": "medium",
+    "question": "Tell me about a time a teammate was not pulling their weight or missing commitments on a critical project. How did you handle it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #015)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_016",
+    "category": "behavioral_scenarios",
+    "topic": "Disagreement & Conflict",
+    "difficulty": "medium",
+    "question": "Tell me about a time you strongly disagreed with a senior engineer or tech lead on an architectural decision. How did you resolve the disagreement? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #016)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_017",
+    "category": "behavioral_scenarios",
+    "topic": "Failure & Accountability",
+    "difficulty": "medium",
+    "question": "Describe a situation where a critical production outage or major bug was caused by code you wrote. How did you take ownership and fix it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #017)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_018",
+    "category": "behavioral_scenarios",
+    "topic": "Deadlines & Prioritization",
+    "difficulty": "medium",
+    "question": "Tell me about a time you were faced with a tight project deadline and realized you could not complete all features in time. How did you prioritize? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #018)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_019",
+    "category": "behavioral_scenarios",
+    "topic": "Mentorship & Teamwork",
+    "difficulty": "medium",
+    "question": "Describe a time you had to mentor or unblock a struggling teammate while simultaneously managing your own tight delivery commitments. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #019)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_020",
+    "category": "behavioral_scenarios",
+    "topic": "Navigating Ambiguity",
+    "difficulty": "medium",
+    "question": "Tell me about an ambiguous project where the requirements were vague or constantly shifting. How did you establish clarity and deliver? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #020)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_021",
+    "category": "behavioral_scenarios",
+    "topic": "Receiving Feedback",
+    "difficulty": "medium",
+    "question": "Describe a time you received difficult constructive feedback during a performance review. How did you process it and what changed? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #021)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_022",
+    "category": "behavioral_scenarios",
+    "topic": "Decision Making Under Pressure",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to make a high-stakes technical decision under incomplete information and tight time constraints. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #022)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_023",
+    "category": "behavioral_scenarios",
+    "topic": "Advocating for Quality",
+    "difficulty": "medium",
+    "question": "Describe a situation where you identified significant technical debt that was slowing down team velocity. How did you advocate for fixing it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #023)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_024",
+    "category": "behavioral_scenarios",
+    "topic": "Cross-Functional Collaboration",
+    "difficulty": "medium",
+    "question": "Tell me about a time you worked with a cross-functional partner (e.g. Product, Design, QA) who had conflicting goals. How did you collaborate? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #024)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_025",
+    "category": "behavioral_scenarios",
+    "topic": "Learning from Failure",
+    "difficulty": "medium",
+    "question": "Describe a time a project you led or contributed to failed to achieve its intended business or technical outcome. What did you learn? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #025)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_026",
+    "category": "behavioral_scenarios",
+    "topic": "Adaptability & Rapid Learning",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to quickly learn an unfamiliar technology, language, or system to solve an urgent production problem. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #026)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_027",
+    "category": "behavioral_scenarios",
+    "topic": "Influence Without Authority",
+    "difficulty": "medium",
+    "question": "Describe a time you successfully convinced skeptical stakeholders or peers to adopt a new engineering standard, process, or tool. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #027)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_028",
+    "category": "behavioral_scenarios",
+    "topic": "Speed vs Quality Balance",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to balance shipping a feature quickly to meet a business deadline versus adhering to engineering best practices. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #028)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_029",
+    "category": "behavioral_scenarios",
+    "topic": "Continuous Improvement",
+    "difficulty": "medium",
+    "question": "Describe a situation where you noticed a team process was broken or inefficient. How did you take initiative to improve it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #029)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_030",
+    "category": "behavioral_scenarios",
+    "topic": "Peer Accountability",
+    "difficulty": "medium",
+    "question": "Tell me about a time a teammate was not pulling their weight or missing commitments on a critical project. How did you handle it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #030)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_031",
+    "category": "behavioral_scenarios",
+    "topic": "Disagreement & Conflict",
+    "difficulty": "medium",
+    "question": "Tell me about a time you strongly disagreed with a senior engineer or tech lead on an architectural decision. How did you resolve the disagreement? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #031)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_032",
+    "category": "behavioral_scenarios",
+    "topic": "Failure & Accountability",
+    "difficulty": "medium",
+    "question": "Describe a situation where a critical production outage or major bug was caused by code you wrote. How did you take ownership and fix it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #032)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_033",
+    "category": "behavioral_scenarios",
+    "topic": "Deadlines & Prioritization",
+    "difficulty": "medium",
+    "question": "Tell me about a time you were faced with a tight project deadline and realized you could not complete all features in time. How did you prioritize? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #033)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_034",
+    "category": "behavioral_scenarios",
+    "topic": "Mentorship & Teamwork",
+    "difficulty": "medium",
+    "question": "Describe a time you had to mentor or unblock a struggling teammate while simultaneously managing your own tight delivery commitments. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #034)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_035",
+    "category": "behavioral_scenarios",
+    "topic": "Navigating Ambiguity",
+    "difficulty": "medium",
+    "question": "Tell me about an ambiguous project where the requirements were vague or constantly shifting. How did you establish clarity and deliver? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #035)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_036",
+    "category": "behavioral_scenarios",
+    "topic": "Receiving Feedback",
+    "difficulty": "medium",
+    "question": "Describe a time you received difficult constructive feedback during a performance review. How did you process it and what changed? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #036)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_037",
+    "category": "behavioral_scenarios",
+    "topic": "Decision Making Under Pressure",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to make a high-stakes technical decision under incomplete information and tight time constraints. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #037)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_038",
+    "category": "behavioral_scenarios",
+    "topic": "Advocating for Quality",
+    "difficulty": "medium",
+    "question": "Describe a situation where you identified significant technical debt that was slowing down team velocity. How did you advocate for fixing it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #038)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_039",
+    "category": "behavioral_scenarios",
+    "topic": "Cross-Functional Collaboration",
+    "difficulty": "medium",
+    "question": "Tell me about a time you worked with a cross-functional partner (e.g. Product, Design, QA) who had conflicting goals. How did you collaborate? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #039)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_040",
+    "category": "behavioral_scenarios",
+    "topic": "Learning from Failure",
+    "difficulty": "medium",
+    "question": "Describe a time a project you led or contributed to failed to achieve its intended business or technical outcome. What did you learn? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #040)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_041",
+    "category": "behavioral_scenarios",
+    "topic": "Adaptability & Rapid Learning",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to quickly learn an unfamiliar technology, language, or system to solve an urgent production problem. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #041)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_042",
+    "category": "behavioral_scenarios",
+    "topic": "Influence Without Authority",
+    "difficulty": "medium",
+    "question": "Describe a time you successfully convinced skeptical stakeholders or peers to adopt a new engineering standard, process, or tool. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #042)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_043",
+    "category": "behavioral_scenarios",
+    "topic": "Speed vs Quality Balance",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to balance shipping a feature quickly to meet a business deadline versus adhering to engineering best practices. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #043)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_044",
+    "category": "behavioral_scenarios",
+    "topic": "Continuous Improvement",
+    "difficulty": "medium",
+    "question": "Describe a situation where you noticed a team process was broken or inefficient. How did you take initiative to improve it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #044)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_045",
+    "category": "behavioral_scenarios",
+    "topic": "Peer Accountability",
+    "difficulty": "medium",
+    "question": "Tell me about a time a teammate was not pulling their weight or missing commitments on a critical project. How did you handle it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #045)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_046",
+    "category": "behavioral_scenarios",
+    "topic": "Disagreement & Conflict",
+    "difficulty": "medium",
+    "question": "Tell me about a time you strongly disagreed with a senior engineer or tech lead on an architectural decision. How did you resolve the disagreement? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #046)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_047",
+    "category": "behavioral_scenarios",
+    "topic": "Failure & Accountability",
+    "difficulty": "medium",
+    "question": "Describe a situation where a critical production outage or major bug was caused by code you wrote. How did you take ownership and fix it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #047)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_048",
+    "category": "behavioral_scenarios",
+    "topic": "Deadlines & Prioritization",
+    "difficulty": "medium",
+    "question": "Tell me about a time you were faced with a tight project deadline and realized you could not complete all features in time. How did you prioritize? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #048)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_049",
+    "category": "behavioral_scenarios",
+    "topic": "Mentorship & Teamwork",
+    "difficulty": "medium",
+    "question": "Describe a time you had to mentor or unblock a struggling teammate while simultaneously managing your own tight delivery commitments. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #049)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_050",
+    "category": "behavioral_scenarios",
+    "topic": "Navigating Ambiguity",
+    "difficulty": "medium",
+    "question": "Tell me about an ambiguous project where the requirements were vague or constantly shifting. How did you establish clarity and deliver? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #050)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_051",
+    "category": "behavioral_scenarios",
+    "topic": "Receiving Feedback",
+    "difficulty": "medium",
+    "question": "Describe a time you received difficult constructive feedback during a performance review. How did you process it and what changed? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #051)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_052",
+    "category": "behavioral_scenarios",
+    "topic": "Decision Making Under Pressure",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to make a high-stakes technical decision under incomplete information and tight time constraints. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #052)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_053",
+    "category": "behavioral_scenarios",
+    "topic": "Advocating for Quality",
+    "difficulty": "medium",
+    "question": "Describe a situation where you identified significant technical debt that was slowing down team velocity. How did you advocate for fixing it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #053)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_054",
+    "category": "behavioral_scenarios",
+    "topic": "Cross-Functional Collaboration",
+    "difficulty": "medium",
+    "question": "Tell me about a time you worked with a cross-functional partner (e.g. Product, Design, QA) who had conflicting goals. How did you collaborate? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #054)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_055",
+    "category": "behavioral_scenarios",
+    "topic": "Learning from Failure",
+    "difficulty": "medium",
+    "question": "Describe a time a project you led or contributed to failed to achieve its intended business or technical outcome. What did you learn? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #055)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_056",
+    "category": "behavioral_scenarios",
+    "topic": "Adaptability & Rapid Learning",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to quickly learn an unfamiliar technology, language, or system to solve an urgent production problem. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #056)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_057",
+    "category": "behavioral_scenarios",
+    "topic": "Influence Without Authority",
+    "difficulty": "medium",
+    "question": "Describe a time you successfully convinced skeptical stakeholders or peers to adopt a new engineering standard, process, or tool. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #057)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_058",
+    "category": "behavioral_scenarios",
+    "topic": "Speed vs Quality Balance",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to balance shipping a feature quickly to meet a business deadline versus adhering to engineering best practices. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #058)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_059",
+    "category": "behavioral_scenarios",
+    "topic": "Continuous Improvement",
+    "difficulty": "medium",
+    "question": "Describe a situation where you noticed a team process was broken or inefficient. How did you take initiative to improve it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #059)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_060",
+    "category": "behavioral_scenarios",
+    "topic": "Peer Accountability",
+    "difficulty": "medium",
+    "question": "Tell me about a time a teammate was not pulling their weight or missing commitments on a critical project. How did you handle it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #060)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_061",
+    "category": "behavioral_scenarios",
+    "topic": "Disagreement & Conflict",
+    "difficulty": "medium",
+    "question": "Tell me about a time you strongly disagreed with a senior engineer or tech lead on an architectural decision. How did you resolve the disagreement? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #061)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_062",
+    "category": "behavioral_scenarios",
+    "topic": "Failure & Accountability",
+    "difficulty": "medium",
+    "question": "Describe a situation where a critical production outage or major bug was caused by code you wrote. How did you take ownership and fix it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #062)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_063",
+    "category": "behavioral_scenarios",
+    "topic": "Deadlines & Prioritization",
+    "difficulty": "medium",
+    "question": "Tell me about a time you were faced with a tight project deadline and realized you could not complete all features in time. How did you prioritize? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #063)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_064",
+    "category": "behavioral_scenarios",
+    "topic": "Mentorship & Teamwork",
+    "difficulty": "medium",
+    "question": "Describe a time you had to mentor or unblock a struggling teammate while simultaneously managing your own tight delivery commitments. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #064)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_065",
+    "category": "behavioral_scenarios",
+    "topic": "Navigating Ambiguity",
+    "difficulty": "medium",
+    "question": "Tell me about an ambiguous project where the requirements were vague or constantly shifting. How did you establish clarity and deliver? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #065)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_066",
+    "category": "behavioral_scenarios",
+    "topic": "Receiving Feedback",
+    "difficulty": "medium",
+    "question": "Describe a time you received difficult constructive feedback during a performance review. How did you process it and what changed? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #066)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_067",
+    "category": "behavioral_scenarios",
+    "topic": "Decision Making Under Pressure",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to make a high-stakes technical decision under incomplete information and tight time constraints. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #067)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_068",
+    "category": "behavioral_scenarios",
+    "topic": "Advocating for Quality",
+    "difficulty": "medium",
+    "question": "Describe a situation where you identified significant technical debt that was slowing down team velocity. How did you advocate for fixing it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #068)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_069",
+    "category": "behavioral_scenarios",
+    "topic": "Cross-Functional Collaboration",
+    "difficulty": "medium",
+    "question": "Tell me about a time you worked with a cross-functional partner (e.g. Product, Design, QA) who had conflicting goals. How did you collaborate? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #069)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_070",
+    "category": "behavioral_scenarios",
+    "topic": "Learning from Failure",
+    "difficulty": "medium",
+    "question": "Describe a time a project you led or contributed to failed to achieve its intended business or technical outcome. What did you learn? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #070)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_071",
+    "category": "behavioral_scenarios",
+    "topic": "Adaptability & Rapid Learning",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to quickly learn an unfamiliar technology, language, or system to solve an urgent production problem. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #071)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_072",
+    "category": "behavioral_scenarios",
+    "topic": "Influence Without Authority",
+    "difficulty": "medium",
+    "question": "Describe a time you successfully convinced skeptical stakeholders or peers to adopt a new engineering standard, process, or tool. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #072)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_073",
+    "category": "behavioral_scenarios",
+    "topic": "Speed vs Quality Balance",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to balance shipping a feature quickly to meet a business deadline versus adhering to engineering best practices. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #073)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_074",
+    "category": "behavioral_scenarios",
+    "topic": "Continuous Improvement",
+    "difficulty": "medium",
+    "question": "Describe a situation where you noticed a team process was broken or inefficient. How did you take initiative to improve it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #074)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_075",
+    "category": "behavioral_scenarios",
+    "topic": "Peer Accountability",
+    "difficulty": "medium",
+    "question": "Tell me about a time a teammate was not pulling their weight or missing commitments on a critical project. How did you handle it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #075)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_076",
+    "category": "behavioral_scenarios",
+    "topic": "Disagreement & Conflict",
+    "difficulty": "medium",
+    "question": "Tell me about a time you strongly disagreed with a senior engineer or tech lead on an architectural decision. How did you resolve the disagreement? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #076)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_077",
+    "category": "behavioral_scenarios",
+    "topic": "Failure & Accountability",
+    "difficulty": "medium",
+    "question": "Describe a situation where a critical production outage or major bug was caused by code you wrote. How did you take ownership and fix it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #077)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_078",
+    "category": "behavioral_scenarios",
+    "topic": "Deadlines & Prioritization",
+    "difficulty": "medium",
+    "question": "Tell me about a time you were faced with a tight project deadline and realized you could not complete all features in time. How did you prioritize? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #078)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_079",
+    "category": "behavioral_scenarios",
+    "topic": "Mentorship & Teamwork",
+    "difficulty": "medium",
+    "question": "Describe a time you had to mentor or unblock a struggling teammate while simultaneously managing your own tight delivery commitments. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #079)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_080",
+    "category": "behavioral_scenarios",
+    "topic": "Navigating Ambiguity",
+    "difficulty": "medium",
+    "question": "Tell me about an ambiguous project where the requirements were vague or constantly shifting. How did you establish clarity and deliver? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #080)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_081",
+    "category": "behavioral_scenarios",
+    "topic": "Receiving Feedback",
+    "difficulty": "medium",
+    "question": "Describe a time you received difficult constructive feedback during a performance review. How did you process it and what changed? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #081)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_082",
+    "category": "behavioral_scenarios",
+    "topic": "Decision Making Under Pressure",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to make a high-stakes technical decision under incomplete information and tight time constraints. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #082)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_083",
+    "category": "behavioral_scenarios",
+    "topic": "Advocating for Quality",
+    "difficulty": "medium",
+    "question": "Describe a situation where you identified significant technical debt that was slowing down team velocity. How did you advocate for fixing it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #083)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_084",
+    "category": "behavioral_scenarios",
+    "topic": "Cross-Functional Collaboration",
+    "difficulty": "medium",
+    "question": "Tell me about a time you worked with a cross-functional partner (e.g. Product, Design, QA) who had conflicting goals. How did you collaborate? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #084)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_085",
+    "category": "behavioral_scenarios",
+    "topic": "Learning from Failure",
+    "difficulty": "medium",
+    "question": "Describe a time a project you led or contributed to failed to achieve its intended business or technical outcome. What did you learn? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #085)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_086",
+    "category": "behavioral_scenarios",
+    "topic": "Adaptability & Rapid Learning",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to quickly learn an unfamiliar technology, language, or system to solve an urgent production problem. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #086)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_087",
+    "category": "behavioral_scenarios",
+    "topic": "Influence Without Authority",
+    "difficulty": "medium",
+    "question": "Describe a time you successfully convinced skeptical stakeholders or peers to adopt a new engineering standard, process, or tool. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #087)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_088",
+    "category": "behavioral_scenarios",
+    "topic": "Speed vs Quality Balance",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to balance shipping a feature quickly to meet a business deadline versus adhering to engineering best practices. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #088)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_089",
+    "category": "behavioral_scenarios",
+    "topic": "Continuous Improvement",
+    "difficulty": "medium",
+    "question": "Describe a situation where you noticed a team process was broken or inefficient. How did you take initiative to improve it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #089)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_090",
+    "category": "behavioral_scenarios",
+    "topic": "Peer Accountability",
+    "difficulty": "medium",
+    "question": "Tell me about a time a teammate was not pulling their weight or missing commitments on a critical project. How did you handle it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #090)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_091",
+    "category": "behavioral_scenarios",
+    "topic": "Disagreement & Conflict",
+    "difficulty": "medium",
+    "question": "Tell me about a time you strongly disagreed with a senior engineer or tech lead on an architectural decision. How did you resolve the disagreement? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #091)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_092",
+    "category": "behavioral_scenarios",
+    "topic": "Failure & Accountability",
+    "difficulty": "medium",
+    "question": "Describe a situation where a critical production outage or major bug was caused by code you wrote. How did you take ownership and fix it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #092)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_093",
+    "category": "behavioral_scenarios",
+    "topic": "Deadlines & Prioritization",
+    "difficulty": "medium",
+    "question": "Tell me about a time you were faced with a tight project deadline and realized you could not complete all features in time. How did you prioritize? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #093)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_094",
+    "category": "behavioral_scenarios",
+    "topic": "Mentorship & Teamwork",
+    "difficulty": "medium",
+    "question": "Describe a time you had to mentor or unblock a struggling teammate while simultaneously managing your own tight delivery commitments. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #094)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_095",
+    "category": "behavioral_scenarios",
+    "topic": "Navigating Ambiguity",
+    "difficulty": "medium",
+    "question": "Tell me about an ambiguous project where the requirements were vague or constantly shifting. How did you establish clarity and deliver? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #095)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_096",
+    "category": "behavioral_scenarios",
+    "topic": "Receiving Feedback",
+    "difficulty": "medium",
+    "question": "Describe a time you received difficult constructive feedback during a performance review. How did you process it and what changed? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #096)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_097",
+    "category": "behavioral_scenarios",
+    "topic": "Decision Making Under Pressure",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to make a high-stakes technical decision under incomplete information and tight time constraints. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #097)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_098",
+    "category": "behavioral_scenarios",
+    "topic": "Advocating for Quality",
+    "difficulty": "medium",
+    "question": "Describe a situation where you identified significant technical debt that was slowing down team velocity. How did you advocate for fixing it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #098)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_099",
+    "category": "behavioral_scenarios",
+    "topic": "Cross-Functional Collaboration",
+    "difficulty": "medium",
+    "question": "Tell me about a time you worked with a cross-functional partner (e.g. Product, Design, QA) who had conflicting goals. How did you collaborate? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #099)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_100",
+    "category": "behavioral_scenarios",
+    "topic": "Learning from Failure",
+    "difficulty": "medium",
+    "question": "Describe a time a project you led or contributed to failed to achieve its intended business or technical outcome. What did you learn? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #100)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_101",
+    "category": "behavioral_scenarios",
+    "topic": "Adaptability & Rapid Learning",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to quickly learn an unfamiliar technology, language, or system to solve an urgent production problem. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #101)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_102",
+    "category": "behavioral_scenarios",
+    "topic": "Influence Without Authority",
+    "difficulty": "medium",
+    "question": "Describe a time you successfully convinced skeptical stakeholders or peers to adopt a new engineering standard, process, or tool. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #102)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_103",
+    "category": "behavioral_scenarios",
+    "topic": "Speed vs Quality Balance",
+    "difficulty": "medium",
+    "question": "Tell me about a time you had to balance shipping a feature quickly to meet a business deadline versus adhering to engineering best practices. Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #103)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_104",
+    "category": "behavioral_scenarios",
+    "topic": "Continuous Improvement",
+    "difficulty": "medium",
+    "question": "Describe a situation where you noticed a team process was broken or inefficient. How did you take initiative to improve it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #104)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  },
+  {
+    "id": "BS_105",
+    "category": "behavioral_scenarios",
+    "topic": "Peer Accountability",
+    "difficulty": "medium",
+    "question": "Tell me about a time a teammate was not pulling their weight or missing commitments on a critical project. How did you handle it? Frame your answer using the STAR format (Situation, Task, Action, Result). (Question #105)",
+    "question_type": "behavioral",
+    "skills": [
+      "behavioral",
+      "star-method",
+      "leadership",
+      "teamwork"
+    ],
+    "expected_evidence": [
+      "Concrete Situation and specific Task with clear stakes",
+      "First-person Actions detailing personal ownership, technical decisions, and soft skills",
+      "Measurable or qualitative Result highlighting business impact and team outcome",
+      "Self-awareness and meaningful retrospective reflection on lessons learned"
+    ],
+    "follow_up_topics": [
+      "What would you do differently?",
+      "How did the team react?"
+    ]
+  }
+]

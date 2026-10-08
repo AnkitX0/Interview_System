@@ -24,6 +24,7 @@ PUBLIC_ROUTES = {
     ("/docs", "GET"),
     ("/docs/oauth2-redirect", "GET"),
     ("/redoc", "GET"),
+    ("/health", "GET"),
 }
 
 

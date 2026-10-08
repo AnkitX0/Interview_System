@@ -7,6 +7,9 @@ session cookie management, and user authentication dependencies.
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, List
 import time
+import re
+import secrets
+import hashlib
 from collections import defaultdict
 
 from argon2 import PasswordHasher
@@ -61,34 +64,37 @@ def enforce_rate_limit(key: str, max_attempts: int = 10, window_seconds: int = 6
 # ---------------------------------------------------------------------------
 # Password Validation & Hashing
 # ---------------------------------------------------------------------------
-TRIVIAL_PASSWORDS = {
-    "password123",
-    "1234567890",
-    "0987654321",
-    "qwertyuiop",
-    "abcdefghij",
-    "password1234",
-    "iloveyou123",
-}
+SPECIAL_CHAR_REGEX = re.compile(r"""[!@#$%^&*(),.?":{}|<>\-_=+[\]~`/\\';]""")
 
 
 def validate_password_strength(password: str) -> Optional[str]:
     """
-    Validates password against length and trivial weakness constraints.
-    Does NOT impose arbitrary composition rules (uppercase, special char, etc.).
+    Enforces production password policy:
+    - Minimum 8 characters
+    - At least one uppercase letter
+    - At least one lowercase letter
+    - At least one number
+    - At least one special character
+    - Non-trivial (not all identical characters)
     Returns error string if invalid, None if valid.
     """
-    if len(password) < 10:
-        return "Password must be at least 10 characters long"
+    if len(password) < 8:
+        return "Password must be at least 8 characters long."
 
     if len(set(password)) <= 1:
-        return "Password cannot consist of a single repeated character"
+        return "Password cannot consist of a single repeated character."
 
-    if password.isdigit():
-        return "Password cannot consist solely of digits"
+    if not any(c.isupper() for c in password):
+        return "Password must contain at least one uppercase letter."
 
-    if password.lower() in TRIVIAL_PASSWORDS:
-        return "Password is too trivial; please choose a stronger password"
+    if not any(c.islower() for c in password):
+        return "Password must contain at least one lowercase letter."
+
+    if not any(c.isdigit() for c in password):
+        return "Password must contain at least one number."
+
+    if not SPECIAL_CHAR_REGEX.search(password):
+        return "Password must contain at least one special character."
 
     return None
 
@@ -96,6 +102,19 @@ def validate_password_strength(password: str) -> Optional[str]:
 def hash_password(password: str) -> str:
     """Hashes a password with Argon2-cffi. Never logs or leaks plaintext."""
     return ph.hash(password)
+
+
+# ---------------------------------------------------------------------------
+# Cryptographic Token Helpers
+# ---------------------------------------------------------------------------
+def generate_verification_token() -> str:
+    """Generates a cryptographically random, single-use URL-safe verification token."""
+    return secrets.token_urlsafe(32)
+
+
+def hash_verification_token(token: str) -> str:
+    """Hashes a verification token using SHA-256 for secure database storage."""
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
 def verify_password(password: str, password_hash: str) -> bool:

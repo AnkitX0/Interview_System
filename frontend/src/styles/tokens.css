@@ -1,74 +1,82 @@
 :root {
   /* ==========================================================================
-     Color System: Professional Slate & Navy Palette (No Sci-Fi / Neon)
+     Color System: Vintage Editorial + Modern Study Platform
+     Light Theme: Warm Ivory Paper & Espresso Ink with Terracotta & Olive Accents
      ========================================================================== */
-  --slate-50: #f8fafc;
-  --slate-100: #f1f5f9;
-  --slate-200: #e2e8f0;
-  --slate-300: #cbd5e1;
-  --slate-400: #94a3b8;
-  --slate-500: #64748b;
-  --slate-600: #475569;
-  --slate-700: #334155;
-  --slate-800: #1e293b;
-  --slate-900: #0f172a;
-  --slate-950: #020617;
 
   /* Surfaces & Backgrounds */
-  --bg-app: #f8fafc;
-  --bg-surface: #ffffff;
-  --bg-subtle: #f1f5f9;
-  --bg-muted: #e2e8f0;
-  --bg-nav: #0f172a;
+  --bg-app: #F5F1E8;          /* Warm Ivory / Paper */
+  --bg-surface: #FBF9F4;      /* Soft Parchment Surface */
+  --bg-subtle: #EFEBE0;       /* Muted Parchment */
+  --bg-muted: #E5DEC9;        /* Deeper Parchment Divider */
+  --bg-nav: #2A211C;          /* Deep Espresso Navigation Header */
 
   /* Text Hierarchy */
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
-  --text-disabled: #94a3b8;
-  --text-inverse: #ffffff;
-  --text-inverse-muted: #94a3b8;
+  --text-primary: #1F1A17;    /* Deep Espresso / Charcoal Ink */
+  --text-secondary: #4A433E;  /* Warm Charcoal */
+  --text-muted: #7A7268;      /* Aged Ink / Slate */
+  --text-disabled: #A8A196;   /* Faded Text */
+  --text-inverse: #FBF9F4;    /* Light Parchment Text */
+  --text-inverse-muted: #DDD5C8;
 
-  /* Primary Brand Accent (Quiet Confidence Navy/Blue) */
-  --primary-50: #eff6ff;
-  --primary-100: #dbeafe;
-  --primary-200: #bfdbfe;
-  --primary-500: #3b82f6;
-  --primary-600: #2563eb;
-  --primary-700: #1d4ed8;
-  --primary-800: #1e40af;
-  --primary-900: #1e3a8a;
+  /* Primary Brand Accent (Muted Terracotta / Copper) */
+  --primary-50: #FAF2EC;
+  --primary-100: #F3E3D6;
+  --primary-200: #E6C5AD;
+  --primary-500: #B47A5A;     /* Muted Copper */
+  --primary-600: #9A6048;     /* Terracotta Core Accent */
+  --primary-700: #824E38;
+  --primary-800: #6B3D2B;
+  --primary-900: #542D1F;
 
-  /* Semantic Feedback (Restrained & Muted) */
-  --success-bg: #f0fdf4;
-  --success-text: #15803d;
-  --success-border: #bbf7d0;
+  /* Secondary Accent (Olive / Sage) */
+  --accent-olive-bg: #F2F4ED;
+  --accent-olive: #69705A;
+  --accent-olive-dark: #525844;
 
-  --warning-bg: #fffbeb;
-  --warning-text: #b45309;
-  --warning-border: #fde68a;
+  /* Semantic Feedback (Restrained & Muted Academic Palette) */
+  --success-bg: #EDF4EC;
+  --success-text: #2D6335;
+  --success-border: #C8DEC6;
 
-  --danger-bg: #fef2f2;
-  --danger-text: #b91c1c;
-  --danger-border: #fecaca;
+  --warning-bg: #FAF5E8;
+  --warning-text: #8C5E1E;
+  --warning-border: #EADBBA;
 
-  --info-bg: #f0f9ff;
-  --info-text: #0369a1;
-  --info-border: #bae6fd;
+  --danger-bg: #F9EBE9;
+  --danger-text: #9B2C2C;
+  --danger-border: #E8BFBA;
 
-  /* Borders & Dividers */
-  --border-subtle: #f1f5f9;
-  --border-default: #e2e8f0;
-  --border-strong: #cbd5e1;
-  --border-focus: #2563eb;
+  --info-bg: #EDF3F7;
+  --info-text: #2B5773;
+  --info-border: #BED1DF;
 
-  /* Elevation / Shadows (Subtle, No Glowing) */
-  --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
-  --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px 0 rgba(15, 23, 42, 0.04);
-  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+  /* Borders & Editorial Dividers */
+  --border-subtle: #EBE4D8;
+  --border-default: #DDD5C8;  /* Soft Warm Border */
+  --border-strong: #C4BAA9;
+  --border-focus: #9A6048;
 
-  /* Geometry & Radii */
+  /* Neutral Grays & Slate Aliases */
+  --slate-50: #FBF9F4;
+  --slate-100: #F3EEE4;
+  --slate-200: #DDD5C8;
+  --slate-300: #C4BAA9;
+  --slate-400: #8C8478;
+  --slate-500: #6B6359;
+  --slate-600: #4A433E;
+  --slate-700: #38312C;
+  --slate-800: #2A211C;
+  --slate-900: #1F1A17;
+  --slate-950: #14110F;
+
+  /* Elevation / Shadows (Soft, Natural Editorial Diffuse) */
+  --shadow-xs: 0 1px 2px 0 rgba(31, 26, 23, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(31, 26, 23, 0.07), 0 1px 2px 0 rgba(31, 26, 23, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(31, 26, 23, 0.08), 0 2px 4px -2px rgba(31, 26, 23, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(31, 26, 23, 0.09), 0 4px 6px -4px rgba(31, 26, 23, 0.05);
+
+  /* Geometry & Radii (Restrained Rounded Corners) */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
@@ -87,7 +95,8 @@
   --space-12: 3rem;    /* 48px */
   --space-16: 4rem;    /* 64px */
 
-  /* Typography Scale */
+  /* Typography Scale & Hierarchy */
+  --font-family-serif: "Newsreader", "Georgia", "Cambria", "Times New Roman", serif;
   --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
@@ -118,3 +127,80 @@
   --transition-normal: 200ms ease;
 }
 
+/* ==========================================================================
+   Dark Theme: Vintage Study Room / Developer Workstation
+   Deep Espresso, Warm Off-White, Muted Copper & Sage
+   ========================================================================== */
+[data-theme="dark"] {
+  /* Surfaces & Backgrounds */
+  --bg-app: #181513;          /* Deep Espresso Background */
+  --bg-surface: #211C18;      /* Warm Studio Surface */
+  --bg-subtle: #29231F;       /* Elevated Surface */
+  --bg-muted: #332B25;        /* Subdued Dark Element */
+  --bg-nav: #14110F;          /* Deep Workstation Top Bar */
+
+  /* Text Hierarchy */
+  --text-primary: #EFECE6;    /* Warm Off-White */
+  --text-secondary: #C8C2B7;  /* Soft Muted Ivory */
+  --text-muted: #9A9287;      /* Aged Charcoal */
+  --text-disabled: #6A6359;
+  --text-inverse: #1F1A17;
+  --text-inverse-muted: #4A433E;
+
+  /* Primary Brand Accent (Warm Terracotta & Copper) */
+  --primary-50: #2E1F18;
+  --primary-100: #42291E;
+  --primary-200: #613C2B;
+  --primary-500: #C88764;     /* Luminous Copper */
+  --primary-600: #BA7753;
+  --primary-700: #DA9E7D;
+  --primary-800: #E9BAA0;
+  --primary-900: #F7DBCB;
+
+  /* Secondary Accent (Sage / Dark Olive) */
+  --accent-olive-bg: #22261E;
+  --accent-olive: #8B9477;
+  --accent-olive-dark: #6F775E;
+
+  /* Semantic Feedback */
+  --success-bg: #1B291D;
+  --success-text: #86C78F;
+  --success-border: #2D4C32;
+
+  --warning-bg: #302617;
+  --warning-text: #E5C37A;
+  --warning-border: #57411E;
+
+  --danger-bg: #321919;
+  --danger-text: #E58686;
+  --danger-border: #5A2727;
+
+  --info-bg: #182631;
+  --info-text: #82B3D5;
+  --info-border: #2B455B;
+
+  /* Borders & Dividers */
+  --border-subtle: #2A231E;
+  --border-default: #3D352F;  /* Warm Dark Border */
+  --border-strong: #4F443C;
+  --border-focus: #C88764;
+
+  /* Dark Slate Aliases */
+  --slate-50: #29231F;
+  --slate-100: #332B25;
+  --slate-200: #3D352F;
+  --slate-300: #4F443C;
+  --slate-400: #8C8478;
+  --slate-500: #A8A196;
+  --slate-600: #C8C2B7;
+  --slate-700: #DDD5C8;
+  --slate-800: #EFECE6;
+  --slate-900: #FBF9F4;
+  --slate-950: #FFFFFF;
+
+  /* Elevation / Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+}

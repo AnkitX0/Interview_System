@@ -1,16 +1,29 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import { AccountModal } from "./AccountModal";
+import { Button } from "./ui/Button";
+import { Card } from "./ui/Card";
+import { isInterviewCurrentlyActive, clearInterviewActiveState } from "../utils/interviewLifecycle";
 
 function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [accountModalTab, setAccountModalTab] = useState(null); // 'profile' | 'privacy' | 'data' | null
+
+  // Guarded in-app navigation confirmation modal state
+  const [navInterceptModal, setNavInterceptModal] = useState({
+    open: false,
+    isLogout: false,
+    targetPath: null,
+  });
 
   const accountMenuRef = useRef(null);
 
@@ -31,7 +44,54 @@ function Navbar() {
     setAccountMenuOpen(false);
   }, [location.pathname]);
 
-  const handleLogout = async () => {
+  const handleGuardedNavigation = (e, targetPath, isLogout = false) => {
+    const isActive = isInterviewCurrentlyActive() || (
+      location.pathname === "/interview" &&
+      sessionStorage.getItem("interviewActive") === "true"
+    );
+    if (isActive) {
+      if (e && e.preventDefault) e.preventDefault();
+      setNavInterceptModal({
+        open: true,
+        isLogout,
+        targetPath,
+      });
+      return false;
+    }
+    return true;
+  };
+
+  const confirmNavIntercept = async () => {
+    const { isLogout, targetPath } = navInterceptModal;
+    setNavInterceptModal({ open: false, isLogout: false, targetPath: null });
+
+    // Finalize or cleanup active interview session
+    const activeSessionId = sessionStorage.getItem("currentSessionId");
+    if (activeSessionId) {
+      try {
+        await fetch(`/interview/${activeSessionId}/complete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ duration_seconds: 0 }),
+        });
+      } catch (err) {
+        console.warn("Session complete notice:", err);
+      }
+    }
+
+    clearInterviewActiveState();
+    sessionStorage.removeItem("interviewActive");
+
+    if (isLogout) {
+      await logout();
+      navigate("/login");
+    } else if (targetPath) {
+      navigate(targetPath);
+    }
+  };
+
+  const handleLogout = async (e) => {
+    if (!handleGuardedNavigation(e, "/login", true)) return;
     await logout();
     navigate("/login");
   };
@@ -42,14 +102,15 @@ function Navbar() {
     { to: "/resume", label: "Resume" },
     { to: "/progress", label: "Progress" },
     { to: "/history", label: "History" },
+    { to: "/profile", label: "Profile" },
   ];
 
   return (
     <>
       <nav
         style={{
-          backgroundColor: "#0f172a",
-          borderBottom: "1px solid #1e293b",
+          backgroundColor: "var(--bg-nav)",
+          borderBottom: "1px solid var(--border-default)",
           position: "sticky",
           top: 0,
           zIndex: 40,
@@ -69,6 +130,7 @@ function Navbar() {
           {/* Brand Mark */}
           <Link
             to={user ? "/dashboard" : "/"}
+            onClick={(e) => handleGuardedNavigation(e, user ? "/dashboard" : "/")}
             style={{
               display: "flex",
               alignItems: "center",
@@ -132,6 +194,7 @@ function Navbar() {
                   <Link
                     key={link.to}
                     to={link.to}
+                    onClick={(e) => handleGuardedNavigation(e, link.to)}
                     style={{
                       padding: "7px 12px",
                       borderRadius: "6px",
@@ -149,11 +212,35 @@ function Navbar() {
               })}
           </div>
 
-          {/* Desktop Auth / Account */}
+          {/* Desktop Auth / Account & Theme */}
           <div
             className="hide-on-mobile"
-            style={{ display: "flex", alignItems: "center", gap: "12px" }}
+            style={{ display: "flex", alignItems: "center", gap: "10px" }}
           >
+            {/* Theme Toggle Button */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "32px",
+                height: "32px",
+                borderRadius: "6px",
+                background: "rgba(255, 255, 255, 0.08)",
+                border: "1px solid #334155",
+                color: "#f8fafc",
+                cursor: "pointer",
+                fontSize: "14px",
+                transition: "all var(--transition-fast)",
+              }}
+            >
+              {theme === "dark" ? "☀" : "◐"}
+            </button>
+
             {user ? (
               <div ref={accountMenuRef} style={{ position: "relative" }}>
                 <button
@@ -226,13 +313,25 @@ function Navbar() {
 
                     <button
                       type="button"
+                      onClick={(e) => {
+                        setAccountMenuOpen(false);
+                        if (handleGuardedNavigation(e, "/profile")) {
+                          navigate("/profile");
+                        }
+                      }}
+                      style={dropdownItemStyle}
+                    >
+                      Candidate Profile & Biodata
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => {
                         setAccountMenuOpen(false);
                         setAccountModalTab("profile");
                       }}
                       style={dropdownItemStyle}
                     >
-                      Profile & Target Role
+                      Quick Settings & Preferences
                     </button>
                     <button
                       type="button"
@@ -343,6 +442,10 @@ function Navbar() {
                   <Link
                     key={link.to}
                     to={link.to}
+                    onClick={(e) => {
+                      setMobileMenuOpen(false);
+                      handleGuardedNavigation(e, link.to);
+                    }}
                     style={{
                       padding: "10px 12px",
                       borderRadius: "6px",
@@ -370,6 +473,13 @@ function Navbar() {
                   style={{ ...mobileBtnStyle, color: "#cbd5e1" }}
                 >
                   Privacy & Data Control
+                </button>
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  style={{ ...mobileBtnStyle, color: "#93c5fd" }}
+                >
+                  {theme === "dark" ? "☀ Switch to Light Mode" : "◐ Switch to Dark Mode"}
                 </button>
                 <button
                   type="button"
@@ -412,6 +522,47 @@ function Navbar() {
           </div>
         )}
       </nav>
+
+      {/* Active Interview Guard Navigation Intercept Modal */}
+      {navInterceptModal.open && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(15, 23, 42, 0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1200,
+            padding: "16px",
+          }}
+        >
+          <Card style={{ maxWidth: "440px", width: "100%", padding: "24px", boxShadow: "var(--shadow-xl)" }}>
+            <h3 style={{ fontSize: "18px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "8px" }}>
+              Your interview is still in progress.
+            </h3>
+            <p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "20px", lineHeight: "1.5" }}>
+              {navInterceptModal.isLogout
+                ? "Leaving now will end this interview."
+                : "Leave the interview and end this session?"}
+            </p>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+              <Button
+                variant="secondary"
+                onClick={() => setNavInterceptModal({ open: false, isLogout: false, targetPath: null })}
+              >
+                Stay
+              </Button>
+              <Button
+                variant="primary"
+                onClick={confirmNavIntercept}
+              >
+                {navInterceptModal.isLogout ? "End Interview & Log Out" : "End Interview"}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Account Modal */}
       <AccountModal

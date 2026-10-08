@@ -133,7 +133,7 @@ function History() {
                       <span style={{ textTransform: "capitalize" }}>{s.mode}</span> ({s.difficulty})
                     </td>
                     <td style={{ padding: "14px" }}>
-                      {s.readiness_score !== null && s.readiness_score !== undefined ? (
+                      {s.status === "completed" && s.readiness_score !== null && s.readiness_score > 0 ? (
                         <span
                           style={{
                             fontWeight: "700",
@@ -143,7 +143,9 @@ function History() {
                           {Math.round(s.readiness_score)}%
                         </span>
                       ) : (
-                        <span style={{ color: "#94a3b8" }}>Incomplete</span>
+                        <span style={{ color: "#94a3b8", fontSize: "12px" }}>
+                          {s.status === "completed" ? "Not assessed" : "Incomplete"}
+                        </span>
                       )}
                     </td>
                     <td style={{ padding: "14px" }}>
@@ -156,7 +158,7 @@ function History() {
                     <td style={{ padding: "14px", textAlign: "right" }}>
                       <div style={{ display: "inline-flex", gap: "8px" }}>
                         <button
-                          onClick={() => navigate(`/dashboard?sessionId=${s.session_id}`)}
+                          onClick={() => navigate(`/report?sessionId=${s.session_id}`)}
                           style={viewBtn}
                         >
                           View Report →

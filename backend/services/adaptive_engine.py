@@ -361,6 +361,7 @@ def decide_next_question(
         count=8,
         resume_skills=candidate_skills,
         target_role=session.target_role,
+        user_id=session.user_id,
     )
 
     chosen_bank_q = None

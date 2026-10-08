@@ -54,8 +54,16 @@ def _build_evaluation_prompt(
     resume_skills: Optional[List[str]]
 ) -> str:
     skills_context = ", ".join(resume_skills) if resume_skills else "None provided"
-    return f"""You are an objective AI Technical Interview Evaluator. Evaluate the candidate's response to the interview question.
-Do NOT assign arbitrary 1-10 scores. Evaluate each of the 5 competency dimensions on a 0-100 rubric scale.
+    return f"""You are a rigorous but fair technical interviewer.
+Evaluate only the evidence contained in the candidate's answer and known interview context.
+Do not assume knowledge that the candidate did not demonstrate.
+Do not reward keywords merely because they were mentioned.
+Do not invent missing project details.
+When criticizing an answer, identify the exact gap and explain why it matters.
+When recommending improvement, give a concrete next step.
+When the answer is strong, explain specifically what made it strong.
+Use natural professional language. Do not sound like an automated grading system. Do not repeat generic advice. Do not overpraise or inflate scores.
+Your goal is to help the candidate understand what a real interviewer would have thought after hearing this answer.
 
 CRITICAL INSTRUCTION: Any direct quotes included in your evidence strings MUST be exact substring quotes from the candidate's actual answer.
 
@@ -68,6 +76,9 @@ Candidate Answer:
 
 Respond with valid JSON matching this exact structure:
 {{
+  "overall_assessment": "<1-2 sentence human interviewer perspective on what was demonstrated>",
+  "what_went_well": ["<concrete strength 1 grounded in specific answer text>"],
+  "what_was_missing": ["<Format: 'What happened: ... Why it matters: ... What to do next: ...'>"],
   "dimensions": {{
     "structure": {{
       "score": <0-100 float>,
@@ -194,8 +205,13 @@ def _validate_and_format_llm_response(
         else:
             overall_score = round((struct_s + tech_s + reas_s + star_s + cons_s) / 5.0, 1)
 
-        strengths = [d["explanation"] for d in dimensions.values() if d["score"] >= 70.0] or ["Answer was submitted."]
+        strengths = raw_data.get("what_went_well") or [d["explanation"] for d in dimensions.values() if d["score"] >= 70.0] or ["Answer was submitted."]
         weaknesses = [d["explanation"] for d in dimensions.values() if d["score"] < 70.0] or ["Could provide more operational metrics."]
+        what_was_missing = raw_data.get("what_was_missing") or weaknesses
+        overall_assessment = raw_data.get("overall_assessment") or (
+            "Clear technical response with actionable context." if overall_score >= 70 else
+            "Response demonstrates foundational understanding, but lacks operational depth."
+        )
         suggestions = [d["recommended_action"] for d in dimensions.values() if d["score"] < 75.0] or ["Continue practicing structured responses."]
 
         return {
@@ -216,6 +232,9 @@ def _validate_and_format_llm_response(
             "consistency": dimensions["consistency"],
             "strengths": strengths,
             "weaknesses": weaknesses,
+            "what_went_well": strengths,
+            "what_was_missing": what_was_missing,
+            "overall_assessment": overall_assessment,
             "missing_concepts": raw_data.get("missing_concepts", ["Operational metrics", "Edge cases"]),
             "suggestions": suggestions,
             "prompt_version": LLM_CONFIG.get("prompt_version", "v1.0")

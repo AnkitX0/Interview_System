@@ -20,6 +20,9 @@ from .models import (
     VoiceMetrics,
     ConsentRecord,
     PracticeRecommendation,
+    QuestionExposureHistory,
+    PracticeSession,
+    PracticeTurn,
 )
 
 __all__ = [
@@ -44,4 +47,7 @@ __all__ = [
     "VoiceMetrics",
     "ConsentRecord",
     "PracticeRecommendation",
+    "QuestionExposureHistory",
+    "PracticeSession",
+    "PracticeTurn",
 ]

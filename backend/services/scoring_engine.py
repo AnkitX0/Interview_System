@@ -314,30 +314,77 @@ def evaluate_rubric_for_answer(
         }
     }
 
-    # Construct Qualitative Feedback (Backward Compatible)
+    # Construct Contextual, Human-Interviewer Qualitative Feedback (No Generic Robotic Templates)
+    tech_str = ", ".join(matched_tech[:3]) if matched_tech else None
+
     strengths = []
-    if structure_score >= 70:
-        strengths.append("Clear communicative structure with coherent narrative flow.")
-    if tech_score >= 70:
-        strengths.append(f"Demonstrated solid domain concepts ({', '.join(matched_tech[:3]) if matched_tech else 'technical depth'}).")
-    if reasoning_score >= 70:
-        strengths.append("Clearly articulated engineering tradeoffs and rationales.")
-    if star_score >= 70:
-        strengths.append("Followed the STAR method by highlighting action steps and tangible outcomes.")
+    if tech_score >= 70 and tech_str:
+        strengths.append(f"You grounded your technical explanation in concrete tools and mechanisms ({tech_str}).")
+    elif structure_score >= 70:
+        strengths.append("Your response had a coherent progression from context into your specific implementation.")
+
+    if reasoning_score >= 70 and matched_reasoning:
+        strengths.append(f"You articulated the architectural rationale behind your choices ({', '.join(matched_reasoning[:2])}).")
+
     if not strengths:
-        strengths.append("Answer was direct and addressed the core question prompt.")
+        if tech_str:
+            strengths.append(f"You referenced relevant engineering technologies ({tech_str}) directly addressing the question topic.")
+        else:
+            strengths.append("You directly engaged with the interview prompt without evading the question.")
 
     weaknesses = []
+    what_was_missing = []
+
+    # Format: WHAT HAPPENED, WHY IT MATTERS, WHAT TO DO NEXT
     if word_count < WORD_COUNT_BANDS["minimal_detail"]:
-        weaknesses.append("Response was too brief; missed opportunity to expand on operational details.")
+        gap = (
+            "What happened: Your answer was brief and stopped at high-level statements.\n"
+            "Why it matters: In a technical interview, an interviewer expects you to unpack the implementation details and challenges, not just summarize the final state.\n"
+            "What to do next: Walk through the request lifecycle or component flow step-by-step, explaining how data travels through the system."
+        )
+        weaknesses.append("Your response stayed fairly general. Give one concrete example from the project instead of describing it broadly.")
+        what_was_missing.append(gap)
+
     if tech_score < 60 and category.lower() == "technical":
-        weaknesses.append("Lacked specific architectural keywords or concrete protocol/database mechanisms.")
-    if not star_hits["result"] and category.lower() in ["behavioral", "hr"]:
-        weaknesses.append("Did not specify the quantifiable final outcome or measurable impact.")
+        if tech_str:
+            gap = (
+                f"What happened: You mentioned {tech_str}, but did not explain how you configured it, structured data, or resolved concurrency.\n"
+                "Why it matters: Simply naming tools confirms familiarity, but interviewers look for defensible architectural decisions and trade-offs.\n"
+                "What to do next: Explain why you chose this tool over alternatives and detail one concrete operational challenge you resolved."
+            )
+            weaknesses.append(f"You mentioned {tech_str}, but did not explain why you chose it over alternatives or how you handled operational edge cases.")
+        else:
+            gap = (
+                "What happened: You described the concept conceptually without mentioning specific protocols, database engines, or frameworks.\n"
+                "Why it matters: Senior interviewers look for verified hands-on engineering experience rather than purely theoretical definitions.\n"
+                "What to do next: Anchor your answer in a specific technology stack (e.g., PostgreSQL indexing, Redis caching, or FastAPI middleware)."
+            )
+            weaknesses.append("Your explanation was mostly conceptual. Anchor your answer with specific protocols, database engines, or frameworks.")
+        what_was_missing.append(gap)
+
     if reasoning_score < 60:
-        weaknesses.append("Focused primarily on 'what' was done rather than 'why' architectural choices were made.")
+        gap = (
+            "What happened: You focused on what was built rather than why that architectural pattern was selected over alternatives.\n"
+            "Why it matters: Engineering maturity is judged by how well you understand the trade-offs (latency vs. complexity, consistency vs. availability) of your choices.\n"
+            "What to do next: Explicitly contrast your design against at least one viable alternative and explain what constraint drove your decision."
+        )
+        weaknesses.append("You described what was done, but did not explain the trade-offs or why you chose this design over alternatives.")
+        what_was_missing.append(gap)
+
     if not weaknesses:
-        weaknesses.append("Could provide more quantitative metrics or operational edge cases.")
+        weaknesses.append("Your explanation was solid, but adding one concrete production metric or failure edge case would make it even stronger.")
+        what_was_missing.append(
+            "What happened: The solution covered the primary path well, but skipped production telemetry.\n"
+            "Why it matters: Production readiness requires understanding failure modes and observability.\n"
+            "What to do next: Mention specific error handling strategies or monitoring metrics (e.g. latency percentiles, database query times)."
+        )
+
+    # Human-readable suggestions
+    suggestions = []
+    if tech_str:
+        suggestions.append(f"In your next answer, explain how {tech_str} interacted with other tiers under concurrent load.")
+    else:
+        suggestions.append("Name the exact libraries, databases, or cloud services you used rather than using passive descriptions like 'the backend'.")
 
     missing_concepts = []
     if category.lower() == "technical" and len(matched_tech) < 2:
@@ -347,11 +394,11 @@ def evaluate_rubric_for_answer(
     else:
         missing_concepts.extend(["Performance benchmarking", "Long-term maintainability"])
 
-    suggestions = [
-        "Use the STAR model explicitly: briefly set the Situation, clarify your Task, detail your personal Actions, and end with the measurable Result.",
-        "Include concrete metrics: e.g., 'reduced API response latency by 40%' or 'scaled to 10k daily active users'.",
-        "Explain the 'why': contrast your choice against alternative designs to demonstrate senior engineering reasoning."
-    ]
+    overall_assessment = (
+        f"You demonstrated a good practical grasp of {tech_str or 'the topic'}, but the interviewer would probe deeper into operational trade-offs and edge cases."
+        if overall_score >= 65 else
+        f"You introduced the right direction with {tech_str or 'your concepts'}, but the explanation needs more depth on architecture, data flow, and why decisions were made."
+    )
 
     # 6. Directness & Evasion Detection
     q_lower = (question_text or "").lower()
@@ -400,6 +447,9 @@ def evaluate_rubric_for_answer(
         "consistency": dimensions["consistency"],
         "strengths": strengths,
         "weaknesses": weaknesses,
+        "what_went_well": strengths,
+        "what_was_missing": what_was_missing,
+        "overall_assessment": overall_assessment,
         "missing_concepts": missing_concepts,
         "suggestions": suggestions
     }

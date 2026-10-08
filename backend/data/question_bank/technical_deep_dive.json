@@ -1,0 +1,2421 @@
+[
+  {
+    "id": "TD_001",
+    "category": "technical_deep_dive",
+    "topic": "Storage Engines",
+    "difficulty": "hard",
+    "question": "Walk through the physical layout of a B-Tree index on disk versus an LSM-Tree (Log-Structured Merge-tree). How do their write amplification and read latency characteristics differ under high write volume?",
+    "question_type": "architecture",
+    "skills": [
+      "databases",
+      "storage",
+      "indexing"
+    ],
+    "expected_evidence": [
+      "Disk block layout and node splitting in B-Trees",
+      "Memtable, write-ahead log (WAL), and immutable SSTable flushing in LSM",
+      "Compaction strategies: Size-tiered vs Leveled compaction",
+      "Read amplification and bloom filters in LSM"
+    ],
+    "follow_up_topics": [
+      "Compaction storm mitigation",
+      "Point-lookup vs range-scan performance"
+    ]
+  },
+  {
+    "id": "TD_002",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "medium",
+    "question": "How does Write-Ahead Logging (WAL) ensure durability and atomicity in ACID-compliant relational databases? Explain what happens during recovery after an abrupt power failure.",
+    "question_type": "implementation",
+    "skills": [
+      "databases",
+      "durability",
+      "transactions"
+    ],
+    "expected_evidence": [
+      "Sequential appending to WAL before dirty buffer pool page flushes",
+      "ARIES recovery algorithm phases: Analysis, Redo, and Undo",
+      "Checkpointing mechanics and fuzzy checkpoints",
+      "fsync system call frequency and write durability guarantees"
+    ],
+    "follow_up_topics": [
+      "Group commit optimization",
+      "Corrupted WAL segment recovery"
+    ]
+  },
+  {
+    "id": "TD_003",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "hard",
+    "question": "Explain the specific concurrency anomalies prevented by Snapshot Isolation and Serializable Isolation: dirty reads, non-repeatable reads, phantom reads, and write skew. Provide a concrete scenario demonstrating write skew.",
+    "question_type": "conceptual",
+    "skills": [
+      "databases",
+      "transactions",
+      "concurrency"
+    ],
+    "expected_evidence": [
+      "Definition of Read Uncommitted through Serializable isolation levels",
+      "Multi-Version Concurrency Control (MVCC) visibility rules",
+      "Write skew example: hospital doctor on-call scheduling constraint",
+      "Two-Phase Locking (2PL) vs Serializable Snapshot Isolation (SSI)"
+    ],
+    "follow_up_topics": [
+      "Predicate locking vs index-range locking",
+      "Deadlock detection in 2PL"
+    ]
+  },
+  {
+    "id": "TD_004",
+    "category": "technical_deep_dive",
+    "topic": "Networking",
+    "difficulty": "medium",
+    "question": "Detail the exact sequence of packet flags (SYN, ACK, FIN) and TCP socket states (SYN-SENT, ESTABLISHED, TIME_WAIT) during connection setup and teardown. Why is the TIME_WAIT state essential, and what problems occur if it is bypassed?",
+    "question_type": "implementation",
+    "skills": [
+      "networking",
+      "tcp",
+      "protocols"
+    ],
+    "expected_evidence": [
+      "3-Way handshake SYN, SYN-ACK, ACK sequence number synchronization",
+      "4-Way teardown FIN, ACK, FIN, ACK exchange",
+      "TIME_WAIT 2*MSL (Maximum Segment Lifetime) safety margin",
+      "Prevention of old duplicate segments colliding with new connections reusing port/IP tuples"
+    ],
+    "follow_up_topics": [
+      "TCP SO_REUSEADDR and TCP reset attacks",
+      "SYN flood denial of service and SYN cookies"
+    ]
+  },
+  {
+    "id": "TD_005",
+    "category": "technical_deep_dive",
+    "topic": "Networking",
+    "difficulty": "hard",
+    "question": "How do loss-based congestion control algorithms (like Cubic or Reno) differ from delay/bandwidth-based algorithms (like BBR)? Explain Slow Start, Congestion Avoidance, Fast Retransmit, and Fast Recovery.",
+    "question_type": "algorithms",
+    "skills": [
+      "networking",
+      "tcp",
+      "performance"
+    ],
+    "expected_evidence": [
+      "Congestion window (cwnd) vs Receiver advertised window (rwnd)",
+      "Multiplicative decrease and additive increase (AIMD)",
+      "Bufferbloat caused by deep switch buffers in loss-based protocols",
+      "BBR pacing rate and delivery rate estimation using Bottleneck Bandwidth and Round-Trip propagation time"
+    ],
+    "follow_up_topics": [
+      "ECN (Explicit Congestion Notification)",
+      "QUIC transport layer congestion management"
+    ]
+  },
+  {
+    "id": "TD_006",
+    "category": "technical_deep_dive",
+    "topic": "Networking",
+    "difficulty": "medium",
+    "question": "How does HTTP/2 binary framing and multiplexing solve HTTP/1.1 head-of-line (HOL) blocking, and why does HTTP/2 still suffer from TCP-level head-of-line blocking? How does HTTP/3 over QUIC resolve this?",
+    "question_type": "architecture",
+    "skills": [
+      "networking",
+      "http",
+      "performance"
+    ],
+    "expected_evidence": [
+      "Binary framing layer: HEADERS and DATA frames interleaved across streams",
+      "Single TCP connection multiplexing eliminating domain sharding need",
+      "TCP packet drop stalling all HTTP/2 streams due to in-order TCP byte stream contract",
+      "QUIC running over UDP with independent stream loss recovery"
+    ],
+    "follow_up_topics": [
+      "0-RTT connection resumption in TLS 1.3 / QUIC",
+      "HPACK vs QPACK compression header mechanics"
+    ]
+  },
+  {
+    "id": "TD_007",
+    "category": "technical_deep_dive",
+    "topic": "Operating Systems",
+    "difficulty": "hard",
+    "question": "Explain how the OS and MMU translate a virtual memory address to a physical RAM address using page tables, multi-level paging, and the Translation Lookaside Buffer (TLB). What happens step-by-step during a minor vs major page fault?",
+    "question_type": "implementation",
+    "skills": [
+      "os",
+      "memory",
+      "linux"
+    ],
+    "expected_evidence": [
+      "Page directory and multi-level page table tree traversal (CR3 register in x86)",
+      "TLB caching virtual-to-physical address mappings",
+      "Minor page fault: page allocated in physical RAM but not mapped into process page table",
+      "Major page fault: required disk I/O to swap space or memory-mapped file, blocking thread"
+    ],
+    "follow_up_topics": [
+      "Huge pages (2MB/1GB) impact on TLB miss rates",
+      "Copy-On-Write (COW) mechanics during fork()"
+    ]
+  },
+  {
+    "id": "TD_008",
+    "category": "technical_deep_dive",
+    "topic": "Operating Systems",
+    "difficulty": "hard",
+    "question": "How does the Linux `epoll` system call scale to 100,000 concurrent sockets compared to `select` and `poll`? Explain edge-triggered (EPOLLET) vs level-triggered (EPOLLIN) modes.",
+    "question_type": "implementation",
+    "skills": [
+      "os",
+      "concurrency",
+      "linux",
+      "networking"
+    ],
+    "expected_evidence": [
+      "O(1) event readiness notification vs O(N) descriptor iteration in select/poll",
+      "Kernel red-black tree storing registered file descriptors",
+      "Kernel ready list (doubly-linked list) populated via hardware interrupt callbacks",
+      "Edge-triggered mode requiring non-blocking sockets and draining until EAGAIN/EWOULDBLOCK"
+    ],
+    "follow_up_topics": [
+      "Thundering herd problem in multi-process epoll",
+      "io_uring vs epoll performance benchmarks"
+    ]
+  },
+  {
+    "id": "TD_009",
+    "category": "technical_deep_dive",
+    "topic": "Runtimes & Memory",
+    "difficulty": "medium",
+    "question": "Explain the Weak Generational Hypothesis and how garbage collectors (such as Java G1/ZGC or Go runtime GC) leverage it. Compare stop-the-world mark-and-sweep with concurrent tri-color marking.",
+    "question_type": "algorithms",
+    "skills": [
+      "memory",
+      "runtimes",
+      "gc"
+    ],
+    "expected_evidence": [
+      "Observation that most allocated objects die young (nursery/Eden generation)",
+      "Survivor spaces, promotion thresholds, and old generation partitioning",
+      "Tri-color marking algorithm: White (unvisited), Grey (discovered), Black (scanned)",
+      "Write barriers to prevent old-to-young generation reference tracking omissions"
+    ],
+    "follow_up_topics": [
+      "Pause time limits in concurrent collectors",
+      "Memory fragmentation and compacting collectors"
+    ]
+  },
+  {
+    "id": "TD_010",
+    "category": "technical_deep_dive",
+    "topic": "Distributed Systems",
+    "difficulty": "expert",
+    "question": "Describe the leader election, log replication, and safety guarantees of the Raft consensus algorithm. How does Raft handle a network partition that isolates the current leader with a minority of nodes?",
+    "question_type": "architecture",
+    "skills": [
+      "distributed-systems",
+      "consensus",
+      "reliability"
+    ],
+    "expected_evidence": [
+      "Heartbeat timers, election timeouts, and randomized election delays",
+      "Quorum requirement (N/2 + 1) for electing a leader and committing log entries",
+      "Term numbers to detect obsolete leaders and reject stale proposals",
+      "Minority partition inability to commit entries; reconciliation via leader log overwriting upon partition heal"
+    ],
+    "follow_up_topics": [
+      "Joint consensus during dynamic cluster membership changes",
+      "Log compaction and snapshotting"
+    ]
+  },
+  {
+    "id": "TD_011",
+    "category": "technical_deep_dive",
+    "topic": "Distributed Systems",
+    "difficulty": "hard",
+    "question": "Contrast Two-Phase Commit (2PC) with the Saga pattern for managing distributed transactions across microservices. What are the blocking failure modes of 2PC, and how do choreograph vs orchestrator Sagas handle compensating actions?",
+    "question_type": "architecture",
+    "skills": [
+      "distributed-systems",
+      "transactions",
+      "microservices"
+    ],
+    "expected_evidence": [
+      "Prepare phase and Commit phase coordinator voting mechanics",
+      "2PC coordinator crash leading to indefinitely locked resources",
+      "Saga as a sequence of local transactions with semantic compensating rollbacks",
+      "Event choreography vs centralized orchestrator state machine trade-offs"
+    ],
+    "follow_up_topics": [
+      "Dual-write problem and transactional outbox pattern",
+      "Idempotency guarantees in compensating transactions"
+    ]
+  },
+  {
+    "id": "TD_012",
+    "category": "technical_deep_dive",
+    "topic": "Caching",
+    "difficulty": "medium",
+    "question": "Describe the Cache-Aside pattern. What is a cache stampede (thundering herd), and what three architectural techniques can protect the database when a high-traffic cache key expires?",
+    "question_type": "architecture",
+    "skills": [
+      "caching",
+      "redis",
+      "performance"
+    ],
+    "expected_evidence": [
+      "Cache-Aside read and write sequence: read cache, on miss read DB and write cache, on update invalidate cache",
+      "Thundering herd: hundreds of concurrent requests simultaneously hitting DB on hot key expiry",
+      "Mitigation 1: Distributed mutex lock (e.g. Redlock or singleflight pattern)",
+      "Mitigation 2: Probabilistic early expiration (XFetch algorithm)",
+      "Mitigation 3: Background asynchronous worker refreshing cache prior to TTL expiry"
+    ],
+    "follow_up_topics": [
+      "Cache penetration vs cache avalanche",
+      "Redis eviction policies: allkeys-lru vs volatile-lfu"
+    ]
+  },
+  {
+    "id": "TD_013",
+    "category": "technical_deep_dive",
+    "topic": "Caching",
+    "difficulty": "hard",
+    "question": "How are Redis Sorted Sets (ZSET) implemented under the hood using SkipLists and Hash Maps? Contrast this with the memory optimization of ziplists/listpacks for small sets.",
+    "question_type": "implementation",
+    "skills": [
+      "caching",
+      "redis",
+      "data-structures"
+    ],
+    "expected_evidence": [
+      "Dual internal representation: Hash map for O(1) score lookup, SkipList for O(log N) range queries",
+      "SkipList probabilistic level assignment and forward pointers",
+      "Ziplist/listpack contiguous memory layout eliminating pointer overhead for small cardinality",
+      "Memory compaction and jemalloc memory allocator considerations in Redis"
+    ],
+    "follow_up_topics": [
+      "HyperLogLog probabilistic counting with register bucketing",
+      "Redis Cluster hash slot partitioning (16384 slots)"
+    ]
+  },
+  {
+    "id": "TD_014",
+    "category": "technical_deep_dive",
+    "topic": "Messaging",
+    "difficulty": "hard",
+    "question": "Explain how Apache Kafka achieves high-throughput disk I/O using append-only logs and zero-copy transfers (`sendfile`). How does consumer group rebalancing work, and how does the Cooperative Sticky Assignor prevent stop-the-world pauses?",
+    "question_type": "architecture",
+    "skills": [
+      "kafka",
+      "streaming",
+      "messaging"
+    ],
+    "expected_evidence": [
+      "Sequential disk access approaching memory bus throughput",
+      "OS page cache and Linux `sendfile` bypassing user-space buffer copies",
+      "Partition assignment strategies: Eager Rebalance vs Cooperative Sticky Rebalance",
+      "Consumer offset committing (auto vs manual) and duplicate message handling"
+    ],
+    "follow_up_topics": [
+      "Consumer lag monitoring and partition starvation",
+      "Exactly-once semantics (EOS) with transactional producers and read_committed"
+    ]
+  },
+  {
+    "id": "TD_015",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "medium",
+    "question": "Why is creating a new database connection expensive, and what does a connection pool (like HikariCP or asyncpg pool) manage? What happens when all connections in the pool are saturated?",
+    "question_type": "implementation",
+    "skills": [
+      "databases",
+      "backend",
+      "performance"
+    ],
+    "expected_evidence": [
+      "Socket creation, TCP 3-way handshake, TLS negotiation, authentication, and backend server process allocation",
+      "Pool lifecycle: active, idle, max lifetime, validation queries, leak detection",
+      "Queueing mechanisms (Fair FIFO vs LIFO for CPU cache affinity) and connection acquisition timeouts",
+      "Database server resource exhaustion (thread-per-connection memory limits)"
+    ],
+    "follow_up_topics": [
+      "Prepared statement caching per connection",
+      "PgBouncer transaction-level vs session-level pooling"
+    ]
+  },
+  {
+    "id": "TD_016",
+    "category": "technical_deep_dive",
+    "topic": "Security",
+    "difficulty": "medium",
+    "question": "Walk through the OAuth 2.0 Authorization Code flow with Proof Key for Code Exchange (PKCE). Why was PKCE invented for public clients (SPAs and mobile apps), and how does the code_verifier/code_challenge pair prevent authorization code injection?",
+    "question_type": "implementation",
+    "skills": [
+      "security",
+      "auth",
+      "oauth"
+    ],
+    "expected_evidence": [
+      "Resource Owner, Client, Authorization Server, Resource Server roles",
+      "Public client inability to store client_secret securely in browser/mobile binary",
+      "Client generates cryptographically random code_verifier and computes SHA256 code_challenge",
+      "Auth server validates code_verifier hash matches original challenge before issuing access token"
+    ],
+    "follow_up_topics": [
+      "Refresh token rotation and replay detection",
+      "State parameter preventing CSRF attacks"
+    ]
+  },
+  {
+    "id": "TD_017",
+    "category": "technical_deep_dive",
+    "topic": "Security",
+    "difficulty": "medium",
+    "question": "Explain how HMAC-SHA256 (HS256) and RSA/ECDSA (RS256) signatures secure JSON Web Tokens. If JWTs are stateless, how do you handle immediate user revocation (e.g. password change, account suspension) without querying a database on every request?",
+    "question_type": "architecture",
+    "skills": [
+      "security",
+      "auth",
+      "jwt"
+    ],
+    "expected_evidence": [
+      "Base64URL encoded Header, Payload, and Signature components",
+      "Symmetric key (HS256) shared secret vs Asymmetric public/private key pair (RS256)",
+      "Revocation strategy 1: Short token lifetimes (5-15 mins) with refresh token checks",
+      "Revocation strategy 2: Distributed Redis token blacklist or user token generation versioning"
+    ],
+    "follow_up_topics": [
+      "Key rotation via JWKS (JSON Web Key Set) endpoints",
+      "None algorithm vulnerabilities and header tampering prevention"
+    ]
+  },
+  {
+    "id": "TD_018",
+    "category": "technical_deep_dive",
+    "topic": "System Design",
+    "difficulty": "medium",
+    "question": "Compare the Token Bucket, Leaky Bucket, and Sliding Window Log rate-limiting algorithms. How would you implement a distributed sliding window rate limiter in Redis to avoid race conditions?",
+    "question_type": "algorithms",
+    "skills": [
+      "algorithms",
+      "rate-limiting",
+      "distributed-systems"
+    ],
+    "expected_evidence": [
+      "Token Bucket: tokens added at steady rate up to capacity; allows controlled bursts",
+      "Leaky Bucket: requests processed at constant output rate; smooths bursty traffic",
+      "Sliding window log using Redis Sorted Set with timestamps as scores",
+      "Atomic execution via Redis Lua scripts or MULTI/EXEC to prevent concurrency anomalies"
+    ],
+    "follow_up_topics": [
+      "Distributed rate limiter synchronization and memory footprint",
+      "HTTP 429 status code and Retry-After header standards"
+    ]
+  },
+  {
+    "id": "TD_019",
+    "category": "technical_deep_dive",
+    "topic": "Resilience",
+    "difficulty": "medium",
+    "question": "Explain the internal state machine of a Circuit Breaker (Closed, Open, Half-Open). What metrics trigger transitions, and how do you protect downstream services from a retry storm when transitioning from Half-Open to Closed?",
+    "question_type": "architecture",
+    "skills": [
+      "microservices",
+      "resilience",
+      "architecture"
+    ],
+    "expected_evidence": [
+      "Closed state: normal request passthrough, monitoring rolling error rate / slow call percentage",
+      "Open state: fast-failing requests immediately with fallback or 503 error, cooldown timer",
+      "Half-Open state: allowing a limited trial quota of requests to test downstream health",
+      "Exponential backoff with randomized jitter to prevent synchronized retry storms"
+    ],
+    "follow_up_topics": [
+      "Bulkhead pattern isolation combining with circuit breakers",
+      "Distributed circuit breaker state sharing via service mesh"
+    ]
+  },
+  {
+    "id": "TD_020",
+    "category": "technical_deep_dive",
+    "topic": "Observability",
+    "difficulty": "hard",
+    "question": "How does distributed context propagation work across microservices? Explain Trace ID, Span ID, Baggage, and the W3C Trace Context specification (`traceparent` header).",
+    "question_type": "architecture",
+    "skills": [
+      "observability",
+      "microservices",
+      "telemetry"
+    ],
+    "expected_evidence": [
+      "Generation of globally unique 64-bit or 128-bit Trace ID at ingress",
+      "Span lifecycle: start time, end time, tags, logs, parent-child span hierarchy",
+      "W3C Trace Context `traceparent` format: version-trace_id-parent_id-trace_flags",
+      "Sampling strategies: Head-based sampling vs Tail-based sampling to reduce storage costs"
+    ],
+    "follow_up_topics": [
+      "Context propagation across asynchronous message queues (Kafka headers)",
+      "Correlating logs, metrics, and traces via trace ID injection"
+    ]
+  },
+  {
+    "id": "TD_021",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "medium",
+    "question": "Explain how index selectivity and column cardinality determine whether the query planner chooses an index scan versus a sequential table scan.",
+    "question_type": "conceptual",
+    "skills": [
+      "databases",
+      "sql",
+      "indexing"
+    ],
+    "expected_evidence": [
+      "High selectivity filtering small fraction of rows",
+      "B-Tree depth and disk random I/O cost",
+      "Planner cost model statistics and ANALYZE command",
+      "Covering index and Index-Only scans"
+    ],
+    "follow_up_topics": [
+      "Composite index column ordering rule",
+      "Partial indexes"
+    ]
+  },
+  {
+    "id": "TD_022",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "hard",
+    "question": "How do relational database engines detect deadlocks using Wait-For Graphs? What heuristics are used to select which victim transaction to abort?",
+    "question_type": "algorithms",
+    "skills": [
+      "databases",
+      "concurrency",
+      "transactions"
+    ],
+    "expected_evidence": [
+      "Directed Wait-For Graph cycle detection algorithms (Tarjan's or DFS)",
+      "Lock timeout threshold vs proactive cycle detection",
+      "Victim selection based on transaction age, CPU cost, or rows modified",
+      "Application-level retry with randomized exponential backoff"
+    ],
+    "follow_up_topics": [
+      "Deadlock prevention: conservative 2PL",
+      "Deadlocks in foreign key updates"
+    ]
+  },
+  {
+    "id": "TD_023",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "medium",
+    "question": "Compare Range, Hash, and List partitioning strategies in PostgreSQL or MySQL. When does a partition key choice cause query routing bottlenecks or partition pruning failures?",
+    "question_type": "architecture",
+    "skills": [
+      "databases",
+      "scaling",
+      "architecture"
+    ],
+    "expected_evidence": [
+      "Partition pruning during compile and execution time",
+      "Hash partitioning for uniform write distribution",
+      "Range partitioning for time-series data and drop partition retention",
+      "Scatter-gather queries when partition key is missing from WHERE clause"
+    ],
+    "follow_up_topics": [
+      "Global vs local indexes on partitioned tables",
+      "Partition rebalancing"
+    ]
+  },
+  {
+    "id": "TD_024",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "medium",
+    "question": "When should you choose Optimistic Concurrency Control (OCC) with version numbers over Pessimistic Locking (`SELECT FOR UPDATE`)? Explain the performance trade-offs under high contention.",
+    "question_type": "architecture",
+    "skills": [
+      "concurrency",
+      "databases",
+      "architecture"
+    ],
+    "expected_evidence": [
+      "Pessimistic locking acquiring row locks in DB buffer pool",
+      "OCC reading version and updating with `WHERE version = V`",
+      "High contention causing high OCC abort and retry rates",
+      "Deadlock risks in multi-row pessimistic locking"
+    ],
+    "follow_up_topics": [
+      "CAS (Compare-And-Swap) hardware primitives",
+      "Distributed locks vs database OCC"
+    ]
+  },
+  {
+    "id": "TD_025",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "hard",
+    "question": "How does PostgreSQL implement Multi-Version Concurrency Control (MVCC) with `xmin` and `xmax` tuple headers? What is table and index bloat, and how does autovacuum clean dead tuples?",
+    "question_type": "implementation",
+    "skills": [
+      "databases",
+      "postgres",
+      "performance"
+    ],
+    "expected_evidence": [
+      "Tuple immutability on UPDATE: inserting new row and marking old row with xmax",
+      "Dead tuples remaining visible to concurrent older transactions",
+      "Autovacuum worker freeing space for reuse within data pages",
+      "Transaction ID wraparound emergency shutdown risk"
+    ],
+    "follow_up_topics": [
+      "VACUUM FULL vs pg_repack zero-downtime compaction",
+      "HOT (Heap-Only Tuples) optimization"
+    ]
+  },
+  {
+    "id": "TD_026",
+    "category": "technical_deep_dive",
+    "topic": "Networking",
+    "difficulty": "easy",
+    "question": "Trace the complete lifecycle of a DNS lookup for `api.example.com` from browser cache to root nameservers, TLD nameservers, and authoritative servers. How does TTL affect propagation?",
+    "question_type": "conceptual",
+    "skills": [
+      "networking",
+      "dns",
+      "web"
+    ],
+    "expected_evidence": [
+      "Browser DNS cache -> OS resolver -> Local recursive DNS resolver",
+      "Recursive lookup: Root (.) -> TLD (.com) -> Authoritative nameserver",
+      "A/AAAA, CNAME, and ALIAS record types",
+      "TTL expiration and caching at recursive resolvers"
+    ],
+    "follow_up_topics": [
+      "DNS round-robin load balancing",
+      "DNS over HTTPS (DoH)"
+    ]
+  },
+  {
+    "id": "TD_027",
+    "category": "technical_deep_dive",
+    "topic": "Networking",
+    "difficulty": "hard",
+    "question": "How does the TLS 1.3 handshake reduce connection latency to 1-RTT compared to TLS 1.2's 2-RTT? Explain the role of Diffie-Hellman key exchange and forward secrecy.",
+    "question_type": "implementation",
+    "skills": [
+      "networking",
+      "security",
+      "tls"
+    ],
+    "expected_evidence": [
+      "ClientHello sends supported ciphers AND Diffie-Hellman key shares simultaneously",
+      "ServerHello completes key negotiation in single round trip",
+      "Ephemeral Diffie-Hellman (ECDHE) guaranteeing forward secrecy",
+      "Removal of legacy insecure cipher suites (RSA key exchange, CBC ciphers)"
+    ],
+    "follow_up_topics": [
+      "0-RTT early data replay attacks",
+      "Certificate verification and OCSP stapling"
+    ]
+  },
+  {
+    "id": "TD_028",
+    "category": "technical_deep_dive",
+    "topic": "Networking",
+    "difficulty": "medium",
+    "question": "Explain how a client initiates an HTTP-to-WebSocket protocol upgrade via the `101 Switching Protocols` handshake. What are the WebSocket frame header fields, masking keys, and keep-alive ping/pong frames?",
+    "question_type": "implementation",
+    "skills": [
+      "networking",
+      "websockets",
+      "protocols"
+    ],
+    "expected_evidence": [
+      "HTTP Upgrade header, Connection: Upgrade, Sec-WebSocket-Key",
+      "Server computes Sec-WebSocket-Accept using SHA1 hash with magic GUID",
+      "Client-to-server 4-byte XOR masking preventing proxy cache poisoning",
+      "Control frames (Ping, Pong, Close) interleaved with data frames"
+    ],
+    "follow_up_topics": [
+      "WebSocket load balancing with sticky sessions or Redis Pub/Sub",
+      "Handling idle connection NAT timeouts"
+    ]
+  },
+  {
+    "id": "TD_029",
+    "category": "technical_deep_dive",
+    "topic": "Networking",
+    "difficulty": "medium",
+    "question": "What is TCP Fast Open (TFO), and how does it allow data to be transferred within the initial SYN packet? What security mechanisms protect against SYN flood amplification attacks?",
+    "question_type": "implementation",
+    "skills": [
+      "networking",
+      "tcp",
+      "performance"
+    ],
+    "expected_evidence": [
+      "Initial handshake client requests TFO cookie from server",
+      "Subsequent connections include TFO cookie and payload in initial SYN packet",
+      "Server verifies cookie authenticity and delivers payload to socket buffer before 3-way handshake finishes",
+      "Cookie encryption preventing IP spoofing and amplification attacks"
+    ],
+    "follow_up_topics": [
+      "Idempotency requirements for initial SYN data",
+      "Middlebox and firewall TFO packet dropping"
+    ]
+  },
+  {
+    "id": "TD_030",
+    "category": "technical_deep_dive",
+    "topic": "Networking",
+    "difficulty": "easy",
+    "question": "What is the difference between HTTP persistent connections (`Keep-Alive`) at the transport layer and an application-level HTTP client connection pool?",
+    "question_type": "conceptual",
+    "skills": [
+      "networking",
+      "http",
+      "performance"
+    ],
+    "expected_evidence": [
+      "Keep-Alive reusing established TCP socket across consecutive HTTP requests",
+      "Eliminating repeated 3-way handshake and TLS negotiation overhead",
+      "Client connection pool managing concurrent reusable sockets to target origin hosts",
+      "Socket idle timeout and max request limits on persistent connections"
+    ],
+    "follow_up_topics": [
+      "HTTP pipelining limitations",
+      "Handling half-closed connections"
+    ]
+  },
+  {
+    "id": "TD_031",
+    "category": "technical_deep_dive",
+    "topic": "Operating Systems",
+    "difficulty": "medium",
+    "question": "Explain the memory layout differences between processes and threads in Linux. What is shared (heap, file descriptors, code) and what is isolated (stack, registers, TLS) in `clone()`?",
+    "question_type": "conceptual",
+    "skills": [
+      "os",
+      "linux",
+      "concurrency"
+    ],
+    "expected_evidence": [
+      "Linux task_struct abstraction representing both processes and threads",
+      "Processes having separate page tables and virtual address spaces",
+      "Threads sharing virtual memory (CLONE_VM) and file descriptors (CLONE_FILES)",
+      "Independent execution contexts: stack pointer, program counter, registers, Thread-Local Storage"
+    ],
+    "follow_up_topics": [
+      "Kernel threads vs user-space green threads (Go goroutines)",
+      "Context switch cache penalty: TLB invalidation in process switches"
+    ]
+  },
+  {
+    "id": "TD_032",
+    "category": "technical_deep_dive",
+    "topic": "Operating Systems",
+    "difficulty": "hard",
+    "question": "How does the Linux Completely Fair Scheduler (CFS) use red-black trees and `vruntime` (virtual runtime) to allocate CPU time across threads? What is the impact of process nice values?",
+    "question_type": "algorithms",
+    "skills": [
+      "os",
+      "linux",
+      "performance"
+    ],
+    "expected_evidence": [
+      "Red-black tree ordered by thread virtual runtime (vruntime)",
+      "CFS picking leftmost node with lowest accumulated vruntime",
+      "Nice values (-20 to +19) weighting virtual clock tick speed",
+      "Latency targeting and sched_min_granularity_ns"
+    ],
+    "follow_up_topics": [
+      "Real-time scheduling policies: SCHED_FIFO and SCHED_RR",
+      "CPU affinity and NUMA node topology"
+    ]
+  },
+  {
+    "id": "TD_033",
+    "category": "technical_deep_dive",
+    "topic": "Runtimes & Memory",
+    "difficulty": "medium",
+    "question": "How can a memory leak occur in a language with automatic garbage collection (like Python or Java)? Describe how you would identify and diagnose one using memory profilers and heap dumps.",
+    "question_type": "debugging",
+    "skills": [
+      "memory",
+      "debugging",
+      "profiling"
+    ],
+    "expected_evidence": [
+      "Unintended object retention via global caches, static collections, or unremoved event listeners",
+      "Circular references with custom destructors or lingering thread-local storage",
+      "Heap dump analysis inspecting dominator trees and retained object sizes",
+      "Tracking allocation churn and generation promotion rates over time"
+    ],
+    "follow_up_topics": [
+      "Weak references (WeakMap / weakref) for caching",
+      "Off-heap / native memory leaks via JNI or C-extensions"
+    ]
+  },
+  {
+    "id": "TD_034",
+    "category": "technical_deep_dive",
+    "topic": "Runtimes & Memory",
+    "difficulty": "medium",
+    "question": "Why does CPython have a Global Interpreter Lock (GIL)? How does it affect CPU-bound multi-threading versus I/O-bound multi-threading, and what alternatives exist for true parallelism?",
+    "question_type": "conceptual",
+    "skills": [
+      "python",
+      "concurrency",
+      "runtimes"
+    ],
+    "expected_evidence": [
+      "Reference counting thread safety without fine-grained object lock overhead",
+      "CPU-bound threads thrashing on GIL acquisition, yielding no speedup or degradation",
+      "I/O operations (sockets, file reads, C extensions like NumPy) releasing the GIL",
+      "Multiprocessing, process pools, subinterpreters (PEP 684), and free-threaded Python 3.13"
+    ],
+    "follow_up_topics": [
+      "Asyncio event loop concurrency vs multi-threading",
+      "GIL switching interval (sys.getswitchinterval)"
+    ]
+  },
+  {
+    "id": "TD_035",
+    "category": "technical_deep_dive",
+    "topic": "Runtimes & Memory",
+    "difficulty": "hard",
+    "question": "Explain the Go runtime M:N scheduler model (G, M, P). How does work-stealing, network poller integration, and preemptive scheduling prevent a single goroutine from starving CPU cores?",
+    "question_type": "architecture",
+    "skills": [
+      "golang",
+      "concurrency",
+      "runtimes"
+    ],
+    "expected_evidence": [
+      "G (Goroutine), M (OS Thread), P (Logical Processor / execution context)",
+      "Local run-queues per P avoiding global lock contention with work-stealing from idle Ps",
+      "Network poller parked goroutines waiting on epoll without blocking OS threads",
+      "Async preemption via OS signals since Go 1.14 interrupting tight loops without function calls"
+    ],
+    "follow_up_topics": [
+      "Goroutine initial stack size (2KB) and contiguous stack growth",
+      "Channel lock-free queue mechanics"
+    ]
+  },
+  {
+    "id": "TD_036",
+    "category": "technical_deep_dive",
+    "topic": "Distributed Systems",
+    "difficulty": "hard",
+    "question": "Explain how Consistent Hashing with virtual nodes (vnodes) solves the rehashing problem when cache nodes are added or removed from a distributed cluster. How does it ensure balanced load?",
+    "question_type": "algorithms",
+    "skills": [
+      "distributed-systems",
+      "caching",
+      "algorithms"
+    ],
+    "expected_evidence": [
+      "Traditional `hash(key) % N` invalidating almost 100% of keys when N changes",
+      "Consistent hash ring mapping both node tokens and key hashes to a 0 - 2^32 space",
+      "Adding/removing a node only reassigns keys adjacent to the changed token (1/N keys)",
+      "Virtual nodes per physical server preventing data hotspots and non-uniform distribution"
+    ],
+    "follow_up_topics": [
+      "Dynamo-style replica placement on hash ring",
+      "Bounded-load consistent hashing to prevent cascaded hotspot failure"
+    ]
+  },
+  {
+    "id": "TD_037",
+    "category": "technical_deep_dive",
+    "topic": "Distributed Systems",
+    "difficulty": "hard",
+    "question": "What causality limitations exist in Lamport Timestamps that Vector Clocks solve? How do vector clocks detect concurrent updates, and how are merge conflicts resolved in dynamo-style databases?",
+    "question_type": "conceptual",
+    "skills": [
+      "distributed-systems",
+      "algorithms",
+      "concurrency"
+    ],
+    "expected_evidence": [
+      "Lamport timestamps provide total order but cannot distinguish causal dependency from concurrency",
+      "Vector clocks maintain vector of logical counters per node",
+      "Update A causally precedes B if every component of V_A <= V_B and at least one is strictly less",
+      "Concurrent updates detected when neither vector clock dominates, requiring sibling resolution or CRDTs"
+    ],
+    "follow_up_topics": [
+      "CRDTs (Conflict-free Replicated Data Types)",
+      "Vector clock size pruning and dotted version vectors"
+    ]
+  },
+  {
+    "id": "TD_038",
+    "category": "technical_deep_dive",
+    "topic": "Distributed Systems",
+    "difficulty": "hard",
+    "question": "Explain the Redlock algorithm for distributed locking across independent Redis nodes. What timing and clock-drift assumptions does it make, and what criticisms were raised by Martin Kleppmann?",
+    "question_type": "architecture",
+    "skills": [
+      "redis",
+      "distributed-systems",
+      "concurrency"
+    ],
+    "expected_evidence": [
+      "Client acquires lock on majority (N/2 + 1) of independent Redis masters with small timeout",
+      "Total time spent acquiring lock must be less than lock validity time minus drift margin",
+      "Fencing tokens requirement: storage system must reject stale writes from paused clients",
+      "Martin Kleppmann's critique: process pauses (GC), clock jumps, and asynchronous network delay can violate mutual exclusion"
+    ],
+    "follow_up_topics": [
+      "Zookeeper / etcd sequential ephemeral nodes as alternative",
+      "Fencing tokens with monotonic database counters"
+    ]
+  },
+  {
+    "id": "TD_039",
+    "category": "technical_deep_dive",
+    "topic": "Distributed Systems",
+    "difficulty": "hard",
+    "question": "What is the split-brain scenario in distributed master-slave or clustered databases? How do quorum-based consensus systems, fencing mechanisms (STONITH), and witness nodes prevent data divergence?",
+    "question_type": "reliability",
+    "skills": [
+      "distributed-systems",
+      "high-availability",
+      "consensus"
+    ],
+    "expected_evidence": [
+      "Network partition dividing cluster into isolated partitions that both assume master authority",
+      "Simultaneous write acceptance causing permanent data inconsistency and corrupt state",
+      "Quorum requirement strictly forbidding state changes on partition with <= N/2 nodes",
+      "STONITH (Shoot The Other Node In The Head) hardware/cloud power fencing preventing rogue masters"
+    ],
+    "follow_up_topics": [
+      "Split-brain resolution in dual-datacenter setups",
+      "Odd vs even cluster node counts"
+    ]
+  },
+  {
+    "id": "TD_040",
+    "category": "technical_deep_dive",
+    "topic": "Distributed Systems",
+    "difficulty": "medium",
+    "question": "Explain why the classic CAP theorem is often misunderstood in modern cloud systems. How does the PACELC theorem provide a more practical model for distributed database trade-offs during normal operation?",
+    "question_type": "conceptual",
+    "skills": [
+      "distributed-systems",
+      "architecture"
+    ],
+    "expected_evidence": [
+      "CAP states that in presence of Partition (P), system must trade off Consistency (C) vs Availability (A)",
+      "Partitions are rare; PACELC evaluates normal operation behavior",
+      "PACELC: If Partition (P): choose Availability (A) or Consistency (C); Else (E): choose Latency (L) or Consistency (C)",
+      "Examples: MongoDB (PC/EC), DynamoDB (PA/EL), Spanner (PC/EC)"
+    ],
+    "follow_up_topics": [
+      "Tunable consistency in Cassandra (ONE, QUORUM, ALL)",
+      "Read-your-writes and monotonic reads consistency"
+    ]
+  },
+  {
+    "id": "TD_041",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "hard",
+    "question": "Compare Hash/Key-based sharding with Directory/Lookup-based sharding for petabyte-scale relational databases. How do you execute cross-shard joins and distributed transactions?",
+    "question_type": "architecture",
+    "skills": [
+      "databases",
+      "scaling",
+      "architecture"
+    ],
+    "expected_evidence": [
+      "Key-based sharding using deterministic hash function on shard key",
+      "Directory-based sharding querying lookup service, allowing flexible shard rebalancing",
+      "Cross-shard joins requiring scatter-gather application joins or materialized views",
+      "Distributed two-phase commit across shards causing latency amplification"
+    ],
+    "follow_up_topics": [
+      "Resharding live production clusters without downtime",
+      "Entity-group colocation to minimize cross-shard operations"
+    ]
+  },
+  {
+    "id": "TD_042",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "hard",
+    "question": "Explain the internal use cases and structural differences between B-Tree, Hash, GIN (Generalized Inverted Index), and BRIN (Block Range Index) in PostgreSQL.",
+    "question_type": "implementation",
+    "skills": [
+      "databases",
+      "indexing",
+      "postgres"
+    ],
+    "expected_evidence": [
+      "B-Tree for ordered range scans and equality (`=`, `<`, `>`)",
+      "Hash index for exact O(1) equality lookup without range support",
+      "GIN indexing composite items (arrays, JSONB keys, full-text search tokens) with inverted entry trees",
+      "BRIN storing min/max values per physical disk block range for naturally sorted huge time-series tables"
+    ],
+    "follow_up_topics": [
+      "GiST (Generalized Search Tree) for geometric and spatial data",
+      "Partial GIN indexes for JSONB queries"
+    ]
+  },
+  {
+    "id": "TD_043",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "hard",
+    "question": "How does an SQL query cost-based optimizer (CBO) generate and evaluate execution plans? Explain how table statistics (histograms, MCVs), join algorithms (Nested Loop, Hash Join, Merge Join), and I/O costs are weighed.",
+    "question_type": "algorithms",
+    "skills": [
+      "databases",
+      "sql",
+      "performance"
+    ],
+    "expected_evidence": [
+      "Parser -> Analyzer -> Rewriter -> Cost-Based Optimizer -> Executor pipeline",
+      "Single-table scan cost evaluation: seq_page_cost vs random_page_cost",
+      "Join algorithms: Nested Loop (small outer, indexed inner), Hash Join (in-memory hash table), Merge Join (pre-sorted inputs)",
+      "Stale statistics causing catastrophic plan degradation (e.g. nested loop over millions of rows)"
+    ],
+    "follow_up_topics": [
+      "EXPLAIN ANALYZE interpretation: planning time vs execution time",
+      "Join order permutation search and genetic query optimization (GEQO)"
+    ]
+  },
+  {
+    "id": "TD_044",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "medium",
+    "question": "What programming errors cause database connection pool exhaustion in backend applications? How do you diagnose connection leaks using pool metrics and database server monitoring views?",
+    "question_type": "debugging",
+    "skills": [
+      "databases",
+      "backend",
+      "debugging"
+    ],
+    "expected_evidence": [
+      "Missing connection close/release in exception handlers or missing context managers",
+      "Long-running transactions holding connections while performing slow HTTP network I/O",
+      "Diagnosing via pool active/idle counters and max wait time alerts",
+      "Inspecting `pg_stat_activity` or MySQL `SHOW PROCESSLIST` for idle-in-transaction connections"
+    ],
+    "follow_up_topics": [
+      "Connection leak detection timeouts in HikariCP",
+      "Transaction boundaries wrapping business logic"
+    ]
+  },
+  {
+    "id": "TD_045",
+    "category": "technical_deep_dive",
+    "topic": "Caching",
+    "difficulty": "medium",
+    "question": "Explain the `singleflight` (request deduplication) pattern used in caching systems. How does it coordinate concurrent in-flight requests for the same missing key to execute exactly one backend query?",
+    "question_type": "algorithms",
+    "skills": [
+      "caching",
+      "concurrency",
+      "go",
+      "backend"
+    ],
+    "expected_evidence": [
+      "Call map mapping key string to in-flight call struct with sync.WaitGroup",
+      "First request acquires lock, creates call struct, unlocks, and executes expensive fetch",
+      "Subsequent identical requests find existing in-flight call and wait on WaitGroup",
+      "First call broadcasts result and error to all waiting callers before deleting map entry"
+    ],
+    "follow_up_topics": [
+      "Singleflight with context cancellation and timeouts",
+      "Combining singleflight with local in-memory cache"
+    ]
+  },
+  {
+    "id": "TD_046",
+    "category": "technical_deep_dive",
+    "topic": "Caching",
+    "difficulty": "medium",
+    "question": "Compare Redis RDB point-in-time snapshots with Append-Only File (AOF) persistence. Explain how RDB uses `fork()` and Copy-On-Write (COW) memory, and how AOF rewrite prevents infinite file growth.",
+    "question_type": "implementation",
+    "skills": [
+      "redis",
+      "caching",
+      "durability"
+    ],
+    "expected_evidence": [
+      "RDB compact single-file binary dump created via background BGSAVE",
+      "BGSAVE fork() allocating child process relying on OS Copy-On-Write (COW)",
+      "AOF logging every write command with configurable fsync (always, everysec, no)",
+      "BGREWRITEAOF creating minimal reconstruction log in background without blocking main thread"
+    ],
+    "follow_up_topics": [
+      "RDB memory spikes if large percentage of memory modified during save",
+      "Hybrid RDB-AOF persistence in Redis 4.0+"
+    ]
+  },
+  {
+    "id": "TD_047",
+    "category": "technical_deep_dive",
+    "topic": "Messaging",
+    "difficulty": "hard",
+    "question": "Why is global message ordering across an entire distributed topic impossible at high throughput? How do message partitioning keys and consumer concurrency achieve per-entity strict ordering?",
+    "question_type": "architecture",
+    "skills": [
+      "messaging",
+      "kafka",
+      "rabbitmq"
+    ],
+    "expected_evidence": [
+      "Single partition required for total order, creating fundamental horizontal scaling bottleneck",
+      "Partitioning key hashing routes identical entity events (e.g. customer_id) to single partition",
+      "In-order consumer processing per partition ensuring per-entity sequential execution",
+      "Out-of-order risks when consumers process partitions with internal thread pools"
+    ],
+    "follow_up_topics": [
+      "Dead-letter queue handling without stalling partition processing",
+      "Idempotent consumer keys to survive redelivery"
+    ]
+  },
+  {
+    "id": "TD_048",
+    "category": "technical_deep_dive",
+    "topic": "Messaging",
+    "difficulty": "expert",
+    "question": "How does Apache Kafka achieve Exactly-Once Processing across `read-process-write` cycles? Explain idempotent producer sequence numbers, transactional coordinators, and marker commits.",
+    "question_type": "architecture",
+    "skills": [
+      "kafka",
+      "streaming",
+      "transactions"
+    ],
+    "expected_evidence": [
+      "Idempotent producer: PID (Producer ID) and monotonic sequence numbers per partition deduplicated by broker",
+      "Transactional producer: Two-phase commit coordinated by internal transaction coordinator",
+      "Consumer isolation level: `read_committed` skipping uncommitted or aborted transaction batches",
+      "Commit markers written to partitions acknowledging transaction boundaries"
+    ],
+    "follow_up_topics": [
+      "Zombie fencing via transactional epoch numbers",
+      "Stream-to-table joins in Kafka Streams"
+    ]
+  },
+  {
+    "id": "TD_049",
+    "category": "technical_deep_dive",
+    "topic": "Runtimes & Memory",
+    "difficulty": "medium",
+    "question": "Explain how single-threaded event loops (Node.js Libuv or Python Asyncio) process I/O without blocking. What happens to event loop responsiveness if a callback executes a 5-second CPU-bound loop?",
+    "question_type": "implementation",
+    "skills": [
+      "async",
+      "nodejs",
+      "python",
+      "runtimes"
+    ],
+    "expected_evidence": [
+      "Event loop phases: timers, pending I/O callbacks, idle/prepare, poll, check (setImmediate), close",
+      "Non-blocking socket registration on epoll/kqueue returning immediately to event loop",
+      "CPU-bound task blocking event loop iteration, starving all concurrent I/O callbacks and health checks",
+      "Offloading CPU work to thread pools (libuv threadpool) or worker processes"
+    ],
+    "follow_up_topics": [
+      "Microtasks (Promises/process.nextTick) vs macrotasks priority",
+      "Event loop lag monitoring metrics"
+    ]
+  },
+  {
+    "id": "TD_050",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "hard",
+    "question": "Describe the Expand-and-Contract (Parallel Run) pattern for performing breaking database migrations (e.g. renaming a column or splitting a table) with zero downtime and active traffic.",
+    "question_type": "architecture",
+    "skills": [
+      "databases",
+      "devops",
+      "migrations"
+    ],
+    "expected_evidence": [
+      "Phase 1: Expand - add new column as nullable without dropping old column",
+      "Phase 2: Dual-write - application writes to both old and new columns, reads from old",
+      "Phase 3: Backfill - historical batch migration script populating new column for past rows",
+      "Phase 4: Switch read - application transitions reads to new column",
+      "Phase 5: Contract - drop writes to old column and deprecate/drop old column"
+    ],
+    "follow_up_topics": [
+      "PostgreSQL table locks on `ALTER TABLE` and `ADD COLUMN` defaults",
+      "Online schema migration tools: GitHub gh-ost vs pt-online-schema-change"
+    ]
+  },
+  {
+    "id": "TD_051",
+    "category": "technical_deep_dive",
+    "topic": "Observability",
+    "difficulty": "medium",
+    "question": "Contrast Head-based sampling with Tail-based sampling in distributed tracing. Why is tail-based sampling superior for diagnosing rare latency spikes and error traces, and what infrastructure does it require?",
+    "question_type": "architecture",
+    "skills": [
+      "observability",
+      "distributed-systems",
+      "telemetry"
+    ],
+    "expected_evidence": [
+      "Head-based sampling deciding trace retention at root service ingress based on fixed probability",
+      "Head sampling frequently discarding the 0.01% of traces containing critical production errors",
+      "Tail-based sampling buffering entire trace spans in collector memory until trace completes",
+      "Collector evaluating trace tags (HTTP 500, error=true, duration > 2s) before saving or discarding"
+    ],
+    "follow_up_topics": [
+      "Collector memory footprint and horizontal routing for tail sampling",
+      "Adaptive rate-limiting on error trace ingestion"
+    ]
+  },
+  {
+    "id": "TD_052",
+    "category": "technical_deep_dive",
+    "topic": "System Design",
+    "difficulty": "hard",
+    "question": "How do you implement a precise sliding window rate limiter in Redis using sorted sets (ZSET)? Detail the timestamp scoring, element pruning, cardinality counting, and expiration TTL.",
+    "question_type": "implementation",
+    "skills": [
+      "redis",
+      "rate-limiting",
+      "distributed-systems"
+    ],
+    "expected_evidence": [
+      "Remove entries older than `now - window_size` using `ZREMRANGEBYSCORE key 0 (now - window)`",
+      "Count remaining elements using `ZCARD key`",
+      "If count < limit: add current timestamp member using `ZADD key now now` and allow request",
+      "Set TTL on key to auto-clean idle users; package operations in single atomic Lua script"
+    ],
+    "follow_up_topics": [
+      "Memory usage per user under high request volumes",
+      "Sliding window counter approximation algorithm as low-memory alternative"
+    ]
+  },
+  {
+    "id": "TD_053",
+    "category": "technical_deep_dive",
+    "topic": "Concurrency",
+    "difficulty": "medium",
+    "question": "How should you size the thread pool and queue capacity for CPU-bound tasks versus I/O-bound tasks? What happens when thread pool saturation causes unbounded queue memory exhaustion?",
+    "question_type": "architecture",
+    "skills": [
+      "concurrency",
+      "backend",
+      "performance"
+    ],
+    "expected_evidence": [
+      "CPU-bound formula: Number of CPU cores (+ 1 for page faults)",
+      "I/O-bound formula: CPU cores * (1 + Wait_Time / Service_Time) or thread-per-concurrency targets",
+      "Unbounded task queue buffering requests indefinitely leading to Out-Of-Memory (OOM) crashes",
+      "Bounded queues with explicit rejection policies: Abort, CallerRuns, DiscardOldest"
+    ],
+    "follow_up_topics": [
+      "Little's Law applied to thread pool capacity and latency",
+      "Dynamic thread pool resizing"
+    ]
+  },
+  {
+    "id": "TD_054",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "hard",
+    "question": "Compare application-level connection pools (HikariCP / asyncpg) with an external connection proxy like PgBouncer in transaction pooling mode. What features are broken by transaction pooling?",
+    "question_type": "architecture",
+    "skills": [
+      "databases",
+      "postgres",
+      "scaling"
+    ],
+    "expected_evidence": [
+      "App pool maintaining dedicated long-lived stateful TCP connections per app thread",
+      "PgBouncer acting as lightweight server-side connection multiplexer for thousands of app connections",
+      "Transaction pooling reassigning backend server connection immediately upon COMMIT/ROLLBACK",
+      "Broken features in transaction mode: prepared statements, session-level SET variables, LISTEN/NOTIFY, advisory locks"
+    ],
+    "follow_up_topics": [
+      "PgBouncer statement pooling vs session pooling",
+      "Prepared statement support via named statement workarounds in PgBouncer 1.21+"
+    ]
+  },
+  {
+    "id": "TD_055",
+    "category": "technical_deep_dive",
+    "topic": "Caching",
+    "difficulty": "hard",
+    "question": "Explain the race condition that occurs when updating the database and invalidating the cache concurrently. Why is Cache Invalidation preferred over Cache Updating upon database write?",
+    "question_type": "concurrency",
+    "skills": [
+      "caching",
+      "redis",
+      "concurrency"
+    ],
+    "expected_evidence": [
+      "Race condition: Thread A updates DB -> Thread B updates DB -> Thread B updates cache -> Thread A updates cache with stale data",
+      "Invalidating cache forces next read to fetch latest DB state",
+      "Read-repair race: Thread 1 reads DB (old) -> Thread 2 updates DB & deletes cache -> Thread 1 writes old value to cache",
+      "Mitigation: Cache invalidation with TTL, or transactional outbox with CDC (Debezium) event cache eviction"
+    ],
+    "follow_up_topics": [
+      "Double-deletion caching pattern",
+      "Change Data Capture (CDC) based cache eviction"
+    ]
+  },
+  {
+    "id": "TD_056",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "medium",
+    "question": "Why do high-throughput distributed architectures frequently eliminate relational database foreign key constraints in favor of application-level validation? What risks and trade-offs emerge?",
+    "question_type": "architecture",
+    "skills": [
+      "databases",
+      "architecture",
+      "tradeoffs"
+    ],
+    "expected_evidence": [
+      "Foreign key checks acquiring row-level locks on parent tables during child inserts/updates",
+      "Lock contention and deadlocks on high-traffic parent records",
+      "Inability to enforce foreign keys across sharded or microservice-partitioned database boundaries",
+      "Application-level integrity trade-off: orphaned records during partial failures, requiring asynchronous reconciliation scripts"
+    ],
+    "follow_up_topics": [
+      "Cascade delete performance implications on massive tables",
+      "Soft deletes vs physical foreign key cascades"
+    ]
+  },
+  {
+    "id": "TD_057",
+    "category": "technical_deep_dive",
+    "topic": "Networking",
+    "difficulty": "hard",
+    "question": "How can high-frequency outbound HTTP calls from a microservice cause ephemeral port exhaustion due to sockets in TIME_WAIT? How do you resolve this at the OS and application layer?",
+    "question_type": "debugging",
+    "skills": [
+      "networking",
+      "linux",
+      "microservices"
+    ],
+    "expected_evidence": [
+      "Client closing connection first placing 4-tuple (source IP/port, dest IP/port) in TIME_WAIT for 60 seconds",
+      "Outbound connections exhausting the ~28,000 ephemeral port range (ip_local_port_range)",
+      "Application fix: HTTP client connection pooling to reuse established sockets",
+      "OS tuning: `tcp_tw_reuse` enabling safe port reuse for outgoing connections with TCP timestamps"
+    ],
+    "follow_up_topics": [
+      "SO_LINGER socket option risks",
+      "SNAT port exhaustion in cloud load balancers and Kubernetes NAT"
+    ]
+  },
+  {
+    "id": "TD_058",
+    "category": "technical_deep_dive",
+    "topic": "Operating Systems",
+    "difficulty": "medium",
+    "question": "How does the Linux Page Cache optimize disk reads and writes? Explain dirty pages, writeback flush threads (`pdflush`/`flusher`), and the difference between buffered I/O, `O_DIRECT`, and `fsync`.",
+    "question_type": "implementation",
+    "skills": [
+      "os",
+      "linux",
+      "storage"
+    ],
+    "expected_evidence": [
+      "Kernel caching disk blocks in unused RAM pages",
+      "Reads served directly from RAM without disk I/O; writes marked as dirty pages in RAM",
+      "Flusher threads periodically writing dirty pages to disk based on dirty_background_ratio",
+      "Buffered I/O copying between kernel page cache and user buffer; O_DIRECT bypassing page cache entirely for databases"
+    ],
+    "follow_up_topics": [
+      "fsync vs fdatasync performance",
+      "Page cache eviction policies under memory pressure"
+    ]
+  },
+  {
+    "id": "TD_059",
+    "category": "technical_deep_dive",
+    "topic": "Distributed Systems",
+    "difficulty": "medium",
+    "question": "How do you design an idempotent API endpoint for payment processing using an `Idempotency-Key` header and Redis? Detail the state machine from IN_PROGRESS to COMPLETED.",
+    "question_type": "implementation",
+    "skills": [
+      "distributed-systems",
+      "api",
+      "redis"
+    ],
+    "expected_evidence": [
+      "Client sends unique UUID idempotency key in request header",
+      "Server attempts atomic `SET key IN_PROGRESS NX EX 120` in Redis",
+      "If key exists and IN_PROGRESS: return 409 Conflict or wait for completion",
+      "When transaction succeeds: update key to COMPLETED storing response status and payload; return cached response on duplicate calls"
+    ],
+    "follow_up_topics": [
+      "Handling failure when downstream payment gateway times out",
+      "Idempotency key storage retention windows"
+    ]
+  },
+  {
+    "id": "TD_060",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "medium",
+    "question": "What happens on the database server when an HTTP client aborts a request midway through a 30-second query? Why do queries often continue running on the database, and how do you configure query cancellation?",
+    "question_type": "implementation",
+    "skills": [
+      "databases",
+      "backend",
+      "resilience"
+    ],
+    "expected_evidence": [
+      "Application server closing TCP socket does not automatically signal database driver",
+      "Database process continues consuming 100% CPU/IO until query completes or driver sends cancellation packet",
+      "PostgreSQL `statement_timeout` and client-side cancellation interrupts",
+      "Context cancellation in Go/Python propagating TCP reset to database driver"
+    ],
+    "follow_up_topics": [
+      "Lock holding during orphaned long-running queries",
+      "PostgreSQL `idle_in_transaction_session_timeout`"
+    ]
+  },
+  {
+    "id": "TD_061",
+    "category": "technical_deep_dive",
+    "topic": "System Design",
+    "difficulty": "medium",
+    "question": "How does a Content Delivery Network determine a Cache Key? Explain the role of Query Parameters, Normalized Headers (`Accept-Encoding`), and instant purge versus stale-while-revalidate.",
+    "question_type": "architecture",
+    "skills": [
+      "cdn",
+      "caching",
+      "web"
+    ],
+    "expected_evidence": [
+      "Cache key components: Host, URI path, normalized query strings, selected headers",
+      "Query parameter variation causing cache fragmentation (e.g. tracking UTM params)",
+      "Surrogate-Key / Cache-Tags header grouping related assets for batch purging",
+      "`stale-while-revalidate` serving cached stale content while asynchronously fetching fresh asset from origin"
+    ],
+    "follow_up_topics": [
+      "Origin Shield caching tier",
+      "Edge compute (Cloudflare Workers / Lambda@Edge) cache modification"
+    ]
+  },
+  {
+    "id": "TD_062",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "medium",
+    "question": "How do you interpret connection pool metrics: Active Connections, Idle Connections, Pending Acquisition Queue, and Wait Duration? What indicates an under-sized pool vs a slow database query?",
+    "question_type": "monitoring",
+    "skills": [
+      "databases",
+      "monitoring",
+      "performance"
+    ],
+    "expected_evidence": [
+      "Active connections at max capacity with growing queue indicates either pool exhaustion or slow queries",
+      "Correlating active connections with database CPU/IO: low CPU indicates connection bottleneck, high CPU indicates query optimization needed",
+      "Acquisition wait time spikes indicating thread starvation",
+      "Connection creation rate spikes indicating premature connection recycling"
+    ],
+    "follow_up_topics": [
+      "Max Lifetime setting preventing firewall socket drops",
+      "Validation query overhead on connection checkout"
+    ]
+  },
+  {
+    "id": "TD_063",
+    "category": "technical_deep_dive",
+    "topic": "Operating Systems",
+    "difficulty": "hard",
+    "question": "What is the thundering herd problem when multiple worker processes listen on the same socket file descriptor using `epoll`? How do `EPOLLEXCLUSIVE` and `SO_REUSEPORT` address this?",
+    "question_type": "implementation",
+    "skills": [
+      "os",
+      "linux",
+      "concurrency"
+    ],
+    "expected_evidence": [
+      "Incoming connection waking up all worker processes blocked in epoll_wait",
+      "One worker accepts connection, while N-1 workers perform context switch only to receive EAGAIN",
+      "EPOLLEXCLUSIVE waking up only a single worker from the waiting process queue",
+      "SO_REUSEPORT allowing multiple sockets to bind same port with kernel-level round-robin load distribution"
+    ],
+    "follow_up_topics": [
+      "SO_REUSEPORT connection dropping during worker process restart",
+      "Nginx master-worker architecture connection handling"
+    ]
+  },
+  {
+    "id": "TD_064",
+    "category": "technical_deep_dive",
+    "topic": "Messaging",
+    "difficulty": "medium",
+    "question": "How does Kafka store consumer offsets in the `__consumer_offsets` topic? How do you calculate Consumer Lag, and what operational alerts indicate a stalled consumer versus an undersized consumer group?",
+    "question_type": "monitoring",
+    "skills": [
+      "kafka",
+      "messaging",
+      "observability"
+    ],
+    "expected_evidence": [
+      "Offsets stored as log compacted topic tracking partition committed offset",
+      "Consumer Lag = Log End Offset (LEO) - Current Consumer Offset",
+      "Growing lag across all partitions indicates processing rate < production rate, requiring consumer scale-out",
+      "Growing lag on single partition indicates consumer crash, poison pill message, or hot partition key"
+    ],
+    "follow_up_topics": [
+      "Burrow / Kafka Exporter monitoring tools",
+      "Rebalance storms caused by slow message processing exceeding `max.poll.interval.ms`"
+    ]
+  },
+  {
+    "id": "TD_065",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "hard",
+    "question": "Contrast a regular Index Scan with a Bitmap Index Scan in PostgreSQL. When does the query planner choose a Bitmap Index Scan, and how does a Bitmap Index Scan eliminate random I/O?",
+    "question_type": "implementation",
+    "skills": [
+      "databases",
+      "postgres",
+      "sql"
+    ],
+    "expected_evidence": [
+      "Regular Index Scan: reads index leaf page and immediately performs random I/O page fetch on table heap",
+      "Bitmap Index Scan Phase 1: reads index and creates memory bitmap of matching physical page numbers",
+      "Phase 2: reads heap pages sequentially in physical disk order, eliminating random I/O",
+      "Combining multiple indexes via BitmapAnd and BitmapOr operations in memory"
+    ],
+    "follow_up_topics": [
+      "Lossy bitmap index scans when `work_mem` is exceeded",
+      "Cluster command aligning physical heap order with index order"
+    ]
+  },
+  {
+    "id": "TD_066",
+    "category": "technical_deep_dive",
+    "topic": "Security",
+    "difficulty": "medium",
+    "question": "Explain how Refresh Token Rotation works in single-page applications. What happens when a compromised refresh token is replayed by an attacker after the legitimate client has already rotated it?",
+    "question_type": "architecture",
+    "skills": [
+      "security",
+      "auth",
+      "oauth"
+    ],
+    "expected_evidence": [
+      "Every refresh request invalidates old refresh token and issues new access token + new refresh token pair",
+      "Auth server tracks token family: if an already-invalidated refresh token is presented, attacker replay is detected",
+      "Immediate breach response: revoke entire token family and force re-authentication across all sessions",
+      "Short-lived refresh token validity windows reducing interception risk"
+    ],
+    "follow_up_topics": [
+      "HttpOnly SameSite cookies vs localStorage for refresh token storage",
+      "Device binding and DPoP (Demonstrating Proof-of-Possession)"
+    ]
+  },
+  {
+    "id": "TD_067",
+    "category": "technical_deep_dive",
+    "topic": "System Design",
+    "difficulty": "medium",
+    "question": "Why is setting an infinite or multi-minute connection pool acquisition timeout dangerous during traffic spikes? How does aggressive fast-fail with short acquisition timeouts protect the service?",
+    "question_type": "resilience",
+    "skills": [
+      "databases",
+      "resilience",
+      "backend"
+    ],
+    "expected_evidence": [
+      "Infinite timeout queuing incoming requests, consuming web server thread capacity and memory",
+      "Upstream load balancers timing out while server continues processing stalled requests (wasted work)",
+      "Short acquisition timeout (e.g. 500ms - 2s) failing fast with 503 Service Unavailable",
+      "Allowing circuit breakers to trip and load balancers to route traffic to healthy replicas"
+    ],
+    "follow_up_topics": [
+      "Load shedding and prioritization of critical API endpoints",
+      "Graceful degradation with cached read fallbacks"
+    ]
+  },
+  {
+    "id": "TD_068",
+    "category": "technical_deep_dive",
+    "topic": "Distributed Systems",
+    "difficulty": "hard",
+    "question": "Why cannot a Raft cluster maintain an unbounded append-only log indefinitely? How does state machine snapshotting work, and how does a leader transmit a snapshot to a lagging follower (`InstallSnapshot`)?",
+    "question_type": "implementation",
+    "skills": [
+      "distributed-systems",
+      "consensus",
+      "storage"
+    ],
+    "expected_evidence": [
+      "Append-only log consuming all disk space and making server restart replay prohibitively slow",
+      "Node takes point-in-time snapshot of state machine and discards all log entries up to snapshot index",
+      "Snapshot metadata: LastIncludedIndex and LastIncludedTerm",
+      "Lagging follower whose required entries were discarded receives InstallSnapshot RPC chunks directly from leader"
+    ],
+    "follow_up_topics": [
+      "Copy-on-write snapshotting without blocking consensus state machine",
+      "Compaction thresholds and disk watermark policies"
+    ]
+  },
+  {
+    "id": "TD_069",
+    "category": "technical_deep_dive",
+    "topic": "Containers & OS",
+    "difficulty": "hard",
+    "question": "How do Linux namespaces (PID, NET, MNT, IPC, UTS, USER) and control groups (cgroups) provide isolation in Docker? What happens when a container exceeds its memory cgroup limit?",
+    "question_type": "implementation",
+    "skills": [
+      "docker",
+      "containers",
+      "linux"
+    ],
+    "expected_evidence": [
+      "cgroups v1/v2 memory limit enforcement leading to kernel OOM-killer",
+      "Namespaces isolating process view of OS resources",
+      "Difference between container isolation and hardware hypervisor virtualization",
+      "Rootless containers and user namespace remapping"
+    ],
+    "follow_up_topics": [
+      "Container security capabilities (CAP_SYS_ADMIN)",
+      "cgroup CPU shares vs CPU quota"
+    ]
+  },
+  {
+    "id": "TD_070",
+    "category": "technical_deep_dive",
+    "topic": "Cloud Architecture",
+    "difficulty": "hard",
+    "question": "How does an Envoy sidecar proxy intercept incoming and outgoing pod traffic using iptables rules in Kubernetes? What latency and CPU overhead does mutual TLS (mTLS) introduce?",
+    "question_type": "architecture",
+    "skills": [
+      "kubernetes",
+      "networking",
+      "microservices"
+    ],
+    "expected_evidence": [
+      "iptables PREROUTING and OUTPUT redirecting TCP packets to Envoy localhost port",
+      "Envoy handling TLS termination, mTLS certificate exchange, and circuit breaking",
+      "CPU serialization and memory overhead of running Envoy alongside every pod",
+      "eBPF service meshes (Cilium) bypassing iptables and TCP stack for pod-to-pod routing"
+    ],
+    "follow_up_topics": [
+      "mTLS certificate rotation without connection drop",
+      "eBPF vs iptables benchmark comparisons"
+    ]
+  },
+  {
+    "id": "TD_071",
+    "category": "technical_deep_dive",
+    "topic": "API Design",
+    "difficulty": "medium",
+    "question": "Explain how GraphQL resolver execution trees cause the N+1 database query problem. How does the DataLoader batching and caching pattern coalesce queries across concurrent resolvers?",
+    "question_type": "debugging",
+    "skills": [
+      "graphql",
+      "api",
+      "databases"
+    ],
+    "expected_evidence": [
+      "GraphQL executing nested field resolvers independently per parent entity",
+      "Naive resolver execution resulting in 1 query for parents + N queries for children",
+      "DataLoader queuing keys during single event loop tick and issuing single batched SQL query",
+      "DataLoader per-request cache lifetime avoiding stale cross-request data leaks"
+    ],
+    "follow_up_topics": [
+      "GraphQL query complexity analysis and depth limiting",
+      "GraphQL persisted queries for security"
+    ]
+  },
+  {
+    "id": "TD_072",
+    "category": "technical_deep_dive",
+    "topic": "Protocols",
+    "difficulty": "hard",
+    "question": "Walk through the frame flow of a Bidirectional Streaming gRPC call over HTTP/2. How are flow control windows, channel deadlines, and cancellation signals handled across streams?",
+    "question_type": "implementation",
+    "skills": [
+      "grpc",
+      "http2",
+      "networking"
+    ],
+    "expected_evidence": [
+      "HTTP/2 DATA frames carrying Protobuf messages with 5-byte length-prefixed framing",
+      "WINDOW_UPDATE frames managing receiver buffer capacity per stream and connection",
+      "gRPC deadline propagation via `grpc-timeout` metadata header",
+      "RST_STREAM frames signaling graceful or immediate call cancellation"
+    ],
+    "follow_up_topics": [
+      "gRPC keepalive ping intervals and GOAWAY frames",
+      "gRPC client-side load balancing via DNS/service discovery"
+    ]
+  },
+  {
+    "id": "TD_073",
+    "category": "technical_deep_dive",
+    "topic": "Operating Systems",
+    "difficulty": "hard",
+    "question": "Why does the traditional `read()` then `write()` file transfer pattern require 4 context switches and 4 data copies? How does `sendfile()` achieve Zero-Copy file transfer across network sockets?",
+    "question_type": "implementation",
+    "skills": [
+      "os",
+      "linux",
+      "performance"
+    ],
+    "expected_evidence": [
+      "read/write: Disk -> Page Cache -> User Space Buffer -> Socket Buffer -> NIC DMA",
+      "User-space buffer copy requiring 4 context switches (2 syscalls)",
+      "sendfile: transferring pages directly between Page Cache and Socket descriptor inside kernel space",
+      "Scatter-gather DMA copying descriptor pointers directly to NIC without CPU page copy"
+    ],
+    "follow_up_topics": [
+      "vmsplice and splice syscalls",
+      "mmap vs sendfile trade-offs for caching static web assets"
+    ]
+  },
+  {
+    "id": "TD_074",
+    "category": "technical_deep_dive",
+    "topic": "Storage & Hardware",
+    "difficulty": "hard",
+    "question": "Explain how NAND flash memory erase blocks and write pages cause Write Amplification. Why can data only be written to pre-erased pages, and what does the TRIM command do?",
+    "question_type": "architecture",
+    "skills": [
+      "storage",
+      "hardware",
+      "databases"
+    ],
+    "expected_evidence": [
+      "Page-level reads and writes (4KB-16KB) versus block-level erasures (2MB-8MB)",
+      "Flash Translation Layer (FTL) performing wear leveling and garbage collection",
+      "Write Amplification Factor (WAF) calculating bytes written to flash vs bytes requested by OS",
+      "TRIM syscall informing SSD firmware of freed file system blocks before OS overwrite"
+    ],
+    "follow_up_topics": [
+      "Over-provisioning impact on enterprise SSD lifespan",
+      "SMR (Shingled Magnetic Recording) HDD trade-offs"
+    ]
+  },
+  {
+    "id": "TD_075",
+    "category": "technical_deep_dive",
+    "topic": "Distributed Databases",
+    "difficulty": "hard",
+    "question": "Explain the write path and read path in Apache Cassandra. How do CommitLogs, Memtables, SSTables, Bloom Filters, and Partition Summaries coordinate to deliver fast writes and deterministic reads?",
+    "question_type": "architecture",
+    "skills": [
+      "cassandra",
+      "nosql",
+      "distributed-systems"
+    ],
+    "expected_evidence": [
+      "Write path: sequential write to CommitLog on disk + concurrent write to in-memory Memtable",
+      "Memtable flushed to immutable SSTable on disk; no in-place updates or read-before-write",
+      "Read path checking Bloom Filter to avoid SSTables not containing the partition key",
+      "Partition summary and partition index locating physical disk offset within SSTable"
+    ],
+    "follow_up_topics": [
+      "Tombstone garbage collection during compaction",
+      "Repair mechanics: read-repair vs anti-entropy repairs"
+    ]
+  },
+  {
+    "id": "TD_076",
+    "category": "technical_deep_dive",
+    "topic": "Search Engines",
+    "difficulty": "hard",
+    "question": "How does an inverted index represent tokenized text terms for full-text search? Explain why Lucene segments are immutable, and what happens to CPU and I/O during segment merging.",
+    "question_type": "implementation",
+    "skills": [
+      "elasticsearch",
+      "search",
+      "indexing"
+    ],
+    "expected_evidence": [
+      "Term dictionary mapping sorted tokens to posting lists (doc ID, term frequency, positions)",
+      "Immutable segments eliminating concurrency locks during query execution",
+      "Deletes represented as bitsets in separate `.del` files rather than in-place index mutation",
+      "Background segment merges combining small segments into large ones, reclaiming deleted doc space"
+    ],
+    "follow_up_topics": [
+      "Doc values columnar storage for sorting and aggregations",
+      "Near-real-time refresh vs flush in Elasticsearch"
+    ]
+  },
+  {
+    "id": "TD_077",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "hard",
+    "question": "How does PostgreSQL implement Multi-Version Concurrency Control (MVCC) without rollback segments? Explain dead tuples, table bloat, autovacuum tuning, and Transaction ID (XID) wraparound.",
+    "question_type": "implementation",
+    "skills": [
+      "postgres",
+      "databases",
+      "performance"
+    ],
+    "expected_evidence": [
+      "Updates creating new tuple versions with `xmin`/`xmax` transaction markers on heap",
+      "Old tuple versions becoming dead tuples once transactions commit or rollback",
+      "Autovacuum scanning pages, marking dead tuple space as reusable in Free Space Map (FSM)",
+      "XID wraparound freeze vacuum preventing 32-bit transaction counter overflow"
+    ],
+    "follow_up_topics": [
+      "VACUUM FULL exclusive lock impact vs pg_repack",
+      "HOT (Heap-Only Tuples) optimization and index bloat"
+    ]
+  },
+  {
+    "id": "TD_078",
+    "category": "technical_deep_dive",
+    "topic": "Distributed Caching",
+    "difficulty": "hard",
+    "question": "How does Redis Cluster partition data across 16,384 hash slots using CRC16? Explain how nodes detect node failures via Gossip PING/PONG and how clients handle MOVED vs ASK redirects.",
+    "question_type": "architecture",
+    "skills": [
+      "redis",
+      "caching",
+      "distributed-systems"
+    ],
+    "expected_evidence": [
+      "Key mapped to slot via `CRC16(key) % 16384`; hash tags `{user_123}` forcing multi-key colocation",
+      "Gossip protocol nodes exchanging node state, fail flags, and slot ownership maps",
+      "MOVED redirect sent when key's hash slot permanently belongs to another master",
+      "ASK redirect sent during live slot migration; client queries destination node with ASKING command"
+    ],
+    "follow_up_topics": [
+      "Split-brain prevention in Redis Cluster",
+      "Client-side cluster topology caching and connection pools"
+    ]
+  },
+  {
+    "id": "TD_079",
+    "category": "technical_deep_dive",
+    "topic": "Language Internals",
+    "difficulty": "hard",
+    "question": "Explain how Rust guarantees memory safety and thread safety without a garbage collector. Detail the rules of ownership, mutable vs immutable references, and explicit lifetime annotations (`'a`).",
+    "question_type": "conceptual",
+    "skills": [
+      "rust",
+      "memory",
+      "concurrency"
+    ],
+    "expected_evidence": [
+      "Every value has single owner; value dropped when owner goes out of scope",
+      "Any number of immutable references (`&T`) OR exactly one mutable reference (`&mut T`), never both",
+      "Lifetimes ensuring references never outlive the underlying referent (preventing dangling pointers)",
+      "Send and Sync marker traits guaranteeing safe concurrency across thread boundaries"
+    ],
+    "follow_up_topics": [
+      "Interior mutability via RefCell and Mutex",
+      "Zero-cost abstractions in Rust compiler"
+    ]
+  },
+  {
+    "id": "TD_080",
+    "category": "technical_deep_dive",
+    "topic": "Distributed Systems",
+    "difficulty": "hard",
+    "question": "Contrast Centralized Wait-For Graph deadlock detection with decentralized timestamp-based schemes (Wait-Die and Wound-Wait). How do Wait-Die and Wound-Wait prevent cyclic waiting?",
+    "question_type": "algorithms",
+    "skills": [
+      "concurrency",
+      "distributed-systems",
+      "algorithms"
+    ],
+    "expected_evidence": [
+      "Wait-For Graph: directed graph of transactions waiting on locks; cycles indicate deadlock",
+      "Distributed wait-for graph communication latency and phantom deadlock risks",
+      "Wait-Die (non-preemptive): older transaction waits for younger; younger transaction dies (aborts)",
+      "Wound-Wait (preemptive): older transaction wounds (preempts/aborts) younger; younger waits for older"
+    ],
+    "follow_up_topics": [
+      "Starvation prevention using original transaction timestamps upon restart",
+      "Edge chasing distributed deadlock detection"
+    ]
+  },
+  {
+    "id": "TD_081",
+    "category": "technical_deep_dive",
+    "topic": "Event-Driven Architecture",
+    "difficulty": "hard",
+    "question": "How does the Transactional Outbox pattern solve the dual-write problem between an SQL database and an Apache Kafka message broker? How does Change Data Capture (CDC) via Debezium read database WAL?",
+    "question_type": "architecture",
+    "skills": [
+      "events",
+      "kafka",
+      "databases"
+    ],
+    "expected_evidence": [
+      "Application writes business entity update AND domain event into `outbox` table in single ACID transaction",
+      "CDC connector (Debezium) tailing database replication log (Postgres WAL / MySQL binlog)",
+      "Eliminates distributed 2PC while guaranteeing at-least-once event publication to Kafka",
+      "Idempotent consumer keys handling duplicate event deliveries"
+    ],
+    "follow_up_topics": [
+      "Outbox table pruning strategies",
+      "Log compaction on Kafka outbox event topics"
+    ]
+  },
+  {
+    "id": "TD_082",
+    "category": "technical_deep_dive",
+    "topic": "Operating Systems",
+    "difficulty": "hard",
+    "question": "How does Linux cgroups v2 unify the hierarchy compared to cgroups v1? Explain how CPU bandwidth controllers enforce `cpu.max` quotas and what happens when CFS throttling occurs.",
+    "question_type": "implementation",
+    "skills": [
+      "linux",
+      "os",
+      "devops"
+    ],
+    "expected_evidence": [
+      "cgroups v1 multiple independent hierarchies causing controller resource accounting conflicts",
+      "cgroups v2 single unified hierarchy where processes belong to exactly one leaf cgroup",
+      "CFS bandwidth controller `cpu.max` setting quota and period (e.g. 100000 100000 for 1 full core)",
+      "CFS throttling thread execution when quota exhausted within period, introducing latency spikes"
+    ],
+    "follow_up_topics": [
+      "Memory high vs memory max limits in cgroups v2",
+      "PSI (Pressure Stall Information) metrics in Linux"
+    ]
+  },
+  {
+    "id": "TD_083",
+    "category": "technical_deep_dive",
+    "topic": "Security",
+    "difficulty": "medium",
+    "question": "Walk through how a browser or API client validates a TLS certificate chain up to a trusted Root CA. What is the privacy and latency risk of online OCSP checks, and how does OCSP Stapling solve it?",
+    "question_type": "implementation",
+    "skills": [
+      "security",
+      "tls",
+      "networking"
+    ],
+    "expected_evidence": [
+      "Leaf certificate -> Intermediate CAs -> Root CA signed by pre-installed trusted certificate store",
+      "Client validating cryptographic signatures, validity dates, subject alternative names (SAN), and revocation status",
+      "Online OCSP requests leaking client browsing/API targets to Certificate Authority and adding 100ms+ network RTT",
+      "OCSP Stapling: server periodically fetches CA-signed, timestamped OCSP response and sends it in TLS handshake"
+    ],
+    "follow_up_topics": [
+      "Certificate Transparency (CT) logs and SCTs",
+      "Self-signed certificate risks in microservice environments"
+    ]
+  },
+  {
+    "id": "TD_084",
+    "category": "technical_deep_dive",
+    "topic": "Hardware & Architecture",
+    "difficulty": "expert",
+    "question": "Explain how the MESI (Modified, Exclusive, Shared, Invalid) cache coherence protocol maintains consistency across CPU L1/L2 caches. What are store buffers, invalidation queues, and memory fences?",
+    "question_type": "conceptual",
+    "skills": [
+      "hardware",
+      "concurrency",
+      "performance"
+    ],
+    "expected_evidence": [
+      "CPU cache lines transitioning between MESI states upon bus read/write snooping",
+      "Store buffers allowing CPU core to proceed immediately without waiting for cache invalidation acknowledgments",
+      "Store buffers causing out-of-order memory visibility across cores",
+      "Memory barriers (fences) forcing CPU to drain store buffers and apply invalidation queues before proceeding"
+    ],
+    "follow_up_topics": [
+      "x86 Total Store Order (TSO) vs ARM weak memory model",
+      "Volatile keyword and atomic operations in Java/C++"
+    ]
+  },
+  {
+    "id": "TD_085",
+    "category": "technical_deep_dive",
+    "topic": "Networking",
+    "difficulty": "hard",
+    "question": "How does Interactive Connectivity Establishment (ICE) establish direct peer-to-peer UDP media streams across Symmetric NATs? What is the function of STUN binding requests versus TURN relay servers?",
+    "question_type": "architecture",
+    "skills": [
+      "webrtc",
+      "networking",
+      "realtime"
+    ],
+    "expected_evidence": [
+      "STUN (Session Traversal Utilities for NAT) allowing client to discover public IP/port reflex address",
+      "Symmetric NAT assigning different public ports per destination, preventing direct STUN peer connection",
+      "TURN (Traversal Using Relays around NAT) acting as cloud relay server when direct connection fails",
+      "ICE gathering candidate pairs (host, srflx, relay) and performing connectivity checks via STUN checks"
+    ],
+    "follow_up_topics": [
+      "DTLS-SRTP encryption for media streams",
+      "SCTP data channels over DTLS in WebRTC"
+    ]
+  },
+  {
+    "id": "TD_086",
+    "category": "technical_deep_dive",
+    "topic": "Serialization",
+    "difficulty": "medium",
+    "question": "How does Protocol Buffers encode integers and field keys compactly using variable-length integers (varints)? Why is ZigZag encoding required for efficient negative integer representation?",
+    "question_type": "implementation",
+    "skills": [
+      "protobuf",
+      "serialization",
+      "performance"
+    ],
+    "expected_evidence": [
+      "Varints using 7 bits per byte for payload and MSB (Most Significant Bit) as continuation flag",
+      "Standard two's complement negative numbers using 64 bits (10 varint bytes) in regular varint",
+      "ZigZag encoding mapping signed integers to unsigned integers: `(n << 1) ^ (n >> 31)`",
+      "Small negative numbers (-1, -2) mapping to small positive integers (1, 3), packing into 1-2 bytes"
+    ],
+    "follow_up_topics": [
+      "Protobuf wire types (0 for varint, 2 for length-delimited string/embedded msg)",
+      "Field number evolution rules preventing breaking changes"
+    ]
+  },
+  {
+    "id": "TD_087",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "medium",
+    "question": "How does SQLite Write-Ahead Logging (WAL) mode allow concurrent readers while a write transaction is executing? What role do the `-wal` and `-shm` (shared memory) index files play?",
+    "question_type": "implementation",
+    "skills": [
+      "sqlite",
+      "databases",
+      "storage"
+    ],
+    "expected_evidence": [
+      "Traditional rollback journal locking entire database file during writes, blocking readers",
+      "WAL mode appending new pages to `-wal` file while original database file remains unchanged",
+      "Readers reading snapshot based on last committed transaction in `-shm` index without blocking writer",
+      "Checkpoint operations periodically syncing `-wal` pages back into main `.db` file"
+    ],
+    "follow_up_topics": [
+      "Checkpoint starvation caused by continuous open readers",
+      "PRAGMA synchronous = NORMAL performance guarantees"
+    ]
+  },
+  {
+    "id": "TD_088",
+    "category": "technical_deep_dive",
+    "topic": "Distributed Systems",
+    "difficulty": "hard",
+    "question": "How does the Raft consensus algorithm prevent split-brain candidate deadlocks during leader election? Explain the mathematical rationale behind randomized election timeouts.",
+    "question_type": "algorithms",
+    "skills": [
+      "consensus",
+      "distributed-systems",
+      "algorithms"
+    ],
+    "expected_evidence": [
+      "Follower increments term and becomes Candidate when heartbeat timeout expires",
+      "If multiple followers timeout simultaneously, votes split equally, resulting in no majority leader",
+      "Randomized election timeout (e.g. 150ms - 300ms) ensuring single candidate almost always times out first",
+      "Winner collecting majority votes and sending heartbeats before other candidates wake up"
+    ],
+    "follow_up_topics": [
+      "Pre-Vote phase preventing partitioned lagging nodes from disrupting healthy leaders",
+      "Joint consensus for dynamic cluster membership changes"
+    ]
+  },
+  {
+    "id": "TD_089",
+    "category": "technical_deep_dive",
+    "topic": "Operating Systems",
+    "difficulty": "hard",
+    "question": "Compare the three journaling modes in the Linux `ext4` filesystem: `data=journal`, `data=ordered`, and `data=writeback`. What are the write throughput penalties and corruption recovery trade-offs?",
+    "question_type": "implementation",
+    "skills": [
+      "linux",
+      "os",
+      "storage"
+    ],
+    "expected_evidence": [
+      "`data=journal`: both metadata and file data written to journal before committing to storage; 50% write penalty",
+      "`data=ordered`: file data written to disk before metadata committed to journal; default safe balance",
+      "`data=writeback`: metadata journaled, but file data flushed asynchronously; risk of stale data leaks after crash",
+      "Crash recovery replaying uncommitted metadata transactions from journal ring buffer"
+    ],
+    "follow_up_topics": [
+      "Barrier=1 mount option and disk write cache flushes",
+      "fsck file system recovery duration in journaled filesystems"
+    ]
+  },
+  {
+    "id": "TD_090",
+    "category": "technical_deep_dive",
+    "topic": "Runtimes",
+    "difficulty": "hard",
+    "question": "How does the Java Garbage-First (G1) collector divide the heap into equal-sized regions instead of contiguous generation spaces? How does it enforce user-configured pause-time targets (`MaxGCPauseMillis`)?",
+    "question_type": "algorithms",
+    "skills": [
+      "java",
+      "jvm",
+      "memory"
+    ],
+    "expected_evidence": [
+      "Heap partitioned into 2048 equal regions dynamically assigned as Eden, Survivor, or Old",
+      "Remembered Sets (R-Sets) tracking cross-region object references without full heap scanning",
+      "Concurrent marking phase identifying old regions containing highest percentage of dead objects (Garbage-First)",
+      "Evacuation pause copying live objects to survivor/old region, fitting pause target dynamically"
+    ],
+    "follow_up_topics": [
+      "Humongous object allocation bypassing G1 regions",
+      "ZGC and Shenandoah concurrent evacuation without stop-the-world pauses"
+    ]
+  },
+  {
+    "id": "TD_091",
+    "category": "technical_deep_dive",
+    "topic": "Runtimes & C",
+    "difficulty": "hard",
+    "question": "How do high-performance Python libraries (like NumPy, Cryptography, and PyTorch) bypass the Global Interpreter Lock (GIL) in C-extensions? What rules dictate when the GIL must be re-acquired?",
+    "question_type": "implementation",
+    "skills": [
+      "python",
+      "c",
+      "concurrency"
+    ],
+    "expected_evidence": [
+      "`Py_BEGIN_ALLOW_THREADS` macro saving thread state and releasing global interpreter lock",
+      "C code performing heavy CPU calculation or socket/disk I/O completely in parallel on native threads",
+      "`Py_END_ALLOW_THREADS` re-acquiring the GIL before manipulating any Python objects (`PyObject*`)",
+      "Invoking Python API functions without GIL holding causing immediate segfaults and heap corruption"
+    ],
+    "follow_up_topics": [
+      "Python 3.13 free-threaded builds without GIL",
+      "Cython nogil block semantics"
+    ]
+  },
+  {
+    "id": "TD_092",
+    "category": "technical_deep_dive",
+    "topic": "Algorithms & System Design",
+    "difficulty": "medium",
+    "question": "Compare the Token Bucket and Leaky Bucket rate limiting algorithms. Which algorithm supports bursty traffic while guaranteeing average rate limits, and which enforces strict constant-rate smoothing?",
+    "question_type": "algorithms",
+    "skills": [
+      "algorithms",
+      "rate-limiting",
+      "networking"
+    ],
+    "expected_evidence": [
+      "Token Bucket: tokens added at steady rate up to max capacity; request consumes token; allows traffic bursts up to capacity",
+      "Leaky Bucket: requests queued in fixed-capacity buffer and processed at constant leak rate; smooths egress traffic",
+      "Token bucket ideal for user API endpoints allowing legitimate fast bursts (e.g. page asset loading)",
+      "Leaky bucket ideal for traffic shaping outbound calls to rate-limited downstream third-party services"
+    ],
+    "follow_up_topics": [
+      "Distributed token bucket synchronization using Redis Lua scripts",
+      "Sliding window log vs token bucket memory trade-offs"
+    ]
+  },
+  {
+    "id": "TD_093",
+    "category": "technical_deep_dive",
+    "topic": "System Resilience",
+    "difficulty": "medium",
+    "question": "Explain the state transition triggers and recovery conditions of a Circuit Breaker pattern. What sliding window metrics (failure rate percentage vs slow call percentage) determine state change?",
+    "question_type": "implementation",
+    "skills": [
+      "resilience",
+      "microservices",
+      "architecture"
+    ],
+    "expected_evidence": [
+      "Closed: normal operation routing requests; failures counted in rolling sliding window",
+      "Transition to Open: failure rate (e.g. > 50%) or latency threshold exceeded within minimum request volume",
+      "Open: immediately fails fast without calling downstream service; prevents thread pool starvation",
+      "Half-Open: after sleep window expires, allows canary test requests; transitions to Closed on success or Open on failure"
+    ],
+    "follow_up_topics": [
+      "Fallback strategies: cached stale response, default payload, or 503 error",
+      "Distributed circuit breakers across service replica fleets"
+    ]
+  },
+  {
+    "id": "TD_094",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "hard",
+    "question": "Why can inserting records into a child table with foreign key constraints cause unexpected row-level lock contention or deadlocks on the parent table under high concurrent write loads?",
+    "question_type": "debugging",
+    "skills": [
+      "databases",
+      "sql",
+      "concurrency"
+    ],
+    "expected_evidence": [
+      "Child insert requiring shared lock (`FOR SHARE`) on referenced parent table row to verify existence",
+      "Concurrent parent updates acquiring exclusive lock (`FOR UPDATE`), conflicting with child inserts",
+      "High-frequency parent record (e.g. organization or platform account) becoming concurrency choke point",
+      "Unindexed foreign key columns in parent delete/update cascades scanning entire child table"
+    ],
+    "follow_up_topics": [
+      "Alternative: application-level validation with asynchronous foreign key consistency verification",
+      "PostgreSQL `SELECT ... FOR KEY SHARE` optimization"
+    ]
+  },
+  {
+    "id": "TD_095",
+    "category": "technical_deep_dive",
+    "topic": "Networking",
+    "difficulty": "medium",
+    "question": "How do MTU (Maximum Transmission Unit) and MSS (Maximum Segment Size) interact during TCP handshake negotiation? Why is IP packet fragmentation hazardous for network throughput and firewalls?",
+    "question_type": "implementation",
+    "skills": [
+      "networking",
+      "tcp",
+      "protocols"
+    ],
+    "expected_evidence": [
+      "MTU (typically 1500 bytes over Ethernet) = IP header + TCP header + TCP payload",
+      "MSS negotiated in SYN options as `MTU - 40` (20-byte IP header + 20-byte TCP header = 1460 bytes)",
+      "IP fragmentation occurring when packet exceeds path MTU and DF (Don't Fragment) bit is unset",
+      "Fragmentation hazards: single lost fragment drops entire packet, NAT traversal failures, and firewall blocking"
+    ],
+    "follow_up_topics": [
+      "Path MTU Discovery (PMTUD) using ICMP Destination Unreachable packets",
+      "Black hole routers dropping ICMP PMTUD packets"
+    ]
+  },
+  {
+    "id": "TD_096",
+    "category": "technical_deep_dive",
+    "topic": "Language Internals",
+    "difficulty": "hard",
+    "question": "Explain how Rust's cooperative asynchronous model works using `Future::poll` and `Waker`. Why is `Pin<&mut Self>` necessary to guarantee self-referential struct memory stability across yields?",
+    "question_type": "implementation",
+    "skills": [
+      "rust",
+      "async",
+      "concurrency"
+    ],
+    "expected_evidence": [
+      "Async functions compiled into compiler-generated state machines implementing `Future`",
+      "`poll()` invoked with `Context`; returns `Poll::Ready(val)` or `Poll::Pending` after registering `Waker`",
+      "Self-referential futures holding pointers to internal stack variables across yield points",
+      "`Pin` preventing value from being moved in memory, guaranteeing self-referential pointers remain valid"
+    ],
+    "follow_up_topics": [
+      "Tokio multi-threaded work-stealing scheduler internals",
+      "Blocking operations stalling Tokio worker threads"
+    ]
+  },
+  {
+    "id": "TD_097",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "hard",
+    "question": "What is parameter sniffing in database query optimizers? How can a query plan generated for an atypical query parameter cause catastrophic performance regressions when executed for typical queries?",
+    "question_type": "debugging",
+    "skills": [
+      "databases",
+      "sql",
+      "performance"
+    ],
+    "expected_evidence": [
+      "Optimizer generating execution plan upon first execution using initial parameter values",
+      "If initial parameter matches rare condition (e.g. 1 matching row), optimizer chooses Index Seek",
+      "Subsequent query executions with common parameters (matching 1,000,000 rows) reusing Index Seek plan",
+      "Catastrophic degradation: millions of random I/O index lookups instead of single fast sequential table scan"
+    ],
+    "follow_up_topics": [
+      "Mitigation: query hints (`OPTIMIZE FOR`), statement recompile, or local variable reassignment",
+      "Plan guides and query store plan forcing in production"
+    ]
+  },
+  {
+    "id": "TD_098",
+    "category": "technical_deep_dive",
+    "topic": "Observability",
+    "difficulty": "medium",
+    "question": "How do microservices maintain end-to-end distributed trace continuity across HTTP and message queues using the W3C `traceparent` and `tracestate` headers? What is the binary format of `traceparent`?",
+    "question_type": "implementation",
+    "skills": [
+      "observability",
+      "distributed-systems",
+      "telemetry"
+    ],
+    "expected_evidence": [
+      "`traceparent` header format: `version-trace_id-parent_id-trace_flags` (e.g. `00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01`)",
+      "4-part components: 2-char version, 32-char hex Trace ID, 16-char hex Parent Span ID, 2-char trace flags (sampled)",
+      "`tracestate` carrying vendor-specific routing and telemetry metadata across heterogeneous observability systems",
+      "Injecting and extracting span context in HTTP headers, gRPC metadata, and Kafka record headers"
+    ],
+    "follow_up_topics": [
+      "B3 propagation vs W3C Trace Context compatibility",
+      "Baggage header for cross-service business context propagation"
+    ]
+  },
+  {
+    "id": "TD_099",
+    "category": "technical_deep_dive",
+    "topic": "Storage Internals",
+    "difficulty": "hard",
+    "question": "Analyze the Write Amplification Factor (WAF) in traditional in-place B-Trees compared to append-only LSM trees during sustained high-concurrency 4KB write operations. How does page size influence WAF?",
+    "question_type": "architecture",
+    "skills": [
+      "databases",
+      "storage",
+      "performance"
+    ],
+    "expected_evidence": [
+      "B-Tree writing entire 8KB/16KB disk page for a 100-byte update",
+      "LSM sequential append to WAL and memtable with delayed compaction",
+      "Size-tiered vs leveled compaction impact on long-term WAF",
+      "SSD wear caused by repeated page rewrites in B-Trees"
+    ],
+    "follow_up_topics": [
+      "Compaction write bandwidth throttling",
+      "ZNS (Zoned Namespaces) SSD integration"
+    ]
+  },
+  {
+    "id": "TD_100",
+    "category": "technical_deep_dive",
+    "topic": "Networking",
+    "difficulty": "hard",
+    "question": "How does Google BBR (Bottleneck Bandwidth and RTT) congestion control model network pipes without relying on packet loss as a congestion indicator? How does it combat bufferbloat?",
+    "question_type": "algorithms",
+    "skills": [
+      "networking",
+      "tcp",
+      "performance"
+    ],
+    "expected_evidence": [
+      "BBR probing bottleneck bandwidth (BtlBw) and round-trip propagation time (RTprop)",
+      "Loss-based algorithms (Cubic/Reno) mistaking queue buffering for available throughput",
+      "BBR pacing packets at estimated bottleneck rate, keeping switch queues empty",
+      "Cycle through ProbeBW, Drain, ProbeRTT states to adapt to changing network paths"
+    ],
+    "follow_up_topics": [
+      "BBR v2 packet loss response",
+      "Fairness between BBR and Cubic on shared links"
+    ]
+  },
+  {
+    "id": "TD_101",
+    "category": "technical_deep_dive",
+    "topic": "Operating Systems",
+    "difficulty": "hard",
+    "question": "Explain the four primary data structures of the Linux Virtual File System: `superblock`, `inode`, `dentry`, and `file`. How does dentry caching (`dcache`) accelerate path lookups?",
+    "question_type": "implementation",
+    "skills": [
+      "linux",
+      "os",
+      "storage"
+    ],
+    "expected_evidence": [
+      "Superblock describing entire filesystem geometry and mount flags",
+      "Inode storing file metadata, permissions, and disk block pointers without filenames",
+      "Dentry linking directory names to inode numbers; cached in dcache for fast O(1) path lookup",
+      "File struct representing open file description (file offset, open flags, refcount) per process"
+    ],
+    "follow_up_topics": [
+      "Hard links vs symbolic links at inode level",
+      "Negative dentries caching nonexistent file lookups"
+    ]
+  },
+  {
+    "id": "TD_102",
+    "category": "technical_deep_dive",
+    "topic": "Distributed Systems",
+    "difficulty": "hard",
+    "question": "Why is classic Two-Phase Commit (2PC) classified as an atomic commitment protocol rather than a fault-tolerant consensus protocol like Raft or Paxos? What happens in 2PC if the coordinator crashes during the PREPARE phase?",
+    "question_type": "conceptual",
+    "skills": [
+      "distributed-systems",
+      "consensus",
+      "transactions"
+    ],
+    "expected_evidence": [
+      "2PC is blocking: if coordinator crashes after participants vote YES, participants remain locked indefinitely",
+      "2PC requires 100% participant survival to commit; Raft requires strict majority quorum (N/2 + 1)",
+      "Raft automatically elects new leader upon crash, resuming log replication without manual intervention",
+      "3PC (Three-Phase Commit) attempting non-blocking commit but vulnerable to network partitions"
+    ],
+    "follow_up_topics": [
+      "Spanner TrueTime integration with Paxos",
+      "Saga pattern as asynchronous alternative to 2PC"
+    ]
+  },
+  {
+    "id": "TD_103",
+    "category": "technical_deep_dive",
+    "topic": "Protocols",
+    "difficulty": "medium",
+    "question": "Compare WebSockets with Server-Sent Events (SSE) over HTTP/2 for unidirectional live metric streaming. How do connection maintenance, proxy buffering, and automatic reconnection differ?",
+    "question_type": "architecture",
+    "skills": [
+      "protocols",
+      "websockets",
+      "http"
+    ],
+    "expected_evidence": [
+      "SSE is standard unidirectional HTTP text stream (`text/event-stream`); native browser `EventSource` with auto-reconnect",
+      "WebSockets bidirectional full-duplex TCP framing; requires manual heartbeat ping/pong and reconnect logic",
+      "SSE over HTTP/2 sharing single multiplexed TCP connection with standard API requests",
+      "Corporate firewalls and reverse proxies seamlessly supporting SSE without WebSocket upgrade inspection"
+    ],
+    "follow_up_topics": [
+      "Last-Event-ID header for missed event replay in SSE",
+      "Binary data streaming trade-offs"
+    ]
+  },
+  {
+    "id": "TD_104",
+    "category": "technical_deep_dive",
+    "topic": "Databases",
+    "difficulty": "medium",
+    "question": "How does an RDBMS background deadlock detector identify circular wait graphs between transactions? Why do high-throughput systems often complement cycle detection with lock timeouts?",
+    "question_type": "debugging",
+    "skills": [
+      "databases",
+      "sql",
+      "concurrency"
+    ],
+    "expected_evidence": [
+      "Directed wait-for graph: nodes are active transactions, edges represent waiting on locked rows",
+      "Background thread periodically running cycle detection (Tarjan or DFS) on lock graph",
+      "Victim selection criteria: transaction with least work done or lowest priority aborted to break cycle",
+      "Lock timeout (`lock_timeout`) failing fast before deadlock detection thread runs, shedding load"
+    ],
+    "follow_up_topics": [
+      "Deadlock frequency metrics in Prometheus",
+      "Application retry logic with exponential backoff and jitter"
+    ]
+  },
+  {
+    "id": "TD_105",
+    "category": "technical_deep_dive",
+    "topic": "Operating Systems",
+    "difficulty": "hard",
+    "question": "Why does executing a hardware system call (e.g. `gettimeofday` or `clock_gettime`) historically require a CPU ring transition? How does the virtual dynamic shared object (vDSO) eliminate this overhead?",
+    "question_type": "implementation",
+    "skills": [
+      "linux",
+      "os",
+      "performance"
+    ],
+    "expected_evidence": [
+      "Syscall historically requiring software interrupt (`int 0x80`) or `syscall` instruction transitioning ring 3 to ring 0",
+      "Context switch saving registers, swapping stack pointers, and flushing TLB/speculation state",
+      "vDSO mapping read-only kernel memory page into process address space containing time data",
+      "User space code reading time directly from hardware TSC without entering kernel mode"
+    ],
+    "follow_up_topics": [
+      "Meltdown/Spectre KPTI (Kernel Page Table Isolation) impact on syscall latency",
+      "eBPF tracepoint overhead vs kprobes"
+    ]
+  }
+]

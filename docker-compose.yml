@@ -12,7 +12,7 @@ services:
     volumes:
       - interview_data:/app/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 3s
       timeout: 3s
       retries: 5
@@ -29,6 +29,12 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:80/"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 3s
 
 volumes:
   interview_data:

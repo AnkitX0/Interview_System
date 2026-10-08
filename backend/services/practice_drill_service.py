@@ -20,8 +20,14 @@ from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 
 import backend.models as models
+from backend.services.question_selection_service import (
+    load_question_bank,
+    record_question_exposure,
+    get_recent_exposed_question_ids
+)
 
 logger = logging.getLogger("interview_system.practice_drills")
+
 
 # Distinct Question Pools for Practice Categories
 DISTINCT_DRILL_POOLS: Dict[str, List[Dict[str, Any]]] = {
@@ -360,9 +366,26 @@ def select_distinct_practice_questions(
     """
     p_type = practice_type.strip().upper()
 
+    category_bank_map = {
+        "TECHNICAL_DEPTH": "technical_deep_dive",
+        "TRADEOFF_REASONING": "tradeoff_reasoning",
+        "FOLLOWUP_DEFENSE": "followup_probe_defense",
+        "PROJECT_DEFENSE": "project_claim_defense",
+        "RESUME_CLAIM_DEFENSE": "project_claim_defense",
+        "COMMUNICATION": "structured_communication",
+        "STRUCTURED_ANSWER": "structured_communication",
+        "BEHAVIORAL_STAR": "behavioral_scenarios",
+        "BEHAVIORAL": "behavioral_scenarios",
+        "PRESSURE_RESPONSE": "high_urgency_pressure",
+    }
+    cat_key = category_bank_map.get(p_type, "technical_deep_dive")
+    bank_items = load_question_bank(cat_key)
+
     # Determine candidate question pool
     if p_type in ("PROJECT_DEFENSE", "RESUME_CLAIM_DEFENSE"):
         raw_pool = _generate_grounded_project_drill_questions(db=db, user_id=user_id, count=count)
+    elif bank_items:
+        raw_pool = bank_items
     elif p_type in DISTINCT_DRILL_POOLS:
         raw_pool = DISTINCT_DRILL_POOLS[p_type]
     elif p_type in ("COMMUNICATION", "STRUCTURED_ANSWER"):
@@ -377,6 +400,7 @@ def select_distinct_practice_questions(
         raw_pool = DISTINCT_DRILL_POOLS["FOLLOWUP_DEFENSE"]
     else:
         raw_pool = DISTINCT_DRILL_POOLS["TECHNICAL_DEPTH"]
+
 
     # Query user's recently answered questions to prevent cross-session repetition
     recent_answers = (
@@ -400,11 +424,12 @@ def select_distinct_practice_questions(
         q_text = item["question"].strip()
         q_norm = q_text.lower()
         if q_norm not in recently_asked_texts and q_norm not in seen_normalized:
+            drill_cat = "Behavioral" if p_type in ("BEHAVIORAL_STAR", "BEHAVIORAL", "STRUCTURED_ANSWER", "COMMUNICATION") else "Technical"
             seen_normalized.add(q_norm)
             selected.append({
                 "id": len(selected) + 1,
                 "question": q_text,
-                "category": item.get("category", "Technical"),
+                "category": drill_cat,
                 "difficulty": item.get("difficulty", difficulty),
                 "focus": item.get("focus", p_type.replace("_", " ").title())
             })
@@ -413,6 +438,7 @@ def select_distinct_practice_questions(
 
     # Second pass: if needed to satisfy count, use unused pool questions
     if len(selected) < count:
+        drill_cat = "Behavioral" if p_type in ("BEHAVIORAL_STAR", "BEHAVIORAL", "STRUCTURED_ANSWER", "COMMUNICATION") else "Technical"
         for item in shuffled_pool:
             q_text = item["question"].strip()
             q_norm = q_text.lower()
@@ -421,11 +447,21 @@ def select_distinct_practice_questions(
                 selected.append({
                     "id": len(selected) + 1,
                     "question": q_text,
-                    "category": item.get("category", "Technical"),
+                    "category": drill_cat,
                     "difficulty": item.get("difficulty", difficulty),
                     "focus": item.get("focus", p_type.replace("_", " ").title())
                 })
-                if len(selected) >= count:
-                    break
+    result = selected[:count]
+    for q_item in result:
+        try:
+            record_question_exposure(
+                db=db,
+                user_id=user_id,
+                question_id=str(q_item.get("id") or "DRILL"),
+                category=cat_key,
+                topic=q_item.get("focus") or "Practice"
+            )
+        except Exception:
+            pass
 
-    return selected[:count]
+    return result
