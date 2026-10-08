@@ -338,7 +338,7 @@ class DevelopmentEmailProvider(EmailProvider):
     ) -> EmailDeliveryResult:
         recipient_hash = _hash_recipient(to_email)
         logger.info(
-            "[EMAIL] type=%s provider=development recipient_hash=%s status=captured",
+            "EMAIL_SEND_START provider=development email_type=%s recipient_hash=%s",
             email_type,
             recipient_hash,
         )
@@ -379,6 +379,11 @@ class DevelopmentEmailProvider(EmailProvider):
         except Exception as log_err:
             logger.debug("Could not append to dev_emails.log: %s", log_err)
 
+        logger.info(
+            "EMAIL_SEND_SUCCESS provider=development email_type=%s message_id=%s",
+            email_type,
+            msg_id,
+        )
         return EmailDeliveryResult(
             status="EMAIL_SENT",
             provider="development",
@@ -415,23 +420,22 @@ class SMTPProvider(EmailProvider):
     ) -> EmailDeliveryResult:
         recipient_hash = _hash_recipient(to_email)
 
+        logger.info(
+            "EMAIL_SEND_START provider=smtp email_type=%s recipient_hash=%s",
+            email_type,
+            recipient_hash,
+        )
+
         if not self.is_configured():
             logger.error(
-                "[EMAIL] type=%s provider=smtp recipient_hash=%s status=provider_unavailable (SMTP_HOST not set)",
+                "EMAIL_SEND_FAILURE provider=smtp email_type=%s error=SMTP_HOST_NOT_CONFIGURED",
                 email_type,
-                recipient_hash,
             )
             return EmailDeliveryResult(
                 status="EMAIL_PROVIDER_UNAVAILABLE",
                 provider="smtp",
                 error="SMTP_HOST is not configured.",
             )
-
-        logger.info(
-            "[EMAIL] type=%s provider=smtp recipient_hash=%s status=sending",
-            email_type,
-            recipient_hash,
-        )
 
         try:
             msg = MIMEMultipart("alternative")
@@ -460,9 +464,9 @@ class SMTPProvider(EmailProvider):
 
             msg_id = f"smtp-{secrets.token_hex(8)}"
             logger.info(
-                "[EMAIL] type=%s provider=smtp recipient_hash=%s status=success",
+                "EMAIL_SEND_SUCCESS provider=smtp email_type=%s message_id=%s",
                 email_type,
-                recipient_hash,
+                msg_id,
             )
             return EmailDeliveryResult(
                 status="EMAIL_SENT",
@@ -470,16 +474,16 @@ class SMTPProvider(EmailProvider):
                 message_id=msg_id,
             )
         except Exception as smtp_err:
+            safe_err = f"{type(smtp_err).__name__}: {str(smtp_err)}"
             logger.error(
-                "[EMAIL] type=%s provider=smtp recipient_hash=%s status=failure error=%s",
+                "EMAIL_SEND_FAILURE provider=smtp email_type=%s error=%s",
                 email_type,
-                recipient_hash,
-                type(smtp_err).__name__,
+                safe_err,
             )
             return EmailDeliveryResult(
                 status="EMAIL_FAILED",
                 provider="smtp",
-                error=f"SMTP delivery failed: {smtp_err}",
+                error=f"SMTP delivery failed: {safe_err}",
             )
 
 
@@ -507,23 +511,22 @@ class ResendProvider(EmailProvider):
     ) -> EmailDeliveryResult:
         recipient_hash = _hash_recipient(to_email)
 
+        logger.info(
+            "EMAIL_SEND_START provider=resend email_type=%s recipient_hash=%s",
+            email_type,
+            recipient_hash,
+        )
+
         if not self.is_configured():
             logger.error(
-                "[EMAIL] type=%s provider=resend recipient_hash=%s status=provider_unavailable (RESEND_API_KEY not set)",
+                "EMAIL_SEND_FAILURE provider=resend email_type=%s error=RESEND_API_KEY_NOT_CONFIGURED",
                 email_type,
-                recipient_hash,
             )
             return EmailDeliveryResult(
                 status="EMAIL_PROVIDER_UNAVAILABLE",
                 provider="resend",
                 error="RESEND_API_KEY is not configured.",
             )
-
-        logger.info(
-            "[EMAIL] type=%s provider=resend recipient_hash=%s status=sending",
-            email_type,
-            recipient_hash,
-        )
 
         try:
             payload = {
@@ -544,9 +547,9 @@ class ResendProvider(EmailProvider):
                 data = res.json()
                 msg_id = data.get("id", f"resend-{secrets.token_hex(8)}")
                 logger.info(
-                    "[EMAIL] type=%s provider=resend recipient_hash=%s status=success",
+                    "EMAIL_SEND_SUCCESS provider=resend email_type=%s message_id=%s",
                     email_type,
-                    recipient_hash,
+                    msg_id,
                 )
                 return EmailDeliveryResult(
                     status="EMAIL_SENT",
@@ -554,28 +557,28 @@ class ResendProvider(EmailProvider):
                     message_id=msg_id,
                 )
             else:
+                safe_err = f"Resend API error HTTP {res.status_code}"
                 logger.error(
-                    "[EMAIL] type=%s provider=resend recipient_hash=%s status=failure http_status=%d",
+                    "EMAIL_SEND_FAILURE provider=resend email_type=%s error=%s",
                     email_type,
-                    recipient_hash,
-                    res.status_code,
+                    safe_err,
                 )
                 return EmailDeliveryResult(
                     status="EMAIL_FAILED",
                     provider="resend",
-                    error=f"Resend API error HTTP {res.status_code}: {res.text}",
+                    error=safe_err,
                 )
         except Exception as resend_err:
+            safe_err = f"{type(resend_err).__name__}: {str(resend_err)}"
             logger.error(
-                "[EMAIL] type=%s provider=resend recipient_hash=%s status=failure error=%s",
+                "EMAIL_SEND_FAILURE provider=resend email_type=%s error=%s",
                 email_type,
-                recipient_hash,
-                type(resend_err).__name__,
+                safe_err,
             )
             return EmailDeliveryResult(
                 status="EMAIL_FAILED",
                 provider="resend",
-                error=f"Resend dispatch error: {resend_err}",
+                error=f"Resend dispatch error: {safe_err}",
             )
 
 

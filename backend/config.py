@@ -88,11 +88,22 @@ import logging
 
 try:
     import dotenv
-    dotenv.load_dotenv()
+    _root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    _root_env = os.path.join(_root_dir, ".env")
+    _backend_env = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    if os.path.exists(_root_env):
+        dotenv.load_dotenv(_root_env)
+    elif os.path.exists(_backend_env):
+        dotenv.load_dotenv(_backend_env)
+    else:
+        dotenv.load_dotenv()
 except Exception:
     pass
 
 _logger = logging.getLogger("interview_system.config")
+
+# Maximum upload file size for resumes (10MB)
+MAX_RESUME_FILE_SIZE = int(os.getenv("MAX_RESUME_FILE_SIZE", str(10 * 1024 * 1024)))
 
 # External Gemini LLM Config
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")

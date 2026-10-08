@@ -241,6 +241,47 @@ Key environment variables:
 
 The application features a clean email provider abstraction. The UI never claims an email was sent unless the provider confirms successful submission.
 
+### Email Configuration
+
+Explain:
+
+- **Development**:
+  Mailpit or Development Sandbox (`EMAIL_PROVIDER=development` or `smtp` to `localhost:1025`). In development mode, emails are captured in-memory and logged to `backend/data/dev_emails.log` for instant local inspection.
+- **Gmail SMTP**:
+  - Enable 2-Step Verification on your Google account
+  - Create a Google App Password (under *Security* → *2-Step Verification* → *App passwords*)
+  - Place credentials in backend `.env`:
+    ```ini
+    EMAIL_PROVIDER=smtp
+    SMTP_HOST=smtp.gmail.com
+    SMTP_PORT=587
+    SMTP_USERNAME=your_sending_gmail@gmail.com
+    SMTP_PASSWORD=your_16_char_google_app_password
+    EMAIL_FROM=your_sending_gmail@gmail.com
+    APP_BASE_URL=http://localhost:5173
+    SMTP_USE_TLS=true
+    ```
+  - Never commit `.env` to version control.
+- **Production**:
+  Use a verified transactional email provider (such as Resend with `EMAIL_PROVIDER=resend`, SendGrid, Postmark, or Amazon SES SMTP).
+
+### Resume File Support
+
+The system strictly enforces document format integrity and validates file signatures:
+
+- **Supported formats**:
+  - `PDF` (`.pdf`) — Validated via `%PDF-` signature.
+  - `Microsoft Word DOCX` (`.docx`) — Validated via Office Open XML ZIP package signature containing `word/document.xml`.
+- **Not supported**:
+  - Legacy Microsoft Word `.doc` — Explicitly rejected with:
+    *"Microsoft Word .doc files are not supported. Please upload a .docx file."*
+  - Plain text `.txt`
+  - Rich Text Format `.rtf`
+  - Apple Pages `.pages` or OpenDocument `.odt`
+  - Images (`.png`, `.jpg`, `.jpeg`) as resume documents
+  - Archive files (`.zip`, `.tar.gz`) or arbitrary data files (`.csv`, `.xlsx`, `.pptx`, `.exe`, `.json`)
+- **Maximum File Size**: 10MB limit enforced on backend and frontend.
+
 ### Option A: Local Development (`EMAIL_PROVIDER=development`)
 - Safe default for testing and local development.
 - Captures outgoing verification and reset emails in-memory and appends them to `backend/data/dev_emails.log`.
@@ -260,19 +301,16 @@ The application features a clean email provider abstraction. The UI never claims
 - Inspect delivered emails in the Mailpit web UI at `http://localhost:8025`.
 
 ### Option C: Google Gmail SMTP (`EMAIL_PROVIDER=smtp`)
-- **Important**: Never use your personal Google account password.
-- Requirements:
-  1. Enable 2-Factor Authentication (2FA) on your Google account.
-  2. Generate a dedicated 16-character **Google App Password** (under *Security* → *2-Step Verification* → *App passwords*).
-  3. Configure in `.env`:
-     ```ini
-     EMAIL_PROVIDER=smtp
-     SMTP_HOST=smtp.gmail.com
-     SMTP_PORT=587
-     SMTP_USERNAME=your_address@gmail.com
-     SMTP_PASSWORD=your_16_character_app_password
-     SMTP_USE_TLS=true
-     ```
+- **Important**: Never use your personal Google account password. Always use an App Password.
+- Configure in `.env`:
+  ```ini
+  EMAIL_PROVIDER=smtp
+  SMTP_HOST=smtp.gmail.com
+  SMTP_PORT=587
+  SMTP_USERNAME=your_address@gmail.com
+  SMTP_PASSWORD=your_16_character_app_password
+  SMTP_USE_TLS=true
+  ```
 
 ### Option D: Production Transactional Email (`EMAIL_PROVIDER=resend` or `smtp`)
 - **Resend**:

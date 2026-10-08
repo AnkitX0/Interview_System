@@ -153,7 +153,7 @@ export default function ResetPassword() {
               </svg>
             </div>
             <h2 style={{ fontSize: "22px", fontWeight: "700", color: "#0f172a", margin: "14px 0 8px 0" }}>
-              Password Updated
+              Password reset successfully.
             </h2>
             <p style={{ fontSize: "14px", color: "#16a34a", fontWeight: "600", margin: 0 }}>
               Your password has been updated.
@@ -167,7 +167,7 @@ export default function ResetPassword() {
           <div style={{ textAlign: "center" }}>
             <Link
               to="/login"
-              id="return-to-login-btn"
+              id="go-to-login-btn"
               style={{
                 display: "inline-block",
                 width: "100%",
@@ -182,7 +182,7 @@ export default function ResetPassword() {
                 textDecoration: "none",
               }}
             >
-              Sign In
+              Go to Login
             </Link>
           </div>
         </div>

@@ -7,9 +7,13 @@ from backend.database import get_db
 import backend.models as models
 from backend.schemas.schemas import ResumeAnalyzeRequest
 from backend.services.auth_service import get_current_user
+from backend.config import MAX_RESUME_FILE_SIZE
 from backend.services.resume_service import (
     extract_text_from_pdf_bytes,
     extract_pdf_page_count,
+    extract_text_from_docx_bytes,
+    validate_resume_file_bytes,
+    normalize_extracted_text,
     sanitize_resume_text,
     validate_resume_document,
     parse_resume_text
@@ -166,7 +170,7 @@ async def upload_resume(
     db: Session = Depends(get_db)
 ):
     """
-    Uploads and extracts resume text from PDF or raw text,
+    Uploads and extracts resume text from PDF or DOCX file, or raw text input,
     performs structured intelligence analysis, persists in database scoped to user,
     and returns full candidate profile with claims, flags, and role fit.
     """
@@ -174,28 +178,43 @@ async def upload_resume(
     filename = "uploaded_resume.txt"
     page_count = None
 
-    if file:
+    if file and file.filename:
         filename = file.filename
         contents = await file.read()
-        if filename.lower().endswith(".pdf"):
+
+        if len(contents) > MAX_RESUME_FILE_SIZE:
+            raise HTTPException(
+                status_code=400,
+                detail="File size exceeds 10MB limit. Please upload a smaller document."
+            )
+
+        is_valid_file, file_err, file_type = validate_resume_file_bytes(contents, filename)
+        if not is_valid_file:
+            raise HTTPException(status_code=400, detail=file_err)
+
+        if file_type == "pdf":
             page_count = extract_pdf_page_count(contents)
             text = extract_text_from_pdf_bytes(contents)
+        elif file_type == "docx":
+            page_count = None
+            text = extract_text_from_docx_bytes(contents)
         else:
-            try:
-                text = contents.decode("utf-8")
-            except Exception:
-                text = contents.decode("latin1", errors="ignore")
+            raise HTTPException(
+                status_code=400,
+                detail="Unsupported file type. Please upload a PDF or DOCX resume."
+            )
 
-    if not text and raw_text:
+    elif raw_text:
         text = raw_text.strip()
+        filename = "pasted_resume.txt"
 
-    if not text:
+    if not text or not text.strip():
         raise HTTPException(
             status_code=400,
-            detail="No document text could be extracted. Please upload a valid PDF or paste resume text."
+            detail="We couldn't extract enough text to analyze this resume."
         )
 
-    clean_text = sanitize_resume_text(text)
+    clean_text = normalize_extracted_text(text)
     is_valid, error_msg, _details = validate_resume_document(clean_text, filename=filename, page_count=page_count)
     if not is_valid:
         raise HTTPException(status_code=400, detail=error_msg)
@@ -237,9 +256,9 @@ def analyze_resume(
 
     text = (data.text or "").strip()
     if not text:
-        raise HTTPException(status_code=400, detail="Text or resume_id required")
+        raise HTTPException(status_code=400, detail="We couldn't extract enough text to analyze this resume.")
 
-    clean_text = sanitize_resume_text(text)
+    clean_text = normalize_extracted_text(text)
     is_valid, error_msg, _details = validate_resume_document(clean_text)
     if not is_valid:
         raise HTTPException(status_code=400, detail=error_msg)

@@ -86,6 +86,7 @@ export default function ResumeUpload() {
   const [loading, setLoading] = useState(false);
   const [loadingStage, setLoadingStage] = useState(0);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   const [profile, setProfile] = useState(resumeData || null);
   const [step, setStep] = useState(resumeData ? "complete" : "upload"); // "upload" | "review" | "complete"
   const [reviewForm, setReviewForm] = useState({
@@ -212,8 +213,28 @@ export default function ResumeUpload() {
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
     if (selected) {
+      const ext = selected.name.split(".").pop().toLowerCase();
+      if (ext === "doc") {
+        setError("Microsoft Word .doc files are not supported. Please upload a .docx file.");
+        setFile(null);
+        setSuccessMessage(null);
+        return;
+      }
+      if (ext !== "pdf" && ext !== "docx") {
+        setError("Unsupported file type. Please upload a PDF or DOCX resume.");
+        setFile(null);
+        setSuccessMessage(null);
+        return;
+      }
+      if (selected.size > 10 * 1024 * 1024) {
+        setError("File size exceeds 10MB limit. Please upload a smaller document.");
+        setFile(null);
+        setSuccessMessage(null);
+        return;
+      }
       setFile(selected);
       setError(null);
+      setSuccessMessage(null);
     }
   };
 
@@ -221,11 +242,12 @@ export default function ResumeUpload() {
     setMode("text");
     setTextInput(SAMPLE_BENCHMARK_RESUME);
     setError(null);
+    setSuccessMessage(null);
   };
 
   const handleAnalyze = async () => {
     if (mode === "file" && !file) {
-      setError("Please select a PDF or text resume file first.");
+      setError("Please select a PDF or DOCX resume file first.");
       return;
     }
     if (mode === "text" && !textInput.trim()) {
@@ -235,6 +257,7 @@ export default function ResumeUpload() {
 
     setLoading(true);
     setError(null);
+    setSuccessMessage(null);
 
     try {
       const formData = new FormData();
@@ -254,13 +277,14 @@ export default function ResumeUpload() {
         const errorMsg =
           data?.error?.message ||
           data?.detail ||
-          "Document validation failed. Please ensure file contains valid resume content.";
+          "We couldn't read this document. Please upload a valid PDF or DOCX file.";
         setError(errorMsg);
         return;
       }
 
       setProfile(data);
       setResumeData(data);
+      setSuccessMessage("Resume extracted successfully.");
 
       // Populate review stage for candidate audit
       setReviewForm({
@@ -365,6 +389,7 @@ export default function ResumeUpload() {
     setPdfBlobUrl(null);
     setTextInput("");
     setError(null);
+    setSuccessMessage(null);
     setStep("upload");
   };
 
@@ -437,7 +462,7 @@ export default function ResumeUpload() {
                   transition: "all 0.15s ease",
                 }}
               >
-                Upload File (PDF / TXT)
+                Upload File (PDF or DOCX)
               </button>
               <button
                 type="button"
@@ -481,7 +506,7 @@ export default function ResumeUpload() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".pdf,.txt,.doc,.docx"
+                  accept=".pdf,.docx"
                   onChange={handleFileChange}
                   style={{ display: "none" }}
                 />
@@ -490,7 +515,7 @@ export default function ResumeUpload() {
                   {file ? file.name : "Click to select or drag and drop your resume"}
                 </p>
                 <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
-                  Supports PDF or TXT documents (Max 10MB)
+                  Supported formats: PDF and Microsoft Word (.docx) (Max 10MB)
                 </p>
               </div>
 
@@ -639,6 +664,12 @@ export default function ResumeUpload() {
               </Button>
             </div>
           </div>
+
+          {successMessage && (
+            <div style={{ marginBottom: "20px", padding: "12px 18px", backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "8px", color: "#166534", fontSize: "14px", fontWeight: "600", display: "flex", alignItems: "center", gap: "8px" }}>
+              <span>✓</span> {successMessage}
+            </div>
+          )}
 
           {/* Form Fields */}
           <div style={{ display: "flex", flexDirection: "column", gap: "22px" }}>

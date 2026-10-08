@@ -41,7 +41,9 @@ export async function apiFetch(url, options = {}) {
     !fullUrl.includes("/auth/login") &&
     !fullUrl.includes("/auth/register") &&
     !fullUrl.includes("/auth/verify-email") &&
-    !fullUrl.includes("/auth/resend-verification")
+    !fullUrl.includes("/auth/resend-verification") &&
+    !fullUrl.includes("/auth/forgot-password") &&
+    !fullUrl.includes("/auth/reset-password")
   ) {
     window.dispatchEvent(new CustomEvent("auth:unauthorized"));
   }

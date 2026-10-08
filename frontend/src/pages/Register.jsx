@@ -185,7 +185,7 @@ export default function Register() {
               )}
             </div>
             <h2 style={{ fontSize: "22px", fontWeight: "700", color: "#0f172a", margin: "14px 0 6px 0" }}>
-              {isEmailSent ? "Check your email" : "Email delivery issue"}
+              {isEmailSent ? "Verification email sent." : "We couldn't send the verification email."}
             </h2>
             <p style={{ fontSize: "14px", color: isEmailSent ? "#64748b" : "#b45309", margin: 0 }}>
               {isEmailSent
@@ -208,7 +208,7 @@ export default function Register() {
 
           {!isEmailSent && !error && (
             <div style={warningBannerStyle}>
-              <span>We couldn't send the verification email right now. Please try again.</span>
+              <span>We couldn't send the verification email.</span>
             </div>
           )}
 
@@ -229,14 +229,14 @@ export default function Register() {
               </>
             ) : (
               <span style={{ color: "#64748b" }}>
-                Use the button below to resend the verification email when your email service is configured.
+                Please check your SMTP provider configuration and try again.
               </span>
             )}
           </div>
 
           <div style={{ textAlign: "center", paddingTop: "18px", borderTop: "1px solid #f1f5f9" }}>
             <p style={{ fontSize: "13px", color: "#64748b", margin: "0 0 10px 0" }}>
-              Didn't receive the email?
+              {isEmailSent ? "Didn't receive the email?" : "Ready to retry delivery?"}
             </p>
             <button
               id="resend-verification-btn"
@@ -249,7 +249,7 @@ export default function Register() {
                 cursor: resendCooldown > 0 || resending ? "not-allowed" : "pointer",
               }}
             >
-              {resending ? "Sending..." : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend verification email"}
+              {resending ? "Sending..." : resendCooldown > 0 ? `Try Again in ${resendCooldown}s` : isEmailSent ? "Resend verification email" : "Try Again"}
             </button>
           </div>
 

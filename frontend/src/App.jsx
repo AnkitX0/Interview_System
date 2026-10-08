@@ -69,6 +69,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/interview/setup" element={<Navigate to="/setup" replace />} />
             <Route
               path="/interview"
               element={

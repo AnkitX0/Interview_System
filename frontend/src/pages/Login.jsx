@@ -1,12 +1,17 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { apiFetch } from "../utils/api";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState(null);
+  const [resendingVerification, setResendingVerification] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendSuccessMsg, setResendSuccessMsg] = useState(null);
 
   const { user, loading: authLoading, login } = useAuth();
   const navigate = useNavigate();
@@ -20,18 +25,62 @@ export default function Login() {
     }
   }, [user, authLoading, navigate, from]);
 
+  // Resend cooldown timer
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setResendSuccessMsg(null);
     setSubmitting(true);
 
     try {
       await login(email, password);
       navigate(from, { replace: true });
     } catch (err) {
-      setError(err.message || "Invalid credentials");
+      const msg = err.message || "Invalid credentials";
+      setError(msg);
+      if (
+        msg.toLowerCase().includes("verify your email") ||
+        msg.toLowerCase().includes("verification") ||
+        msg.toLowerCase().includes("unverified")
+      ) {
+        setUnverifiedEmail(email.trim().toLowerCase());
+      } else {
+        setUnverifiedEmail(null);
+      }
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!unverifiedEmail || resendCooldown > 0 || resendingVerification) return;
+    setResendingVerification(true);
+    setResendSuccessMsg(null);
+    setError(null);
+
+    try {
+      const res = await apiFetch("/auth/resend-verification", {
+        method: "POST",
+        body: JSON.stringify({ email: unverifiedEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error?.message || data?.detail || "Could not resend verification email.");
+      }
+      setResendSuccessMsg("Verification email sent. Please check your inbox.");
+      setResendCooldown(60);
+    } catch (err) {
+      setError(err.message || "Failed to resend verification email.");
+    } finally {
+      setResendingVerification(false);
     }
   };
 
@@ -47,9 +96,42 @@ export default function Login() {
           </p>
         </div>
 
+        {resendSuccessMsg && (
+          <div style={successBannerStyle}>
+            <span style={{ fontSize: "13px", fontWeight: "500" }}>{resendSuccessMsg}</span>
+          </div>
+        )}
+
         {error && (
           <div style={errorBannerStyle}>
             <span style={{ fontSize: "13px", fontWeight: "500" }}>{error}</span>
+          </div>
+        )}
+
+        {unverifiedEmail && (
+          <div style={{ marginBottom: "18px", padding: "14px 16px", backgroundColor: "#fffbeb", border: "1px solid #fde68a", borderRadius: "8px", textAlign: "center" }}>
+            <p style={{ fontSize: "13px", color: "#92400e", margin: "0 0 10px 0", fontWeight: "500" }}>
+              Please verify your email address before signing in.
+            </p>
+            <button
+              id="login-resend-verification-btn"
+              type="button"
+              onClick={handleResendVerification}
+              disabled={resendCooldown > 0 || resendingVerification}
+              style={{
+                padding: "8px 18px",
+                fontSize: "13px",
+                fontWeight: "600",
+                color: "#92400e",
+                backgroundColor: "#fef3c7",
+                border: "1px solid #fcd34d",
+                borderRadius: "6px",
+                cursor: resendCooldown > 0 || resendingVerification ? "not-allowed" : "pointer",
+                opacity: resendCooldown > 0 || resendingVerification ? 0.6 : 1,
+              }}
+            >
+              {resendingVerification ? "Sending..." : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend Verification Email"}
+            </button>
           </div>
         )}
 
@@ -57,12 +139,13 @@ export default function Login() {
           <div style={{ marginBottom: "18px" }}>
             <label style={labelStyle}>Email Address</label>
             <input
+              id="login-email-input"
               type="email"
               required
               autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@company.com"
+              placeholder="name@gmail.com"
               style={inputStyle}
             />
           </div>
@@ -79,6 +162,7 @@ export default function Login() {
               </Link>
             </div>
             <input
+              id="login-password-input"
               type="password"
               required
               value={password}
@@ -89,6 +173,7 @@ export default function Login() {
           </div>
 
           <button
+            id="login-submit-btn"
             type="submit"
             disabled={submitting}
             style={{
@@ -101,10 +186,33 @@ export default function Login() {
           </button>
         </form>
 
-        <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "18px", borderTop: "1px solid #f1f5f9" }}>
+        <div style={{ textAlign: "center", marginTop: "20px", paddingTop: "16px", borderTop: "1px solid #f1f5f9" }}>
+          <p style={{ fontSize: "13px", color: "#64748b", margin: "0 0 8px 0" }}>
+            Forgot your password?
+          </p>
+          <Link
+            to="/forgot-password"
+            id="reset-password-btn"
+            style={{
+              display: "inline-block",
+              fontSize: "13px",
+              color: "#2563eb",
+              fontWeight: "600",
+              textDecoration: "none",
+              padding: "7px 16px",
+              borderRadius: "6px",
+              backgroundColor: "#eff6ff",
+              border: "1px solid #dbeafe",
+            }}
+          >
+            Reset Password
+          </Link>
+        </div>
+
+        <div style={{ textAlign: "center", marginTop: "16px" }}>
           <p style={{ fontSize: "13px", color: "#64748b", margin: 0 }}>
-            Don't have an account?{" "}
-            <Link to="/register" style={{ color: "#2563eb", fontWeight: "600", textDecoration: "none" }}>
+            Don&apos;t have an account?{" "}
+            <Link to="/register" id="create-account-link" style={{ color: "#2563eb", fontWeight: "600", textDecoration: "none" }}>
               Create an account
             </Link>
           </p>
@@ -167,6 +275,15 @@ const errorBannerStyle = {
   backgroundColor: "#fef2f2",
   color: "#b91c1c",
   border: "1px solid #fecaca",
+  borderRadius: "8px",
+  padding: "10px 14px",
+  marginBottom: "18px",
+};
+
+const successBannerStyle = {
+  backgroundColor: "#f0fdf4",
+  color: "#166534",
+  border: "1px solid #bbf7d0",
   borderRadius: "8px",
   padding: "10px 14px",
   marginBottom: "18px",

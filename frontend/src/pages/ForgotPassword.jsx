@@ -73,7 +73,7 @@ export default function ForgotPassword() {
                   <polyline points="22 4 12 14.01 9 11.01" />
                 </svg>
                 <div style={{ fontSize: "14px", color: "#065f46", lineHeight: 1.5 }}>
-                  If an account exists for this email, we'll send a password reset link.
+                  If an account exists for this email, a password reset link has been sent.
                 </div>
               </div>
             </div>
@@ -83,8 +83,8 @@ export default function ForgotPassword() {
             </p>
 
             <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "18px", borderTop: "1px solid #f1f5f9" }}>
-              <Link to="/login" style={{ fontSize: "14px", color: "#2563eb", fontWeight: "600", textDecoration: "none" }}>
-                Back to Sign In
+              <Link to="/login" id="back-to-login-link" style={{ fontSize: "14px", color: "#2563eb", fontWeight: "600", textDecoration: "none" }}>
+                Back to Login
               </Link>
             </div>
           </div>
@@ -118,8 +118,8 @@ export default function ForgotPassword() {
             </button>
 
             <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "18px", borderTop: "1px solid #f1f5f9" }}>
-              <Link to="/login" style={{ fontSize: "13px", color: "#64748b", textDecoration: "none", fontWeight: "500" }}>
-                ← Back to Sign In
+              <Link to="/login" id="back-to-login-link-form" style={{ fontSize: "13px", color: "#64748b", textDecoration: "none", fontWeight: "500" }}>
+                ← Back to Login
               </Link>
             </div>
           </form>

@@ -3,7 +3,14 @@ __pycache__/
 *$py.class
 venv/
 .env
+.env.*
+!.env.example
 frontend/node_modules/
 frontend/dist/
 .pytest_cache/
-
+*.db
+*.sqlite
+*.sqlite3
+backend/data/*.log
+backend/data/dev_emails.log
+scratch/

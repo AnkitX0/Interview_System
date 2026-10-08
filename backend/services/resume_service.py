@@ -70,6 +70,178 @@ SECTION_HEADERS = {
 }
 
 
+import io
+import zipfile
+import docx
+from docx.text.paragraph import Paragraph
+from docx.table import Table
+from docx.oxml.ns import qn
+
+
+def validate_resume_file_bytes(contents: bytes, filename: str) -> Tuple[bool, str, str]:
+    """
+    Validates resume file format, extension, and binary magic byte signatures.
+    Strictly supports only PDF and Microsoft Word DOCX.
+    Explicitly rejects legacy .doc, disguised files, images, zip files, plain text, etc.
+    Returns: (is_valid: bool, error_message: str, file_type: str)
+    """
+    if not contents or len(contents) == 0:
+        return False, "We couldn't extract enough text to analyze this resume.", "empty"
+
+    if len(contents) > 10 * 1024 * 1024:
+        return False, "File size exceeds 10MB limit. Please upload a smaller document.", "oversize"
+
+    base_ext = os.path.splitext(filename or "")[1].lower().strip()
+
+    # Explicit rejection for legacy .doc
+    if base_ext == ".doc":
+        return False, "Microsoft Word .doc files are not supported. Please upload a .docx file.", "doc_unsupported"
+
+    # Reject if magic bytes indicate OLE2 compound document (legacy .doc, .xls, .ppt)
+    if contents.startswith(b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"):
+        return False, "Microsoft Word .doc files are not supported. Please upload a .docx file.", "doc_unsupported"
+
+    # Reject unsupported extensions
+    if base_ext not in (".pdf", ".docx"):
+        return False, "Unsupported file type. Please upload a PDF or DOCX resume.", "unsupported_format"
+
+    # PDF Validation
+    if base_ext == ".pdf":
+        if b"%PDF-" not in contents[:1024]:
+            return False, "We couldn't read this document. Please upload a valid PDF or DOCX file.", "invalid_pdf_signature"
+        if contents.startswith(b"PK\x03\x04"):
+            return False, "We couldn't read this document. Please upload a valid PDF or DOCX file.", "zip_renamed_to_pdf"
+        return True, "", "pdf"
+
+    # DOCX Validation
+    if base_ext == ".docx":
+        if not contents.startswith(b"PK\x03\x04"):
+            return False, "We couldn't read this document. Please upload a valid PDF or DOCX file.", "invalid_docx_signature"
+        try:
+            with zipfile.ZipFile(io.BytesIO(contents)) as zf:
+                namelist = zf.namelist()
+                if "word/document.xml" not in namelist:
+                    return False, "We couldn't read this document. Please upload a valid PDF or DOCX file.", "missing_document_xml"
+        except Exception:
+            return False, "We couldn't read this document. Please upload a valid PDF or DOCX file.", "corrupted_docx"
+        return True, "", "docx"
+
+    return False, "Unsupported file type. Please upload a PDF or DOCX resume.", "unsupported"
+
+
+def _extract_paragraph_with_links(p: Paragraph) -> str:
+    """Extracts paragraph text and visible hyperlink targets if relevant."""
+    text = p.text.strip()
+    if not text:
+        return ""
+    try:
+        urls: List[str] = []
+        for child in p._element:
+            if child.tag.endswith("hyperlink"):
+                r_id = child.get(qn("r:id"))
+                if r_id and r_id in p.part.rels:
+                    rel = p.part.rels[r_id]
+                    target = getattr(rel, "target_ref", "")
+                    if target and target.startswith(("http://", "https://")):
+                        clean_target = target.rstrip("/")
+                        if clean_target.lower() not in text.lower():
+                            if any(d in clean_target.lower() for d in ["github.com", "linkedin.com", "portfolio", "gitlab.com"]):
+                                urls.append(clean_target)
+        if urls:
+            text = f"{text} ({', '.join(urls)})"
+    except Exception:
+        pass
+    return text
+
+
+def _extract_table_content(tbl: Table) -> str:
+    """Extracts table contents row by row, normalizing whitespace and cell merges."""
+    rows_text: List[str] = []
+    for row in tbl.rows:
+        row_cells: List[str] = []
+        for cell in row.cells:
+            cell_paragraphs = [p.text.strip() for p in cell.paragraphs if p.text.strip()]
+            c_text = " ".join(cell_paragraphs)
+            c_text = re.sub(r"\s+", " ", c_text).strip()
+            # Deduplicate horizontally merged cells
+            if c_text and (not row_cells or c_text != row_cells[-1]):
+                row_cells.append(c_text)
+        if row_cells:
+            if len(row_cells) == 2:
+                rows_text.append(f"{row_cells[0]}: {row_cells[1]}")
+            else:
+                rows_text.append(" | ".join(row_cells))
+    return "\n".join(rows_text)
+
+
+def extract_text_from_docx_bytes(docx_bytes: bytes) -> str:
+    """
+    Extracts structured, human-readable text from Microsoft Word (.docx) bytes.
+    Traverses the document body in visual order:
+    - Headings and paragraphs (including visible hyperlink text)
+    - Tables (all rows and cells, normalizing whitespace without loss)
+    - Meaningful header/footer candidate details (avoiding duplicate page headers)
+    """
+    try:
+        doc = docx.Document(io.BytesIO(docx_bytes))
+    except Exception as e:
+        logger.warning("python-docx could not open document: %s", e)
+        return ""
+
+    body_parts: List[str] = []
+
+    # 1. Header inspection (for candidate name, phone, email, github/linkedin)
+    header_texts: List[str] = []
+    for section in doc.sections:
+        try:
+            header = section.header
+            if header and not header.is_linked_to_previous:
+                h_lines = [p.text.strip() for p in header.paragraphs if p.text.strip()]
+                h_str = "\n".join(h_lines)
+                if h_str and h_str not in header_texts:
+                    if any(s in h_str.lower() for s in ["@", "phone", "linkedin", "github", "portfolio", "tel:", "contact"]) or len(h_lines) <= 2:
+                        header_texts.append(h_str)
+        except Exception:
+            pass
+
+    # 2. Iterate document body in sequential order (paragraphs and tables)
+    for child in doc.element.body:
+        tag = child.tag.split("}")[-1]
+        if tag == "p":
+            p = Paragraph(child, doc)
+            text = _extract_paragraph_with_links(p)
+            if text:
+                body_parts.append(text)
+        elif tag == "tbl":
+            tbl = Table(child, doc)
+            table_str = _extract_table_content(tbl)
+            if table_str:
+                body_parts.append(table_str)
+
+    # 3. Footer inspection
+    footer_texts: List[str] = []
+    for section in doc.sections:
+        try:
+            footer = section.footer
+            if footer and not footer.is_linked_to_previous:
+                f_lines = [p.text.strip() for p in footer.paragraphs if p.text.strip()]
+                f_str = "\n".join(f_lines)
+                if f_str and f_str not in footer_texts:
+                    if not re.match(r"^(page\s*\d+(\s*of\s*\d+)?|\d+)$", f_str.strip(), re.IGNORECASE):
+                        footer_texts.append(f_str)
+        except Exception:
+            pass
+
+    ordered_content: List[str] = []
+    if header_texts:
+        ordered_content.extend(header_texts)
+    ordered_content.extend(body_parts)
+    if footer_texts:
+        ordered_content.extend(footer_texts)
+
+    return "\n\n".join(ordered_content).strip()
+
+
 def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> str:
     """Extract raw text from PDF bytes using pdftotext or stream regex fallback."""
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_file:
@@ -139,44 +311,107 @@ def extract_pdf_page_count(pdf_bytes: bytes) -> Optional[int]:
         if ff_count > 0:
             page_count = ff_count + 1
         else:
-            page_matches = len(re.findall(b"/Type\s*/Page\b", pdf_bytes))
+            page_matches = len(re.findall(rb"/Type\s*/Page\b", pdf_bytes))
             if page_matches > 0:
                 page_count = page_matches
 
     return page_count
 
 
+def normalize_extracted_text(text: str) -> str:
+    """
+    Normalizes extracted resume text across both PDF and DOCX pipelines:
+    - Normalizes non-breaking spaces, zero-width spaces, and Unicode artifacts
+    - Strips residual HTML/XML tags and styling
+    - Preserves structural line breaks while collapsing redundant whitespace
+    """
+    if not text:
+        return ""
+    cleaned = text.replace("\u00a0", " ").replace("\u200b", "").replace("\ufeff", "")
+    cleaned = re.sub(r"<[^>]+>", " ", cleaned)
+    cleaned = re.sub(r"\{[^\}]*(?:margin|padding|color|font|background|border|display):[^\}]*\}", " ", cleaned, flags=re.IGNORECASE)
+    cleaned = "".join(ch for ch in cleaned if ch.isprintable() or ch in "\n\t")
+    cleaned = re.sub(r"\r\n|\r", "\n", cleaned)
+    cleaned = re.sub(r"[ \t]+", " ", cleaned)
+    cleaned = re.sub(r"\n\s*\n\s*\n+", "\n\n", cleaned)
+    lines = [line.strip() for line in cleaned.split("\n")]
+    return "\n".join(lines).strip()
+
+
 def sanitize_resume_text(text: str) -> str:
-    """Sanitizes extracted resume text to remove HTML/CSS artifacts and binary noise."""
-    cleaned = re.sub(r"<[^>]+>", " ", text)
-    cleaned = re.sub(r"\{[^\}]*(?:margin|padding|color|font|background|border):[^\}]*\}", " ", cleaned, flags=re.IGNORECASE)
-    lines = [line.strip() for line in cleaned.split("\n") if line.strip()]
-    return "\n".join(lines)
+    """Sanitizes extracted resume text (delegates to normalize_extracted_text)."""
+    return normalize_extracted_text(text)
 
 
 def validate_resume_document(text: str, filename: str = "", page_count: Optional[int] = None) -> Tuple[bool, str, Dict[str, Any]]:
     """
-    Quality gate validating whether an extracted document is a legitimate resume/CV,
-    filtering out code dumps, stack traces, HTML/CSS markup, server logs, and unrelated files.
+    Deterministic quality gate validating that the extracted text is human-readable resume content.
+    Strictly checks:
+    - No raw XML/ZIP package fragments or OpenXML signatures
+    - Sufficient text length
+    - Human-readable character distribution (printable ratio >= 90%, alphabetic ratio >= 25%)
+    - Resume structure evidence (sections, contact info, or career keywords)
+    - Rejects source code dumps, server logs, database dumps, and unrelated documents.
     """
     clean_text = text.strip()
     words = clean_text.split()
     total_words = len(words)
 
+    # 1. Critical Safety Check: XML/ZIP Package Artifacts
+    FORBIDDEN_SIGNATURES = [
+        r"word/document\.xml",
+        r"\[Content_Types\]\.xml",
+        r"word/_rels/",
+        r"word/theme/",
+        r"word/numbering\.xml",
+        r"schemas\.openxmlformats\.org",
+        r"schemas\.microsoft\.com",
+        r"xmlns:w=",
+        r"xmlns:r=",
+        r"<w:[a-zA-Z0-9]+",
+        r"</w:[a-zA-Z0-9]+>",
+        r"PK\x03\x04",
+        r"_rels/\.rels",
+    ]
+    for sig in FORBIDDEN_SIGNATURES:
+        if re.search(sig, clean_text, re.IGNORECASE):
+            logger.warning("Security/Integrity Gate: Forbidden XML/ZIP artifact '%s' detected.", sig)
+            return False, "Unable to read this document correctly. Please upload a valid PDF or DOCX resume.", {
+                "reason": "xml_zip_garbage_detected",
+                "matched_signature": sig,
+            }
+
+    # 2. Text Length Check
     if total_words < 5 or len(clean_text) < 25:
-        return False, "Extracted text is too short to contain resume information.", {
+        return False, "We couldn't extract enough text to analyze this resume.", {
             "reason": "text_too_short",
             "word_count": total_words,
+            "char_count": len(clean_text),
             "page_count": page_count,
         }
 
-    # Negative Signal 1: High density of HTML / XML tags
+    # 3. Printable Character Ratio Check
+    printable_count = sum(1 for c in clean_text if c.isprintable() or c in "\n\t")
+    printable_ratio = printable_count / max(1, len(clean_text))
+    if printable_ratio < 0.90:
+        return False, "Unable to read this document correctly. Please upload a valid PDF or DOCX resume.", {
+            "reason": "low_printable_ratio",
+            "printable_ratio": round(printable_ratio, 3),
+        }
+
+    # 4. Alphabetic Character Distribution Check
+    non_space_chars = [c for c in clean_text if not c.isspace()]
+    alpha_count = sum(1 for c in non_space_chars if c.isalpha())
+    alpha_ratio = alpha_count / max(1, len(non_space_chars))
+    if alpha_ratio < 0.25:
+        return False, "Unable to read this document correctly. Please upload a valid PDF or DOCX resume.", {
+            "reason": "low_alpha_ratio",
+            "alpha_ratio": round(alpha_ratio, 3),
+        }
+
+    # 5. Noise Analysis (HTML/CSS markup, source code, SQL, server logs)
     html_tags = len(re.findall(r"<[a-zA-Z\/][^>]*>", clean_text))
-
-    # Negative Signal 2: High density of CSS styling blocks
     css_blocks = len(re.findall(r"\{[^\}]*(?:margin|padding|color|font|background|border|display):[^\}]*\}", clean_text, re.IGNORECASE))
-
-    # Negative Signal 3: High density of source code statements & keywords
     code_patterns = [
         r"\bimport\s+java\b", r"\bpublic\s+class\b", r"\bprivate\s+void\b", r"\bSystem\.out\.print",
         r"\bString\s+url\s*=", r"\bjdbc:mysql:", r"\bfunction\s*\([^\)]*\)\s*\{", r"#include\s*<",
@@ -184,45 +419,43 @@ def validate_resume_document(text: str, filename: str = "", page_count: Optional
         r"\bvar\s+\w+\s*=\s*new\b", r"\bval\s+\w+\s*:", r"\blet\s+\w+\s*="
     ]
     code_matches = sum(len(re.findall(pat, clean_text, re.IGNORECASE)) for pat in code_patterns)
-
-    # Negative Signal 4: Stack traces and server logs
     log_patterns = [
         r"\bINFO:\s*", r"\bSEVERE:\s*", r"\bWARN:\s*", r"\bDEBUG:\s*", r"Server startup in \d+",
         r"Exception in thread", r"\bat com\.", r"\bat org\.", r"\bat java\.", r"Traceback \(most recent call last\):"
     ]
     log_matches = sum(len(re.findall(pat, clean_text, re.IGNORECASE)) for pat in log_patterns)
-
-    # Negative Signal 5: SQL DDL / DML dumps
     sql_patterns = [r"\bCREATE TABLE\b", r"\bINSERT INTO\b", r"\bALTER TABLE\b", r"\bFOREIGN KEY\b"]
     sql_matches = sum(len(re.findall(pat, clean_text, re.IGNORECASE)) for pat in sql_patterns)
 
     total_noise_count = html_tags + css_blocks + (code_matches * 2) + (log_matches * 2) + (sql_matches * 2)
 
-    # Positive Signal 1: Contact Info (Email, Phone, LinkedIn/GitHub)
+    # 6. Resume Evidence (Contact Info, Section Headers, Career Keywords)
     has_email = bool(re.search(r"[\w\.-]+@[\w\.-]+\.\w+", clean_text))
     has_phone = bool(re.search(r"\+?\d[\d\s\-\(\)]{8,}\d", clean_text))
-    has_link = bool(re.search(r"\b(linkedin\.com|github\.com|portfolio)\b", clean_text, re.IGNORECASE))
+    has_link = bool(re.search(r"\b(linkedin\.com|github\.com|portfolio|gitlab\.com)\b", clean_text, re.IGNORECASE))
     contact_score = (1 if has_email else 0) + (1 if has_phone else 0) + (1 if has_link else 0)
 
-    # Positive Signal 2: Resume Section Headers
     sections_found = 0
     header_keywords = [
         r"\b(summary|objective|profile)\b",
-        r"\b(experience|work experience|employment|work history)\b",
-        r"\b(projects|technical projects)\b",
-        r"\b(skills|technical skills|competencies)\b",
-        r"\b(education|academic background|qualifications)\b"
+        r"\b(experience|work experience|employment|work history|professional experience)\b",
+        r"\b(projects|technical projects|key projects)\b",
+        r"\b(skills|technical skills|competencies|technologies)\b",
+        r"\b(education|academic background|qualifications)\b",
+        r"\b(certifications|achievements|publications)\b"
     ]
     for hk in header_keywords:
         if re.search(hk, clean_text, re.IGNORECASE):
             sections_found += 1
 
+    has_career_keyword = bool(re.search(r"\b(skills|engineer|developer|experience|education|projects|technologies)\b", clean_text, re.IGNORECASE))
+
     noise_ratio = total_noise_count / max(1, total_words / 20)
 
-    # Page count check: High page count documents (>15) require strong evidence of resume structure
+    # Multi-page documents (>15 pages) must have strong resume structure
     if page_count is not None and page_count >= 15:
         if sections_found < 3 or contact_score == 0:
-            return False, "That document doesn't appear to be a resume. We extracted mostly code, markup, logs, or unrelated document content rather than resume information.", {
+            return False, "This document doesn't appear to contain a readable resume. That document doesn't appear to be a resume; high density of code or logs detected.", {
                 "reason": "high_page_count_low_resume_signal",
                 "page_count": page_count,
                 "sections_found": sections_found,
@@ -232,12 +465,20 @@ def validate_resume_document(text: str, filename: str = "", page_count: Optional
             }
 
     if noise_ratio > 2.5 and (sections_found < 2 or contact_score == 0):
-        return False, "That document doesn't appear to be a resume. We extracted mostly code, markup, logs, or unrelated document content rather than resume information.", {
+        return False, "This document doesn't appear to contain a readable resume. That document doesn't appear to be a resume; high density of code or logs detected.", {
             "reason": "high_noise_density",
             "noise_ratio": round(noise_ratio, 2),
             "sections_found": sections_found,
             "contact_score": contact_score,
             "detail": "High density of source code, HTML/CSS markup, SQL, or server logs detected."
+        }
+
+    # Minimum resume structure check: At least 1 section or contact evidence or career keywords
+    if sections_found == 0 and contact_score == 0 and not has_career_keyword:
+        return False, "This document doesn't appear to contain a readable resume. That document doesn't appear to be a resume with recognizable sections or contact details.", {
+            "reason": "no_resume_structure",
+            "sections_found": sections_found,
+            "contact_score": contact_score,
         }
 
     return True, "Valid resume document", {

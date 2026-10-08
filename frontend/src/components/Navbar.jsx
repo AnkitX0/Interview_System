@@ -6,6 +6,7 @@ import { AccountModal } from "./AccountModal";
 import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
 import { isInterviewCurrentlyActive, clearInterviewActiveState } from "../utils/interviewLifecycle";
+import { apiFetch } from "../utils/api";
 
 function Navbar() {
   const location = useLocation();
@@ -69,7 +70,7 @@ function Navbar() {
     const activeSessionId = sessionStorage.getItem("currentSessionId");
     if (activeSessionId) {
       try {
-        await fetch(`/interview/${activeSessionId}/complete`, {
+        await apiFetch(`/interview/${activeSessionId}/complete`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ duration_seconds: 0 }),
