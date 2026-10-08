@@ -21,6 +21,7 @@ export default function Register() {
   // Verification Pending State
   const [verificationPending, setVerificationPending] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
+  const [emailDeliveryStatus, setEmailDeliveryStatus] = useState("EMAIL_SENT");
   const [resending, setResending] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resendMessage, setResendMessage] = useState(null);
@@ -123,6 +124,7 @@ export default function Register() {
       const normalizedEmail = email.trim().toLowerCase();
       const res = await register(normalizedEmail, password, fullName.trim());
       setRegisteredEmail(normalizedEmail);
+      setEmailDeliveryStatus(res?.email_status || "EMAIL_SENT");
       setVerificationPending(true);
       setResendCooldown(60); // 60s initial cooldown
     } catch (err) {
@@ -146,12 +148,13 @@ export default function Register() {
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data?.error?.message || data?.detail || "Could not resend verification email.");
+        throw new Error(data?.error?.message || data?.detail || "We couldn't resend the email. Please try again.");
       }
+      setEmailDeliveryStatus("EMAIL_SENT");
       setResendMessage("Verification email sent. Please check your inbox.");
       setResendCooldown(60);
     } catch (err) {
-      setError(err.message || "Failed to resend verification email. Please wait a moment.");
+      setError(err.message || "We couldn't resend the email. Please try again.");
     } finally {
       setResending(false);
     }
@@ -159,23 +162,35 @@ export default function Register() {
 
   // Render Verification Pending Screen
   if (verificationPending) {
+    const isEmailSent = emailDeliveryStatus === "EMAIL_SENT";
+
     return (
       <div style={containerStyle}>
         <div style={cardStyle}>
           {/* Header */}
           <div style={{ textAlign: "center", marginBottom: "24px" }}>
             <div style={badgeStyle}>Interview Intelligence</div>
-            <div style={iconCircleStyle}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="20" height="16" x="2" y="4" rx="2" />
-                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-              </svg>
+            <div style={isEmailSent ? iconCircleStyle : warningCircleStyle}>
+              {isEmailSent ? (
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="20" height="16" x="2" y="4" rx="2" />
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                </svg>
+              ) : (
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+              )}
             </div>
             <h2 style={{ fontSize: "22px", fontWeight: "700", color: "#0f172a", margin: "14px 0 6px 0" }}>
-              Check your email
+              {isEmailSent ? "Check your email" : "Email delivery issue"}
             </h2>
-            <p style={{ fontSize: "14px", color: "#64748b", margin: 0 }}>
-              Verify your email address to activate your account.
+            <p style={{ fontSize: "14px", color: isEmailSent ? "#64748b" : "#b45309", margin: 0 }}>
+              {isEmailSent
+                ? "Verify your email address to activate your account."
+                : "Your account is created, but the verification email could not be sent."}
             </p>
           </div>
 
@@ -191,9 +206,15 @@ export default function Register() {
             </div>
           )}
 
+          {!isEmailSent && !error && (
+            <div style={warningBannerStyle}>
+              <span>We couldn't send the verification email right now. Please try again.</span>
+            </div>
+          )}
+
           <div style={{ backgroundColor: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0", padding: "14px 16px", marginBottom: "20px", textAlign: "center" }}>
             <div style={{ fontSize: "12px", color: "#64748b", marginBottom: "4px" }}>
-              We sent a verification link to:
+              {isEmailSent ? "We sent a verification link to:" : "Registered email address:"}
             </div>
             <div style={{ fontSize: "14px", fontWeight: "600", color: "#0f172a", wordBreak: "break-all" }}>
               {registeredEmail}
@@ -201,8 +222,16 @@ export default function Register() {
           </div>
 
           <div style={{ fontSize: "13px", color: "#475569", lineHeight: "1.5", marginBottom: "24px", textAlign: "center" }}>
-            Click the link in the email to activate your account.<br />
-            <span style={{ color: "#64748b", fontSize: "12px" }}>This link expires in 30 minutes.</span>
+            {isEmailSent ? (
+              <>
+                Click the link in the email to activate your account.<br />
+                <span style={{ color: "#64748b", fontSize: "12px" }}>This link expires in 30 minutes.</span>
+              </>
+            ) : (
+              <span style={{ color: "#64748b" }}>
+                Use the button below to resend the verification email when your email service is configured.
+              </span>
+            )}
           </div>
 
           <div style={{ textAlign: "center", paddingTop: "18px", borderTop: "1px solid #f1f5f9" }}>
@@ -635,3 +664,27 @@ const fieldErrorStyle = {
   marginTop: "4px",
   fontWeight: "500",
 };
+
+const warningBannerStyle = {
+  backgroundColor: "#fffbeb",
+  color: "#b45309",
+  padding: "12px 14px",
+  borderRadius: "8px",
+  marginBottom: "18px",
+  border: "1px solid #fde68a",
+  fontSize: "13px",
+  textAlign: "center",
+  fontWeight: "500",
+};
+
+const warningCircleStyle = {
+  width: "56px",
+  height: "56px",
+  borderRadius: "50%",
+  backgroundColor: "#fef3c7",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  margin: "0 auto 12px auto",
+};
+

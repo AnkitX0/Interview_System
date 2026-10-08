@@ -117,6 +117,16 @@ def hash_verification_token(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
+def generate_password_reset_token() -> str:
+    """Generates a cryptographically random, single-use URL-safe password reset token."""
+    return secrets.token_urlsafe(32)
+
+
+def hash_password_reset_token(token: str) -> str:
+    """Hashes a password reset token using SHA-256 for secure database storage."""
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
 def verify_password(password: str, password_hash: str) -> bool:
     """Verifies a candidate password against an Argon2 hash in constant time."""
     try:

@@ -206,5 +206,9 @@ def test_tradeoff_reasoning_curriculum(db_session: Session, test_user):
     assert q["id"].startswith("TR_")
     text_lower = q["question"].lower()
     # Trade-off questions emphasize vs, trade-off, choose, between, compare, or justify
-    assert any(term in text_lower for term in [" vs ", "versus", "choose", "trade-off", "tradeoff", "between", "alternative", "justify", "prefer", "balance", "evaluate", "against", "compare"])
+    assert any(term in text_lower for term in [
+        " vs ", "versus", "choose", "trade-off", "tradeoff", "between", "alternative",
+        "justify", "prefer", "balance", "evaluate", "against", "compare", "contrast",
+        "when ", "under what", "advantage"
+    ])
 

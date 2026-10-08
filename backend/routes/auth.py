@@ -19,6 +19,8 @@ from backend.schemas.schemas import (
     RegisterRequest,
     VerifyEmailRequest,
     ResendVerificationRequest,
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
     LoginRequest,
     UserProfileSchema,
     UserResponse,
@@ -34,15 +36,21 @@ from backend.services.auth_service import (
     check_rate_limit,
     generate_verification_token,
     hash_verification_token,
+    generate_password_reset_token,
+    hash_password_reset_token,
     get_current_user,
 )
-from backend.services.email_service import send_verification_email
+from backend.services.email_service import (
+    send_verification_email,
+    send_password_reset_email,
+)
 from backend.config import (
     AUTH_COOKIE_NAME,
     ACCESS_TOKEN_EXPIRE_MINUTES,
     ENVIRONMENT,
     PRIVACY_POLICY_VERSION,
     VERIFICATION_TOKEN_EXPIRE_MINUTES,
+    PASSWORD_RESET_TOKEN_EXPIRE_MINUTES,
 )
 
 logger = logging.getLogger("interview_system.auth")
@@ -195,15 +203,30 @@ def register(
     db.refresh(user)
 
     # 7. Send verification email (or capture in dev)
-    send_verification_email(clean_email, token, clean_name)
+    delivery_result = send_verification_email(clean_email, token, clean_name)
 
-    logger.info("New registration created for %s (verification pending)", clean_email)
+    logger.info(
+        "New registration created for %s (verification pending, delivery_status=%s)",
+        clean_email,
+        delivery_result.status
+    )
 
-    return {
-        "message": "Account created. Please check your email to verify your account.",
-        "email": clean_email,
-        "verification_required": True,
-    }
+    if delivery_result.is_success:
+        return {
+            "message": "Account created. Please check your email to verify your account.",
+            "email": clean_email,
+            "verification_required": True,
+            "email_status": "EMAIL_SENT",
+        }
+    else:
+        status = "EMAIL_PROVIDER_UNAVAILABLE" if delivery_result.status == "EMAIL_PROVIDER_UNAVAILABLE" else "EMAIL_FAILED"
+        return {
+            "message": "Account created, but we couldn't send the verification email right now. Please try again.",
+            "email": clean_email,
+            "verification_required": True,
+            "email_status": status,
+            "error": delivery_result.error or "Email delivery could not be completed at this time."
+        }
 
 
 @router.post("/auth/verify-email")
@@ -298,12 +321,20 @@ def resend_verification(
         user.verification_used_at = None
         db.commit()
 
-        send_verification_email(clean_email, token, user.full_name)
-        logger.info("Resent verification email for %s", clean_email)
+        delivery_result = send_verification_email(clean_email, token, user.full_name)
+        logger.info("Resent verification email for %s (status=%s)", clean_email, delivery_result.status)
+
+        if not delivery_result.is_success:
+            status = "EMAIL_PROVIDER_UNAVAILABLE" if delivery_result.status == "EMAIL_PROVIDER_UNAVAILABLE" else "EMAIL_FAILED"
+            raise HTTPException(
+                status_code=502,
+                detail="We couldn't resend the email. Please try again."
+            )
 
     return {
         "message": "Verification email sent. Please check your inbox.",
         "sent": True,
+        "email_status": "EMAIL_SENT",
     }
 
 
@@ -356,6 +387,119 @@ def logout(response: Response):
     """Logs out user by clearing the httpOnly session cookie."""
     _clear_auth_cookie(response)
     return {"message": "Logged out successfully"}
+
+
+@router.post("/auth/forgot-password")
+def forgot_password(
+    data: ForgotPasswordRequest,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """
+    Initiates password reset flow with account enumeration protection.
+    Always returns uniform confirmation message.
+    """
+    client_ip = request.client.host if request.client else "unknown"
+    enforce_rate_limit(f"forgot_ip:{client_ip}", max_attempts=10, window_seconds=60)
+
+    # Validate Gmail address format
+    gmail_err = validate_gmail_address(data.email)
+    if gmail_err:
+        raise HTTPException(status_code=400, detail=gmail_err)
+
+    clean_email = data.email.strip().lower()
+
+    # Rate limit requests per email address (max 3 per 5 minutes)
+    if not check_rate_limit(f"forgot_email:{clean_email}", max_attempts=3, window_seconds=300):
+        raise HTTPException(
+            status_code=429,
+            detail="Too many password reset requests. Please wait a few minutes before trying again."
+        )
+
+    user = db.query(models.User).filter(models.User.email == clean_email).first()
+    if user:
+        token = generate_password_reset_token()
+        token_hash = hash_password_reset_token(token)
+        now = datetime.now(timezone.utc)
+        expires_at = now + timedelta(minutes=PASSWORD_RESET_TOKEN_EXPIRE_MINUTES)
+
+        user.password_reset_token_hash = token_hash
+        user.password_reset_expires_at = expires_at
+        user.password_reset_sent_at = now
+        user.password_reset_used_at = None
+        db.commit()
+
+        delivery_result = send_password_reset_email(clean_email, token, user.full_name)
+        logger.info(
+            "Password reset token issued for user id=%d (delivery_status=%s)",
+            user.id,
+            delivery_result.status
+        )
+
+    # Uniform response to prevent account enumeration
+    return {
+        "message": "If an account exists for this email, we'll send a password reset link.",
+        "email": clean_email,
+        "sent": True,
+    }
+
+
+@router.post("/auth/reset-password")
+def reset_password(
+    data: ResetPasswordRequest,
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db)
+):
+    """
+    Validates single-use password reset token and updates user password with Argon2 hashing.
+    Invalidates used token and existing session cookie.
+    """
+    client_ip = request.client.host if request.client else "unknown"
+    enforce_rate_limit(f"reset_ip:{client_ip}", max_attempts=10, window_seconds=60)
+
+    # Validate new password policy
+    pwd_err = validate_password_strength(data.new_password)
+    if pwd_err:
+        raise HTTPException(status_code=400, detail=pwd_err)
+
+    raw_token = data.token.strip()
+    if not raw_token:
+        raise HTTPException(status_code=400, detail="This password reset link is no longer valid.")
+
+    token_hash = hash_password_reset_token(raw_token)
+    user = db.query(models.User).filter(models.User.password_reset_token_hash == token_hash).first()
+
+    if not user:
+        raise HTTPException(status_code=400, detail="This password reset link is no longer valid.")
+
+    if user.password_reset_used_at is not None:
+        raise HTTPException(status_code=400, detail="This password reset link is no longer valid.")
+
+    now = datetime.now(timezone.utc)
+    if user.password_reset_expires_at:
+        expires_at = user.password_reset_expires_at
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        if expires_at < now:
+            raise HTTPException(status_code=400, detail="This password reset link is no longer valid.")
+
+    # Apply new password hash
+    user.password_hash = hash_password(data.new_password)
+    user.password_reset_used_at = now
+    user.password_reset_token_hash = None  # Single-use: immediately clear
+    db.commit()
+
+    # Clear any active auth cookie to force re-authentication with new password
+    _clear_auth_cookie(response)
+
+    logger.info("Password successfully reset for user id=%d", user.id)
+
+    return {
+        "message": "Your password has been updated.",
+        "success": True,
+    }
+
 
 
 @router.get("/auth/me")

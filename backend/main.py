@@ -91,12 +91,33 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
     )
 
 
-ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+from backend.config import CORS_ORIGINS, FRONTEND_URL, APP_BASE_URL
+from backend.services.email_service import EmailService
+from sqlalchemy import text
+from backend.database import SessionLocal
+
+# Parse allowed origins dynamically from environment
+def _get_allowed_origins() -> list:
+    origins = set()
+    default_dev_origins = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ]
+    origins.update(default_dev_origins)
+    if CORS_ORIGINS:
+        for o in CORS_ORIGINS.split(","):
+            cleaned = o.strip()
+            if cleaned:
+                origins.add(cleaned)
+    if FRONTEND_URL:
+        origins.add(FRONTEND_URL.rstrip("/"))
+    if APP_BASE_URL:
+        origins.add(APP_BASE_URL.rstrip("/"))
+    return sorted(list(origins))
+
+ALLOWED_ORIGINS = _get_allowed_origins()
 
 # CORS configuration
 app.add_middleware(
@@ -153,9 +174,36 @@ def root():
 
 @app.get("/health")
 def health_check():
+    """Liveness check endpoint."""
     return {
-        "status": "healthy",
-        "service": "AI Interview Intelligence System",
-        "version": "1.0.0"
+        "status": "ok"
     }
+
+
+@app.get("/health/ready")
+def readiness_check():
+    """
+    Readiness check endpoint: verifies DB and email service connectivity
+    without exposing any secrets.
+    """
+    db_status = "ok"
+    try:
+        db = SessionLocal()
+        try:
+            db.execute(text("SELECT 1"))
+        finally:
+            db.close()
+    except Exception as e:
+        logger.error("Readiness check DB query failed: %s", e)
+        db_status = "error"
+
+    email_health = EmailService.health_check()
+    is_ready = db_status == "ok"
+
+    return {
+        "status": "ready" if is_ready else "degraded",
+        "database": db_status,
+        "email": email_health,
+    }
+
 

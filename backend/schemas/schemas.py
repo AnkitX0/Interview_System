@@ -155,6 +155,15 @@ class LoginRequest(BaseModel):
     password: str = Field(..., description="User password")
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: str = Field(..., min_length=5, description="User Gmail address")
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(..., min_length=1, description="Password reset token")
+    new_password: str = Field(..., min_length=1, description="New password")
+
+
 class UserProfileSchema(BaseModel):
     target_role: Optional[str] = None
     domain: Optional[str] = None

@@ -6,10 +6,14 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "interview.db")
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DB_PATH}")
+# Support hosting platforms that provide postgres:// prefix (e.g. Render, Railway)
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {},
+    pool_pre_ping=True,
 )
 
 
@@ -77,7 +81,7 @@ def init_db():
                     if col not in existing_ia:
                         conn.exec_driver_sql(f"ALTER TABLE interview_answers ADD COLUMN {col} {col_def}")
 
-                # 3. users email verification columns
+                # 3. users email verification and password reset columns
                 existing_u = [r[1] for r in conn.exec_driver_sql("PRAGMA table_info(users)").fetchall()]
                 u_cols = {
                     "email_verified": "BOOLEAN DEFAULT 1",
@@ -85,6 +89,10 @@ def init_db():
                     "verification_expires_at": "DATETIME",
                     "verification_used_at": "DATETIME",
                     "verification_sent_at": "DATETIME",
+                    "password_reset_token_hash": "VARCHAR",
+                    "password_reset_expires_at": "DATETIME",
+                    "password_reset_used_at": "DATETIME",
+                    "password_reset_sent_at": "DATETIME",
                 }
                 for col, col_def in u_cols.items():
                     if col not in existing_u:

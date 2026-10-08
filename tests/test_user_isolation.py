@@ -20,11 +20,16 @@ PUBLIC_ROUTES = {
     ("/auth/register", "POST"),
     ("/auth/login", "POST"),
     ("/auth/logout", "POST"),
+    ("/auth/verify-email", "POST"),
+    ("/auth/resend-verification", "POST"),
+    ("/auth/forgot-password", "POST"),
+    ("/auth/reset-password", "POST"),
     ("/openapi.json", "GET"),
     ("/docs", "GET"),
     ("/docs/oauth2-redirect", "GET"),
     ("/redoc", "GET"),
     ("/health", "GET"),
+    ("/health/ready", "GET"),
 }
 
 

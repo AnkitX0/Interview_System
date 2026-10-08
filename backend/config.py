@@ -116,13 +116,35 @@ ALGORITHM = "HS256"
 # ---------------------------
 # Email & Verification Configuration
 # ---------------------------
-SMTP_HOST = os.getenv("SMTP_HOST", "")
+EMAIL_PROVIDER = os.getenv("EMAIL_PROVIDER", "development").lower().strip()
+SMTP_HOST = os.getenv("SMTP_HOST", "").strip()
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
-SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", "noreply@interviewintelligence.com")
-APP_BASE_URL = os.getenv("APP_BASE_URL", "http://localhost:5173")
+SMTP_USERNAME = os.getenv("SMTP_USERNAME", "").strip()
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "").strip()
+EMAIL_FROM = os.getenv("EMAIL_FROM") or os.getenv("SMTP_FROM_EMAIL", "noreply@interviewintelligence.com")
+SMTP_FROM_EMAIL = EMAIL_FROM  # Backward-compatibility alias
+SMTP_USE_TLS = os.getenv("SMTP_USE_TLS", "true").lower().strip() in ("true", "1", "yes")
+SMTP_USE_SSL = os.getenv("SMTP_USE_SSL", "false").lower().strip() in ("true", "1", "yes")
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
+
+APP_BASE_URL = os.getenv("APP_BASE_URL", "http://localhost:5173").rstrip("/")
+FRONTEND_URL = os.getenv("FRONTEND_URL", APP_BASE_URL).rstrip("/")
 VERIFICATION_TOKEN_EXPIRE_MINUTES = int(os.getenv("VERIFICATION_TOKEN_EXPIRE_MINUTES", "30"))
+PASSWORD_RESET_TOKEN_EXPIRE_MINUTES = int(os.getenv("PASSWORD_RESET_TOKEN_EXPIRE_MINUTES", "30"))
+
+# Storage Configuration
+STORAGE_PROVIDER = os.getenv("STORAGE_PROVIDER", "local").lower().strip()
+STORAGE_DIR = os.getenv("STORAGE_DIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads"))
+STORAGE_BUCKET = os.getenv("STORAGE_BUCKET", "").strip()
+STORAGE_ACCESS_KEY = os.getenv("STORAGE_ACCESS_KEY", "").strip()
+STORAGE_SECRET_KEY = os.getenv("STORAGE_SECRET_KEY", "").strip()
+STORAGE_REGION = os.getenv("STORAGE_REGION", "us-east-1").strip()
+
+# CORS Origins (comma-separated)
+CORS_ORIGINS = os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173"
+)
 
 # ---------------------------
 # Voice Metrics Configuration
