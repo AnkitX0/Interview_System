@@ -85,7 +85,11 @@ export function AuthProvider({ children }) {
       throw new Error(errorMsg);
     }
 
-    // New registrations require email verification before setting authenticated user session
+    // Set authenticated user immediately if verification is not required
+    if (data?.user && !data?.verification_required) {
+      setUser(data.user);
+    }
+
     return data;
   };
 

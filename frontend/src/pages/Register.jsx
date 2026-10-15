@@ -123,10 +123,15 @@ export default function Register() {
     try {
       const normalizedEmail = email.trim().toLowerCase();
       const res = await register(normalizedEmail, password, fullName.trim());
-      setRegisteredEmail(normalizedEmail);
-      setEmailDeliveryStatus(res?.email_status || "EMAIL_SENT");
-      setVerificationPending(true);
-      setResendCooldown(60); // 60s initial cooldown
+      if (res?.verification_required) {
+        setRegisteredEmail(normalizedEmail);
+        setEmailDeliveryStatus(res?.email_status || "EMAIL_SENT");
+        setVerificationPending(true);
+        setResendCooldown(60); // 60s initial cooldown
+      } else {
+        // Direct transition to dashboard or previous route on successful registration
+        navigate(from, { replace: true });
+      }
     } catch (err) {
       const msg = err.message || "Something went wrong while creating your account. Please try again.";
       setError(msg);

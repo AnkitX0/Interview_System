@@ -6,6 +6,7 @@ import { apiFetch } from "../utils/api";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [unverifiedEmail, setUnverifiedEmail] = useState(null);
@@ -38,20 +39,31 @@ export default function Login() {
     e.preventDefault();
     setError(null);
     setResendSuccessMsg(null);
+
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setError("Please enter your email address.");
+      return;
+    }
+    if (!password) {
+      setError("Please enter your password.");
+      return;
+    }
+
     setSubmitting(true);
 
     try {
-      await login(email, password);
+      await login(trimmedEmail, password);
       navigate(from, { replace: true });
     } catch (err) {
-      const msg = err.message || "Invalid credentials";
+      const msg = err.message || "Invalid email or password.";
       setError(msg);
       if (
         msg.toLowerCase().includes("verify your email") ||
         msg.toLowerCase().includes("verification") ||
         msg.toLowerCase().includes("unverified")
       ) {
-        setUnverifiedEmail(email.trim().toLowerCase());
+        setUnverifiedEmail(trimmedEmail.toLowerCase());
       } else {
         setUnverifiedEmail(null);
       }
@@ -88,11 +100,12 @@ export default function Login() {
     <div style={containerStyle}>
       <div style={cardStyle}>
         <div style={{ textAlign: "center", marginBottom: "28px" }}>
-          <h2 style={{ fontSize: "22px", fontWeight: "700", color: "#0f172a", margin: "0 0 6px 0" }}>
+          <div style={badgeStyle}>Interview Intelligence</div>
+          <h2 style={{ fontSize: "22px", fontWeight: "700", color: "#0f172a", margin: "10px 0 6px 0" }}>
             Sign in to your account
           </h2>
           <p style={{ fontSize: "14px", color: "#64748b", margin: 0 }}>
-            AI Interview Intelligence Platform
+            Prepare smarter. Interview with confidence.
           </p>
         </div>
 
@@ -135,12 +148,15 @@ export default function Login() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <div style={{ marginBottom: "18px" }}>
-            <label style={labelStyle}>Email Address</label>
+            <label htmlFor="login-email-input" style={labelStyle}>
+              Email Address
+            </label>
             <input
               id="login-email-input"
               type="email"
+              autoComplete="email"
               required
               autoFocus
               value={email}
@@ -152,7 +168,9 @@ export default function Login() {
 
           <div style={{ marginBottom: "20px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-              <label style={{ ...labelStyle, marginBottom: 0 }}>Password</label>
+              <label htmlFor="login-password-input" style={{ ...labelStyle, marginBottom: 0 }}>
+                Password
+              </label>
               <Link
                 to="/forgot-password"
                 id="forgot-password-link"
@@ -161,15 +179,39 @@ export default function Login() {
                 Forgot password?
               </Link>
             </div>
-            <input
-              id="login-password-input"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••••••"
-              style={inputStyle}
-            />
+            <div style={{ position: "relative" }}>
+              <input
+                id="login-password-input"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••••••"
+                style={{ ...inputStyle, paddingRight: "42px" }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                style={eyeButtonStyle}
+              >
+                {showPassword ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m15 18-.722-3.25" />
+                    <path d="M2 8a10.645 10.645 0 0 0 20 0" />
+                    <path d="m20 15-1.726-2.05" />
+                    <path d="m4 15 1.726-2.05" />
+                    <path d="m9 18 .722-3.25" />
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
 
           <button
@@ -182,7 +224,7 @@ export default function Login() {
               cursor: submitting ? "not-allowed" : "pointer",
             }}
           >
-            {submitting ? "Authenticating..." : "Sign In"}
+            {submitting ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
@@ -287,4 +329,30 @@ const successBannerStyle = {
   borderRadius: "8px",
   padding: "10px 14px",
   marginBottom: "18px",
+};
+
+const badgeStyle = {
+  display: "inline-block",
+  fontSize: "11px",
+  fontWeight: "700",
+  letterSpacing: "0.06em",
+  textTransform: "uppercase",
+  color: "#2563eb",
+  backgroundColor: "#eff6ff",
+  padding: "3px 10px",
+  borderRadius: "100px",
+};
+
+const eyeButtonStyle = {
+  position: "absolute",
+  right: "10px",
+  top: "50%",
+  transform: "translateY(-50%)",
+  background: "none",
+  border: "none",
+  cursor: "pointer",
+  padding: "4px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
 };

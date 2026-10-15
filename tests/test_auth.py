@@ -169,7 +169,7 @@ def test_auth_registration_weak_passwords(client: TestClient):
 
 
 def test_auth_registration_happy_path_and_duplicate(client: TestClient):
-    # Matrix 18: Registration success
+    # Registration success without mandatory email verification
     clear_dev_email_store()
     email = "New.Student@Gmail.com"  # Mixed case to test normalization
     payload = {
@@ -180,25 +180,22 @@ def test_auth_registration_happy_path_and_duplicate(client: TestClient):
     res = client.post("/auth/register", json=payload)
     assert res.status_code == 200
     data = res.json()
-    assert data["verification_required"] is True
+    assert data["verification_required"] is False
     assert data["email"] == "new.student@gmail.com"
-    # Ensure no cookies set until verified
-    assert AUTH_COOKIE_NAME not in res.cookies
+    # User is immediately authenticated with session cookie
+    assert AUTH_COOKIE_NAME in res.cookies
+    assert data["user"]["email"] == "new.student@gmail.com"
 
-    # Matrix 19: Verification token generated and email captured
-    dev_email = get_latest_dev_email("new.student@gmail.com")
-    assert dev_email is not None
-    assert dev_email["token"] is not None
-    assert "/verify-email?token=" in dev_email["verification_link"]
-
-    # Matrix 17: Existing account rejection without enumeration
+    # Existing account rejection without enumeration
     res_dup = client.post("/auth/register", json=payload)
     assert res_dup.status_code == 400
     assert "already exists" in res_dup.json()["error"]["message"].lower()
 
 
-def test_unverified_user_cannot_login(client: TestClient):
-    # Register pending user
+def test_unverified_user_cannot_login_when_verification_required(client: TestClient, monkeypatch):
+    import backend.routes.auth as auth_route
+    monkeypatch.setattr(auth_route, "REQUIRE_EMAIL_VERIFICATION", True)
+
     email = "pending.user@gmail.com"
     client.post("/auth/register", json={
         "email": email,
@@ -216,7 +213,10 @@ def test_unverified_user_cannot_login(client: TestClient):
     assert "verify your email" in res.json()["error"]["message"].lower()
 
 
-def test_email_verification_flow_and_token_reuse(client: TestClient, db_session):
+def test_email_verification_flow_and_token_reuse(client: TestClient, db_session, monkeypatch):
+    import backend.routes.auth as auth_route
+    monkeypatch.setattr(auth_route, "REQUIRE_EMAIL_VERIFICATION", True)
+
     email = "verify.flow@gmail.com"
     client.post("/auth/register", json={
         "email": email,
@@ -227,17 +227,17 @@ def test_email_verification_flow_and_token_reuse(client: TestClient, db_session)
     dev_email = get_latest_dev_email(email)
     raw_token = dev_email["token"]
 
-    # Matrix 23: Invalid verification token
+    # Invalid verification token
     res_inv = client.post("/auth/verify-email", json={"token": "totally-bogus-token"})
     assert res_inv.status_code == 400
     assert "no longer valid" in res_inv.json()["error"]["message"].lower()
 
-    # Matrix 22: Verification succeeds
+    # Verification succeeds
     res_verify = client.post("/auth/verify-email", json={"token": raw_token})
     assert res_verify.status_code == 200
     assert res_verify.json()["verified"] is True
 
-    # Matrix 21: Verification token cannot be reused
+    # Verification token cannot be reused
     res_reuse = client.post("/auth/verify-email", json={"token": raw_token})
     assert res_reuse.status_code == 400
     assert (
@@ -245,7 +245,7 @@ def test_email_verification_flow_and_token_reuse(client: TestClient, db_session)
         or "no longer valid" in res_reuse.json()["error"]["message"].lower()
     )
 
-    # Matrix 30: Login works after verification
+    # Login works after verification
     res_login = client.post("/auth/login", json={
         "email": email,
         "password": "VerifyFlowPass123!",
@@ -255,8 +255,10 @@ def test_email_verification_flow_and_token_reuse(client: TestClient, db_session)
     assert res_login.json()["user"]["email"] == email
 
 
-def test_email_verification_token_expiration(client: TestClient, db_session):
-    # Matrix 20: Verification token expires
+def test_email_verification_token_expiration(client: TestClient, db_session, monkeypatch):
+    import backend.routes.auth as auth_route
+    monkeypatch.setattr(auth_route, "REQUIRE_EMAIL_VERIFICATION", True)
+
     email = "expired.test@gmail.com"
     client.post("/auth/register", json={
         "email": email,
@@ -276,8 +278,10 @@ def test_email_verification_token_expiration(client: TestClient, db_session):
     assert "expired" in res.json()["error"]["message"].lower()
 
 
-def test_resend_verification_and_rate_limit(client: TestClient, db_session):
-    # Matrix 24 & 25: Resend verification and rate limit
+def test_resend_verification_and_rate_limit(client: TestClient, db_session, monkeypatch):
+    import backend.routes.auth as auth_route
+    monkeypatch.setattr(auth_route, "REQUIRE_EMAIL_VERIFICATION", True)
+
     email = "resend.test@gmail.com"
     client.post("/auth/register", json={
         "email": email,
@@ -306,7 +310,7 @@ def test_resend_verification_and_rate_limit(client: TestClient, db_session):
 
 
 def test_existing_users_still_work_without_reverification(client: TestClient, test_user):
-    # Matrix 29 & 30: Existing users (like test_user in conftest) default to email_verified=True
+    # Existing users default to email_verified=True
     assert test_user.email_verified is True
 
     # Can log in directly
@@ -319,7 +323,6 @@ def test_existing_users_still_work_without_reverification(client: TestClient, te
 
 
 def test_auth_logout_clears_cookie(client: TestClient):
-    # Matrix 31: Logout still works
     client.cookies.clear()
     email = "logout.test@gmail.com"
     client.post("/auth/register", json={
@@ -327,8 +330,7 @@ def test_auth_logout_clears_cookie(client: TestClient):
         "password": "LogoutSecure123!",
         "full_name": "Logout User",
     })
-    dev_email = get_latest_dev_email(email)
-    client.post("/auth/verify-email", json={"token": dev_email["token"]})
+    # User is immediately logged in upon registration
     client.post("/auth/login", json={"email": email, "password": "LogoutSecure123!"})
     assert AUTH_COOKIE_NAME in client.cookies
 
@@ -339,7 +341,6 @@ def test_auth_logout_clears_cookie(client: TestClient):
 
 
 def test_protected_routes_still_work(client: TestClient):
-    # Matrix 32: Protected routes still work
     client.cookies.clear()
     client.headers.pop("Authorization", None)
     res_unauth = client.get("/auth/me")
@@ -351,9 +352,6 @@ def test_protected_routes_still_work(client: TestClient):
         "password": "MeSecurePass123!",
         "full_name": "Me Tester",
     })
-    dev_email = get_latest_dev_email(email)
-    client.post("/auth/verify-email", json={"token": dev_email["token"]})
-    client.post("/auth/login", json={"email": email, "password": "MeSecurePass123!"})
 
     res_me = client.get("/auth/me")
     assert res_me.status_code == 200
@@ -367,9 +365,6 @@ def test_csrf_origin_blocking_cookie_request(client: TestClient):
         "password": "CsrfSecurePass123!",
         "full_name": "CSRF Tester",
     })
-    dev_email = get_latest_dev_email(email)
-    client.post("/auth/verify-email", json={"token": dev_email["token"]})
-    client.post("/auth/login", json={"email": email, "password": "CsrfSecurePass123!"})
 
     client.headers.pop("Authorization", None)
     res = client.post(

@@ -47,10 +47,13 @@ from backend.services.email_service import (
 from backend.config import (
     AUTH_COOKIE_NAME,
     ACCESS_TOKEN_EXPIRE_MINUTES,
+    AUTH_COOKIE_SAMESITE,
+    AUTH_COOKIE_SECURE,
     ENVIRONMENT,
     PRIVACY_POLICY_VERSION,
     VERIFICATION_TOKEN_EXPIRE_MINUTES,
     PASSWORD_RESET_TOKEN_EXPIRE_MINUTES,
+    REQUIRE_EMAIL_VERIFICATION,
 )
 
 logger = logging.getLogger("interview_system.auth")
@@ -96,8 +99,8 @@ def _set_auth_cookie(response: Response, token: str) -> None:
         key=AUTH_COOKIE_NAME,
         value=token,
         httponly=True,
-        samesite="lax",
-        secure=(ENVIRONMENT == "production"),
+        samesite=AUTH_COOKIE_SAMESITE,
+        secure=AUTH_COOKIE_SECURE,
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         path="/",
     )
@@ -107,7 +110,8 @@ def _clear_auth_cookie(response: Response) -> None:
     """Clears authentication cookie."""
     response.delete_cookie(
         key=AUTH_COOKIE_NAME,
-        samesite="lax",
+        samesite=AUTH_COOKIE_SAMESITE,
+        secure=AUTH_COOKIE_SECURE,
         httponly=True,
         path="/",
     )
@@ -141,12 +145,18 @@ def _build_profile_response(profile: Optional[models.UserProfile], user: Optiona
 def register(
     data: RegisterRequest,
     request: Request,
+    response: Response,
     db: Session = Depends(get_db)
 ):
     """
-    Registers a new user account with strict Gmail validation, Argon2 password hashing,
-    and single-use cryptographic email ownership verification.
-    Does NOT issue authenticated session cookie until email is verified.
+    Registers a new user account with strict Gmail validation and Argon2 password hashing.
+    When REQUIRE_EMAIL_VERIFICATION is False (default):
+    - Activates account immediately (email_verified=True).
+    - Issues authenticated session cookie.
+    - Returns full user profile for immediate onboarding/dashboard transition.
+    When REQUIRE_EMAIL_VERIFICATION is True:
+    - Creates user in pending verification state.
+    - Sends cryptographic single-use verification email.
     """
     client_ip = request.client.host if request.client else "unknown"
     enforce_rate_limit(f"register:{client_ip}", max_attempts=30, window_seconds=60)
@@ -175,15 +185,53 @@ def register(
             detail="If an account already exists for this address, please sign in or reset your password."
         )
 
-    # 5. Cryptographic single-use token generation
-    token = generate_verification_token()
-    token_hash = hash_verification_token(token)
-    now = datetime.now(timezone.utc)
-    expires_at = now + timedelta(minutes=VERIFICATION_TOKEN_EXPIRE_MINUTES)
-
-    # 6. Create user in pending verification state
     clean_name = data.full_name.strip() if data.full_name else None
     hashed = hash_password(data.password)
+    now = datetime.now(timezone.utc)
+
+    if not REQUIRE_EMAIL_VERIFICATION:
+        # Immediate activation flow (default for demo and production)
+        user = models.User(
+            email=clean_email,
+            password_hash=hashed,
+            full_name=clean_name,
+            email_verified=True,
+            verification_token_hash=None,
+            verification_expires_at=None,
+            verification_sent_at=None,
+            verification_used_at=now,
+        )
+        db.add(user)
+        db.flush()
+
+        profile = models.UserProfile(user_id=user.id)
+        db.add(profile)
+        db.commit()
+        db.refresh(user)
+
+        token = create_access_token(user.id)
+        _set_auth_cookie(response, token)
+
+        logger.info("New registration activated immediately for %s (id=%d)", clean_email, user.id)
+
+        return {
+            "message": "Account created successfully.",
+            "email": clean_email,
+            "verification_required": False,
+            "email_status": "VERIFICATION_DISABLED",
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "full_name": user.full_name,
+                "profile": _build_profile_response(profile, user),
+            }
+        }
+
+    # Mandatory verification flow (when REQUIRE_EMAIL_VERIFICATION is True)
+    token = generate_verification_token()
+    token_hash = hash_verification_token(token)
+    expires_at = now + timedelta(minutes=VERIFICATION_TOKEN_EXPIRE_MINUTES)
+
     user = models.User(
         email=clean_email,
         password_hash=hashed,
@@ -196,13 +244,11 @@ def register(
     db.add(user)
     db.flush()
 
-    # Create empty user profile
     profile = models.UserProfile(user_id=user.id)
     db.add(profile)
     db.commit()
     db.refresh(user)
 
-    # 7. Send verification email (or capture in dev)
     delivery_result = send_verification_email(clean_email, token, clean_name)
 
     logger.info(
@@ -359,8 +405,8 @@ def login(
     if not user or not verify_password(data.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    # Reject unverified accounts
-    if user.email_verified is False:
+    # Reject unverified accounts only if email verification is mandatory
+    if REQUIRE_EMAIL_VERIFICATION and user.email_verified is False:
         raise HTTPException(
             status_code=403,
             detail="Please verify your email address before signing in. Check your inbox for the verification link."

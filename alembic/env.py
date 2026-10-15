@@ -23,7 +23,12 @@ if config.config_file_name is not None:
 # Set DB URL if not already explicitly provided by the caller or if placeholder
 current_url = config.get_main_option("sqlalchemy.url")
 if not current_url or "driver://user:pass" in current_url:
-    config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL", DATABASE_URL))
+    target_url = os.getenv("DATABASE_URL", DATABASE_URL)
+    if target_url and target_url.startswith("postgres://"):
+        target_url = target_url.replace("postgres://", "postgresql://", 1)
+    config.set_main_option("sqlalchemy.url", target_url)
+elif current_url and current_url.startswith("postgres://"):
+    config.set_main_option("sqlalchemy.url", current_url.replace("postgres://", "postgresql://", 1))
 
 target_metadata = Base.metadata
 

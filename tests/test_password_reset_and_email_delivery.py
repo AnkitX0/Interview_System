@@ -40,7 +40,24 @@ def clean_state(db_session):
 # Part 1 & 2: Honest Email Delivery Status
 # ==============================================================================
 
-def test_register_returns_honest_email_sent_status(client: TestClient):
+def test_register_returns_disabled_status_when_verification_not_required(client: TestClient):
+    email = "disabled.verif@gmail.com"
+    res = client.post("/auth/register", json={
+        "email": email,
+        "password": "ValidPassword123!",
+        "full_name": "Immediate User",
+    })
+    assert res.status_code == 200
+    data = res.json()
+    assert data["email_status"] == "VERIFICATION_DISABLED"
+    assert data["verification_required"] is False
+    assert data["user"]["email"] == email
+
+
+def test_register_returns_honest_email_sent_status(client: TestClient, monkeypatch):
+    import backend.routes.auth as auth_route
+    monkeypatch.setattr(auth_route, "REQUIRE_EMAIL_VERIFICATION", True)
+
     email = "honest.sent@gmail.com"
     res = client.post("/auth/register", json={
         "email": email,
@@ -54,7 +71,10 @@ def test_register_returns_honest_email_sent_status(client: TestClient):
     assert "check your email" in data["message"].lower()
 
 
-def test_register_returns_honest_failure_when_provider_fails(client: TestClient):
+def test_register_returns_honest_failure_when_provider_fails(client: TestClient, monkeypatch):
+    import backend.routes.auth as auth_route
+    monkeypatch.setattr(auth_route, "REQUIRE_EMAIL_VERIFICATION", True)
+
     email = "honest.fail@gmail.com"
     failed_result = EmailDeliveryResult(
         status="EMAIL_FAILED",
@@ -74,7 +94,10 @@ def test_register_returns_honest_failure_when_provider_fails(client: TestClient)
         assert "couldn't send the verification email" in data["message"].lower()
 
 
-def test_resend_verification_reports_failure_when_provider_fails(client: TestClient, db_session):
+def test_resend_verification_reports_failure_when_provider_fails(client: TestClient, db_session, monkeypatch):
+    import backend.routes.auth as auth_route
+    monkeypatch.setattr(auth_route, "REQUIRE_EMAIL_VERIFICATION", True)
+
     email = "resend.fail@gmail.com"
     client.post("/auth/register", json={
         "email": email,
@@ -202,12 +225,7 @@ def test_complete_password_reset_flow(client: TestClient, db_session):
         "full_name": "Reset Flow User",
     })
 
-    # Verify email first so account is active
-    verif_email = get_latest_dev_email(email)
-    token = verif_email["plain_text"].split("token=")[1].split()[0]
-    client.post("/auth/verify-email", json={"token": token})
-
-    # Confirm old password works
+    # Account is active immediately without mandatory verification
     res_login_old = client.post("/auth/login", json={"email": email, "password": "OldPassword123!"})
     assert res_login_old.status_code == 200
     client.cookies.clear()

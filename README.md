@@ -344,10 +344,12 @@ The system strictly enforces document format integrity and validates file signat
 
 ## Production Deployment
 
+> **Detailed Guide**: For exact step-by-step instructions for deploying to **Neon PostgreSQL**, **Render**, and **Vercel**, see [DEPLOYMENT.md](DEPLOYMENT.md).
+
 ### Production Architecture
-1. **Frontend**: Static deploy on Cloudflare Pages, Vercel, or Netlify (`npm run build` → serve `dist/`).
-2. **Backend**: Containerized FastAPI service on Render, Railway, Fly.io, or AWS ECS/Cloud Run.
-3. **Database**: Managed PostgreSQL instance (AWS RDS, Supabase, Neon, or Railway PostgreSQL).
+1. **Frontend**: Static deploy on Vercel (`npm run build` → serve `dist/` with `vercel.json` SPA rewrites).
+2. **Backend**: FastAPI web service on Render (`uvicorn backend.main:app --host 0.0.0.0 --port $PORT`).
+3. **Database**: Managed Serverless PostgreSQL on Neon (`postgresql://...`).
 4. **Storage**: Object storage bucket (AWS S3 or Cloudflare R2) or managed persistent volume.
 5. **Email Provider**: Resend or transactional SMTP with custom domain DKIM/SPF records.
 

@@ -123,10 +123,15 @@ if not SECRET_KEY:
 AUTH_COOKIE_NAME = "auth_token"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 ALGORITHM = "HS256"
+AUTH_COOKIE_SAMESITE = os.getenv("AUTH_COOKIE_SAMESITE", "none" if ENVIRONMENT == "production" else "lax")
+AUTH_COOKIE_SECURE = os.getenv("AUTH_COOKIE_SECURE", "true" if ENVIRONMENT == "production" else "false").lower().strip() in ("true", "1", "yes")
 
 # ---------------------------
 # Email & Verification Configuration
 # ---------------------------
+# When REQUIRE_EMAIL_VERIFICATION is False (default for demo/production), users can register
+# and log in immediately without mandatory email OTP or link verification.
+REQUIRE_EMAIL_VERIFICATION = os.getenv("REQUIRE_EMAIL_VERIFICATION", "false").lower().strip() in ("true", "1", "yes")
 EMAIL_PROVIDER = os.getenv("EMAIL_PROVIDER", "development").lower().strip()
 SMTP_HOST = os.getenv("SMTP_HOST", "").strip()
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
