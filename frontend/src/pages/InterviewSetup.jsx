@@ -167,6 +167,7 @@ function InterviewSetup() {
   };
 
   const handleStart = async () => {
+    if (loadingStart) return;
     if (mode === "pressure" && !pressureAcknowledged) {
       setErrorMessage("Please acknowledge the Incident Response notice below before continuing.");
       return;
@@ -180,6 +181,7 @@ function InterviewSetup() {
   };
 
   const executeStart = async (isTextOnly = false) => {
+    if (loadingStart) return;
     setLoadingStart(true);
     setErrorMessage(null);
 

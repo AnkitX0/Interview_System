@@ -9,7 +9,17 @@ import { API_BASE_URL } from "../config";
  * "Failed to fetch" string.
  */
 export async function apiFetch(url, options = {}) {
-  const fullUrl = url.startsWith("http") ? url : `${API_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+  const cleanBase = (API_BASE_URL || "").replace(/\/+$/, "");
+  const isAbsolute = url.startsWith("http://") || url.startsWith("https://");
+
+  if (!cleanBase && !isAbsolute) {
+    throw new Error(
+      "Configuration Error: API base URL is missing. Please ensure VITE_API_BASE_URL is configured."
+    );
+  }
+
+  const cleanPath = url.startsWith("/") ? url : `/${url}`;
+  const fullUrl = isAbsolute ? url : `${cleanBase}${cleanPath}`;
 
   const headers = { ...options.headers };
   if (!(options.body instanceof FormData) && !headers["Content-Type"]) {
@@ -28,11 +38,14 @@ export async function apiFetch(url, options = {}) {
   let response;
   try {
     response = await fetch(fullUrl, config);
-  } catch (networkErr) {
-    // fetch() throws a TypeError when the backend is unreachable (wrong port,
-    // server not started, DNS failure, or CORS preflight hard-blocked).
+  } catch {
+    const isRenderBackend = cleanBase.includes("onrender.com");
+    const coldStartHint = isRenderBackend
+      ? " The server may be waking up from sleep (Render free instances take ~30-40s on first request). Please wait a moment and retry."
+      : "";
+
     throw new Error(
-      `Unable to connect to the server at ${API_BASE_URL}. Make sure the backend server is running.`
+      `Unable to connect to the server at ${cleanBase}.${coldStartHint}`
     );
   }
 

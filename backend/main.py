@@ -117,15 +117,27 @@ def _get_allowed_origins() -> list:
         origins.add(APP_BASE_URL.rstrip("/"))
     return sorted(list(origins))
 
+import os
+import re
+
+CORS_ORIGIN_REGEX = os.getenv("CORS_ORIGIN_REGEX", r"^https:\/\/.*\.vercel\.app$")
+_cors_regex_compiled = re.compile(CORS_ORIGIN_REGEX) if CORS_ORIGIN_REGEX else None
+
 ALLOWED_ORIGINS = _get_allowed_origins()
 
 # CORS configuration
+cors_kwargs = {
+    "allow_origins": ALLOWED_ORIGINS,
+    "allow_credentials": True,
+    "allow_methods": ["*"],
+    "allow_headers": ["*"],
+}
+if CORS_ORIGIN_REGEX:
+    cors_kwargs["allow_origin_regex"] = CORS_ORIGIN_REGEX
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    **cors_kwargs
 )
 
 
@@ -143,7 +155,12 @@ async def csrf_protect_middleware(request: Request, call_next):
             if origin:
                 host = request.headers.get("host")
                 allowed_hosts = {f"http://{host}", f"https://{host}"} if host else set()
-                if origin not in ALLOWED_ORIGINS and origin not in allowed_hosts:
+                is_allowed = (
+                    origin in ALLOWED_ORIGINS or
+                    origin in allowed_hosts or
+                    bool(_cors_regex_compiled and _cors_regex_compiled.match(origin))
+                )
+                if not is_allowed:
                     logger.warning("CSRF check blocked request from origin: %s", origin)
                     return JSONResponse(
                         status_code=403,
@@ -151,7 +168,6 @@ async def csrf_protect_middleware(request: Request, call_next):
                     )
     return await call_next(request)
 
-import os
 from backend.routes import auth, resume, interview, analytics, practice, readiness
 
 # Register route modules

@@ -246,6 +246,7 @@ export default function ResumeUpload() {
   };
 
   const handleAnalyze = async () => {
+    if (loading) return;
     if (mode === "file" && !file) {
       setError("Please select a PDF or DOCX resume file first.");
       return;
