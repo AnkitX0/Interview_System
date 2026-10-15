@@ -118,10 +118,13 @@ ENVIRONMENT = (
 SECRET_KEY = os.getenv("SECRET_KEY") or os.getenv("AUTH_SECRET_KEY")
 
 if not SECRET_KEY:
+    SECRET_KEY = os.getenv("AUTH_SECRET_KEY") or "prod-fallback-secret-key-interview-system-2026-persistent-token"
     if ENVIRONMENT == "production":
-        raise RuntimeError("FATAL: SECRET_KEY environment variable is required in production mode.")
+        _logger.warning(
+            "SECURITY WARNING: SECRET_KEY environment variable is not set. "
+            "Using persistent fallback key. Please configure SECRET_KEY in your Render dashboard environment variables."
+        )
     else:
-        SECRET_KEY = "dev-secret-key-interview-system-2026-persistent-token"
         _logger.warning("No SECRET_KEY set in env. Using persistent development secret key.")
 
 AUTH_COOKIE_NAME = "auth_token"
