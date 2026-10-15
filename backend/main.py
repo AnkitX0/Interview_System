@@ -1,4 +1,6 @@
 import logging
+import os
+import re
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -117,8 +119,6 @@ def _get_allowed_origins() -> list:
         origins.add(APP_BASE_URL.rstrip("/"))
     return sorted(list(origins))
 
-import os
-import re
 
 CORS_ORIGIN_REGEX = os.getenv("CORS_ORIGIN_REGEX", r"^https:\/\/.*\.vercel\.app$")
 _cors_regex_compiled = re.compile(CORS_ORIGIN_REGEX) if CORS_ORIGIN_REGEX else None
