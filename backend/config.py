@@ -110,7 +110,11 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 GEMINI_TRANSCRIBE_MODEL = os.getenv("GEMINI_TRANSCRIBE_MODEL", "gemini-3.5-transcribe")
 
-ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+ENVIRONMENT = (
+    os.getenv("ENVIRONMENT") or
+    os.getenv("APP_ENV") or
+    ("production" if os.getenv("RENDER") else "development")
+).lower().strip()
 SECRET_KEY = os.getenv("SECRET_KEY") or os.getenv("AUTH_SECRET_KEY")
 
 if not SECRET_KEY:
@@ -123,8 +127,18 @@ if not SECRET_KEY:
 AUTH_COOKIE_NAME = "auth_token"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 ALGORITHM = "HS256"
-AUTH_COOKIE_SAMESITE = os.getenv("AUTH_COOKIE_SAMESITE", "none" if ENVIRONMENT == "production" else "lax")
-AUTH_COOKIE_SECURE = os.getenv("AUTH_COOKIE_SECURE", "true" if ENVIRONMENT == "production" else "false").lower().strip() in ("true", "1", "yes")
+
+# In production or on Render, default to cross-site cookie policy (SameSite=none, Secure=true)
+_is_prod = ENVIRONMENT == "production" or bool(os.getenv("RENDER"))
+AUTH_COOKIE_SAMESITE = os.getenv("AUTH_COOKIE_SAMESITE", "none" if _is_prod else "lax").lower().strip()
+AUTH_COOKIE_SECURE = os.getenv(
+    "AUTH_COOKIE_SECURE",
+    "true" if (_is_prod or AUTH_COOKIE_SAMESITE == "none") else "false"
+).lower().strip() in ("true", "1", "yes")
+
+# RFC 6265bis: SameSite=None cookies MUST have Secure=True
+if AUTH_COOKIE_SAMESITE == "none":
+    AUTH_COOKIE_SECURE = True
 
 # ---------------------------
 # Email & Verification Configuration

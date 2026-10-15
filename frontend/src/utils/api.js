@@ -29,6 +29,15 @@ export async function apiFetch(url, options = {}) {
     headers["X-Requested-With"] = "XMLHttpRequest";
   }
 
+  try {
+    const token = typeof window !== "undefined" ? window.sessionStorage?.getItem("auth_token") : null;
+    if (token && !headers["Authorization"]) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+  } catch {
+    // ignore
+  }
+
   const config = {
     ...options,
     headers,

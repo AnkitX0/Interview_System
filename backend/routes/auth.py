@@ -95,12 +95,14 @@ def validate_gmail_address(email: str) -> Optional[str]:
 
 def _set_auth_cookie(response: Response, token: str) -> None:
     """Sets secure httpOnly authentication cookie."""
+    samesite = AUTH_COOKIE_SAMESITE.lower()
+    secure = AUTH_COOKIE_SECURE or (samesite == "none")
     response.set_cookie(
         key=AUTH_COOKIE_NAME,
         value=token,
         httponly=True,
-        samesite=AUTH_COOKIE_SAMESITE,
-        secure=AUTH_COOKIE_SECURE,
+        samesite=samesite,
+        secure=secure,
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         path="/",
     )
@@ -108,10 +110,12 @@ def _set_auth_cookie(response: Response, token: str) -> None:
 
 def _clear_auth_cookie(response: Response) -> None:
     """Clears authentication cookie."""
+    samesite = AUTH_COOKIE_SAMESITE.lower()
+    secure = AUTH_COOKIE_SECURE or (samesite == "none")
     response.delete_cookie(
         key=AUTH_COOKIE_NAME,
-        samesite=AUTH_COOKIE_SAMESITE,
-        secure=AUTH_COOKIE_SECURE,
+        samesite=samesite,
+        secure=secure,
         httponly=True,
         path="/",
     )
@@ -217,6 +221,8 @@ def register(
         return {
             "message": "Account created successfully.",
             "email": clean_email,
+            "access_token": token,
+            "token_type": "bearer",
             "verification_required": False,
             "email_status": "VERIFICATION_DISABLED",
             "user": {
@@ -419,6 +425,8 @@ def login(
 
     return {
         "message": "Logged in successfully",
+        "access_token": token,
+        "token_type": "bearer",
         "user": {
             "id": user.id,
             "email": user.email,
