@@ -394,3 +394,66 @@ def test_log_hygiene_no_sensitive_data_in_logs(client: TestClient, caplog):
     captured_text = caplog.text
     assert secret_password not in captured_text
     assert "auth_token=" not in captured_text
+
+
+def test_cookie_security_params_validation(monkeypatch):
+    import backend.routes.auth as auth_mod
+
+    # Valid values
+    monkeypatch.setattr(auth_mod, "AUTH_COOKIE_SAMESITE", "none")
+    monkeypatch.setattr(auth_mod, "AUTH_COOKIE_SECURE", False)
+    samesite, secure = auth_mod._get_cookie_security_params()
+    assert samesite == "none"
+    assert secure is True  # SameSite=None MUST be Secure=True
+
+    monkeypatch.setattr(auth_mod, "AUTH_COOKIE_SAMESITE", "strict")
+    monkeypatch.setattr(auth_mod, "AUTH_COOKIE_SECURE", True)
+    samesite, secure = auth_mod._get_cookie_security_params()
+    assert samesite == "strict"
+    assert secure is True
+
+    # Invalid values fallback to "lax"
+    monkeypatch.setattr(auth_mod, "AUTH_COOKIE_SAMESITE", "invalid-value")
+    monkeypatch.setattr(auth_mod, "AUTH_COOKIE_SECURE", False)
+    samesite, secure = auth_mod._get_cookie_security_params()
+    assert samesite == "lax"
+    assert secure is False
+
+
+def test_set_and_clear_auth_cookie_attributes():
+    from fastapi import Response
+    from backend.routes.auth import _set_auth_cookie, _clear_auth_cookie
+    from backend.config import AUTH_COOKIE_NAME
+
+    # Test set cookie
+    res_set = Response()
+    _set_auth_cookie(res_set, "token123")
+    set_cookies = res_set.headers.getlist("set-cookie")
+    assert len(set_cookies) == 1
+    cookie_str = set_cookies[0]
+    assert f"{AUTH_COOKIE_NAME}=token123" in cookie_str
+    assert "HttpOnly" in cookie_str
+    assert "Path=/" in cookie_str
+
+    # Test clear cookie
+    res_clear = Response()
+    _clear_auth_cookie(res_clear)
+    clear_cookies = res_clear.headers.getlist("set-cookie")
+    assert len(clear_cookies) == 1
+    clear_str = clear_cookies[0]
+    assert f'{AUTH_COOKIE_NAME}=""' in clear_str
+    assert "Max-Age=0" in clear_str
+    assert "HttpOnly" in clear_str
+    assert "Path=/" in clear_str
+
+
+def test_logout_endpoint_clears_cookie_with_matching_flags(client: TestClient):
+    res = client.post("/auth/logout")
+    assert res.status_code == 200
+    set_cookies = res.headers.get_list("set-cookie")
+    assert len(set_cookies) >= 1
+    cookie_header = set_cookies[0]
+    assert "auth_token=" in cookie_header
+    assert "Max-Age=0" in cookie_header
+    assert "HttpOnly" in cookie_header
+    assert "Path=/" in cookie_header

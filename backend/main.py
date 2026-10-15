@@ -108,6 +108,8 @@ def _get_allowed_origins() -> list:
         "http://127.0.0.1:3000",
     ]
     origins.update(default_dev_origins)
+    # Ensure production frontend origin is always explicitly allowed
+    origins.add("https://interview-system-orpin.vercel.app")
     if CORS_ORIGINS:
         for o in CORS_ORIGINS.split(","):
             cleaned = o.strip()

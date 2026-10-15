@@ -94,7 +94,7 @@ def client(db_session, test_user):
 
     app.dependency_overrides[get_db] = override_get_db
     token = create_access_token(test_user.id)
-    with TestClient(app) as test_client:
+    with TestClient(app, base_url="https://testserver") as test_client:
         test_client.headers["Authorization"] = f"Bearer {token}"
         yield test_client
     app.dependency_overrides.clear()
@@ -109,7 +109,7 @@ def unauth_client(db_session):
             pass
 
     app.dependency_overrides[get_db] = override_get_db
-    with TestClient(app) as test_client:
+    with TestClient(app, base_url="https://testserver") as test_client:
         test_client.cookies.clear()
         test_client.headers.pop("Authorization", None)
         yield test_client
@@ -139,7 +139,7 @@ def client_b(db_session):
         db_session.commit()
         db_session.refresh(user_b)
     token_b = create_access_token(user_b.id)
-    with TestClient(app) as test_client:
+    with TestClient(app, base_url="https://testserver") as test_client:
         test_client.headers["Authorization"] = f"Bearer {token_b}"
         yield test_client
     app.dependency_overrides.clear()

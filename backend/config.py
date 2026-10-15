@@ -158,7 +158,10 @@ SMTP_USE_SSL = os.getenv("SMTP_USE_SSL", "false").lower().strip() in ("true", "1
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
 
 APP_BASE_URL = os.getenv("APP_BASE_URL", "http://localhost:5173").rstrip("/")
-FRONTEND_URL = os.getenv("FRONTEND_URL", APP_BASE_URL).rstrip("/")
+FRONTEND_URL = os.getenv(
+    "FRONTEND_URL",
+    "https://interview-system-orpin.vercel.app" if _is_prod else APP_BASE_URL
+).rstrip("/")
 VERIFICATION_TOKEN_EXPIRE_MINUTES = int(os.getenv("VERIFICATION_TOKEN_EXPIRE_MINUTES", "30"))
 PASSWORD_RESET_TOKEN_EXPIRE_MINUTES = int(os.getenv("PASSWORD_RESET_TOKEN_EXPIRE_MINUTES", "30"))
 

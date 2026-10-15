@@ -107,11 +107,11 @@ def _set_auth_cookie(response: Response, token: str) -> None:
     response.set_cookie(
         key=AUTH_COOKIE_NAME,
         value=token,
-        httponly=True,
-        samesite=samesite,
-        secure=secure,
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         path="/",
+        secure=secure,
+        httponly=True,
+        samesite=samesite,
     )
 
 
@@ -120,10 +120,10 @@ def _clear_auth_cookie(response: Response) -> None:
     samesite, secure = _get_cookie_security_params()
     response.delete_cookie(
         key=AUTH_COOKIE_NAME,
+        path="/",
+        secure=secure,
         httponly=True,
         samesite=samesite,
-        secure=secure,
-        path="/",
     )
 
 
