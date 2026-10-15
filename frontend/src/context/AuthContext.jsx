@@ -58,14 +58,6 @@ export function AuthProvider({ children }) {
       throw new Error(errorMsg);
     }
 
-    if (data?.access_token) {
-      try {
-        sessionStorage.setItem("auth_token", data.access_token);
-      } catch {
-        // ignore
-      }
-    }
-
     try {
       const meRes = await apiFetch("/auth/me");
       if (meRes.ok) {
@@ -91,14 +83,6 @@ export function AuthProvider({ children }) {
     if (!res.ok) {
       const errorMsg = data?.error?.message || data?.detail || "Registration failed";
       throw new Error(errorMsg);
-    }
-
-    if (data?.access_token) {
-      try {
-        sessionStorage.setItem("auth_token", data.access_token);
-      } catch {
-        // ignore
-      }
     }
 
     // Set authenticated user immediately if verification is not required

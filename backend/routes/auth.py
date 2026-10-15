@@ -93,10 +93,17 @@ def validate_gmail_address(email: str) -> Optional[str]:
     return None
 
 
+def _get_cookie_security_params():
+    samesite = (AUTH_COOKIE_SAMESITE or "lax").lower().strip()
+    if samesite not in ("lax", "strict", "none"):
+        samesite = "lax"
+    secure = bool(AUTH_COOKIE_SECURE or samesite == "none")
+    return samesite, secure
+
+
 def _set_auth_cookie(response: Response, token: str) -> None:
     """Sets secure httpOnly authentication cookie."""
-    samesite = AUTH_COOKIE_SAMESITE.lower()
-    secure = AUTH_COOKIE_SECURE or (samesite == "none")
+    samesite, secure = _get_cookie_security_params()
     response.set_cookie(
         key=AUTH_COOKIE_NAME,
         value=token,
@@ -110,13 +117,12 @@ def _set_auth_cookie(response: Response, token: str) -> None:
 
 def _clear_auth_cookie(response: Response) -> None:
     """Clears authentication cookie."""
-    samesite = AUTH_COOKIE_SAMESITE.lower()
-    secure = AUTH_COOKIE_SECURE or (samesite == "none")
+    samesite, secure = _get_cookie_security_params()
     response.delete_cookie(
         key=AUTH_COOKIE_NAME,
+        httponly=True,
         samesite=samesite,
         secure=secure,
-        httponly=True,
         path="/",
     )
 
@@ -221,8 +227,6 @@ def register(
         return {
             "message": "Account created successfully.",
             "email": clean_email,
-            "access_token": token,
-            "token_type": "bearer",
             "verification_required": False,
             "email_status": "VERIFICATION_DISABLED",
             "user": {
@@ -425,8 +429,6 @@ def login(
 
     return {
         "message": "Logged in successfully",
-        "access_token": token,
-        "token_type": "bearer",
         "user": {
             "id": user.id,
             "email": user.email,
