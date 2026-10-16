@@ -155,8 +155,11 @@ class RecoveryChallengeRequest(BaseModel):
 
 
 class RecoveryVerifyAnswerRequest(BaseModel):
-    email: str = Field(..., min_length=5, description="Registered Gmail address")
-    answer: str = Field(..., min_length=1, description="Candidate security answer")
+    email: str = Field(..., min_length=5, description="Registered email address")
+    answer: Optional[str] = Field(None, min_length=1, description="Candidate security answer")
+    security_answer: Optional[str] = Field(None, min_length=1, description="Candidate security answer alias")
+    security_question: Optional[str] = Field(None, description="Selected security question")
+    question: Optional[str] = Field(None, description="Selected security question alias")
 
 
 class RecoveryResetPasswordRequest(BaseModel):

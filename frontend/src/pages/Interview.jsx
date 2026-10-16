@@ -115,6 +115,7 @@ function Interview() {
   const {
     speechState,
     speechNotice,
+    setSpeechNotice,
     speechSupported,
     audioLevel,
     activeEngine,
@@ -907,18 +908,24 @@ function Interview() {
   // Handle Answer Submission with instant feedback and auto-advance
   const handleSubmitAnswer = async () => {
     if (evaluating || loadingNext || submittingFinal || isSubmittingAnswerRef.current) return;
-    isSubmittingAnswerRef.current = true;
+
+    if (isTranscribing) {
+      setSubmitError("Please wait for your speech transcription to finish before submitting.");
+      return;
+    }
 
     if (isListening) {
       try { stopListening(); } catch {}
+      setSubmitError("Finishing audio recording... Please review your transcript in a moment and submit.");
+      return;
     }
 
     if (!answer.trim()) {
       setSubmitError("Please speak or type your answer before submitting.");
-      isSubmittingAnswerRef.current = false;
       return;
     }
 
+    isSubmittingAnswerRef.current = true;
     setEvaluating(true);
     setSubmitError(null);
     setLifecycleState(InterviewLifecycleState.SUBMITTING);
@@ -2067,11 +2074,11 @@ function Interview() {
                 {speechSupported && (
                   <Button
                     size="sm"
-                    variant={isListening ? "danger" : "secondary"}
+                    variant={isListening ? "danger" : isTranscribing ? "subtle" : "secondary"}
                     onClick={toggleSpeechRecognition}
-                    disabled={evaluating || loadingNext || submittingFinal}
+                    disabled={evaluating || loadingNext || submittingFinal || isTranscribing}
                   >
-                    {isListening ? "● Stop Speaking" : "🎤 Start Speaking"}
+                    {isListening ? "● Stop Speaking" : isTranscribing ? "⏳ Transcribing..." : "🎤 Start Speaking"}
                   </Button>
                 )}
                 {isTimeLow && (

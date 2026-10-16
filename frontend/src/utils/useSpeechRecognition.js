@@ -96,6 +96,7 @@ export function useSpeechRecognition({
   const isExplicitlyStoppedRef = useRef(false);
   const isUploadingRef = useRef(false);
   const speechSessionIdRef = useRef(0);
+  const retryCountRef = useRef(0);
 
   // Synchronize latestAnswerRef with answer prop
   useEffect(() => {
@@ -203,10 +204,19 @@ export function useSpeechRecognition({
   // Upload complete recorded Blob to /interview/transcribe
   const uploadAndTranscribe = useCallback(
     async (audioBlob) => {
-      if (!audioBlob || audioBlob.size < 200 || isUploadingRef.current) return;
+      if (!audioBlob || audioBlob.size < 300) {
+        setSpeechState(SPEECH_STATES.IDLE);
+        updateNotice("Recording was too short. Speak naturally into the microphone.");
+        releaseMicrophone();
+        return;
+      }
+      if (isUploadingRef.current) return;
       isUploadingRef.current = true;
       setSpeechState(SPEECH_STATES.TRANSCRIBING);
-      updateNotice("Transcribing your answer with Gemini 3.5...");
+      updateNotice("Transcribing your answer...");
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 25000);
 
       try {
         const formData = new FormData();
@@ -229,7 +239,9 @@ export function useSpeechRecognition({
         const res = await apiFetch("/interview/transcribe", {
           method: "POST",
           body: formData,
+          signal: controller.signal,
         });
+        clearTimeout(timeoutId);
 
         if (res.ok) {
           const data = await res.json();
@@ -241,14 +253,14 @@ export function useSpeechRecognition({
             latestAnswerRef.current = combined;
             baseTextRef.current = combined;
 
-            setActiveEngine(data.engine || "gemini-3.5-transcribe");
+            setActiveEngine(data.engine || "gemini");
             setSpeechState(SPEECH_STATES.TRANSCRIPTION_COMPLETE);
             updateNotice("Transcript ready.");
             setLivePreviewText("");
 
             setDebugInfo((prev) => ({
               ...prev,
-              engine: data.engine || "gemini-3.5-transcribe",
+              engine: data.engine || "gemini",
               lastTranscriptEvent: new Date().toLocaleTimeString(),
               lastTranscriptText: combined,
               recordingDuration: data.duration_seconds || 0,
@@ -264,9 +276,15 @@ export function useSpeechRecognition({
           updateNotice(`Transcription failed: ${errMsg}. Your recording was preserved.`);
         }
       } catch (err) {
-        console.warn("[SPEECH] Upload transcription error:", err);
-        setSpeechState(SPEECH_STATES.ERROR);
-        updateNotice("Transcription failed due to network glitch. Your recording was preserved.");
+        clearTimeout(timeoutId);
+        if (err.name === "AbortError") {
+          setSpeechState(SPEECH_STATES.ERROR);
+          updateNotice("Transcription request timed out. You can retry with your saved audio or type your answer.");
+        } else {
+          console.warn("[SPEECH] Upload transcription error:", err);
+          setSpeechState(SPEECH_STATES.ERROR);
+          updateNotice("Transcription failed due to network glitch. Your recording was preserved.");
+        }
       } finally {
         isUploadingRef.current = false;
         releaseMicrophone();
@@ -277,7 +295,12 @@ export function useSpeechRecognition({
 
   // Retry transcription using cached audio Blob
   const retryTranscription = useCallback(async () => {
+    if (retryCountRef.current >= 2) {
+      updateNotice("Maximum retry attempts reached. Please record again or type your answer.");
+      return;
+    }
     if (lastRecordedBlobRef.current) {
+      retryCountRef.current += 1;
       await uploadAndTranscribe(lastRecordedBlobRef.current);
     } else {
       updateNotice("No cached audio available to retry. Please record your answer again.");
@@ -292,6 +315,7 @@ export function useSpeechRecognition({
     }
 
     speechSessionIdRef.current += 1;
+    retryCountRef.current = 0;
     isExplicitlyStoppedRef.current = false;
     audioChunksRef.current = [];
     setLivePreviewText("");
@@ -459,9 +483,12 @@ export function useSpeechRecognition({
     }
     setLivePreviewText("");
 
-    // Stop MediaRecorder (triggers recorder.onstop -> uploadAndTranscribe)
+    // Stop MediaRecorder (flushes buffer with requestData then triggers onstop -> uploadAndTranscribe)
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       try {
+        if (typeof mediaRecorderRef.current.requestData === "function") {
+          mediaRecorderRef.current.requestData();
+        }
         mediaRecorderRef.current.stop();
       } catch (err) {
         console.warn("[SPEECH] MediaRecorder stop error:", err);
@@ -540,6 +567,7 @@ export function useSpeechRecognition({
   return {
     speechState,
     speechNotice,
+    setSpeechNotice,
     speechSupported,
     audioLevel,
     activeEngine,

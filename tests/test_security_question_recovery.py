@@ -292,3 +292,65 @@ def test_existing_interview_data_preserved_after_password_recovery(client: TestC
     ).first()
     assert saved_session is not None
     assert saved_session.status == "ACTIVE"
+
+
+def test_recovery_challenge_returns_question_and_security_question_and_masked_email(client: TestClient):
+    email = "challenge.fields@gmail.com"
+    client.post("/auth/register", json={
+        "email": email,
+        "password": "Password123!",
+        "full_name": "Challenge User",
+        "security_question": "What is your favorite movie?",
+        "security_answer": "Inception",
+    })
+
+    res = client.post("/auth/recovery/challenge", json={"email": email})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["question"] == "What is your favorite movie?"
+    assert data["security_question"] == "What is your favorite movie?"
+    assert "masked_email" in data
+    assert "@gmail.com" in data["masked_email"]
+
+
+def test_recovery_verify_with_security_answer_and_dropdown_question(client: TestClient):
+    email = "dropdown.verify@gmail.com"
+    q = "What was the first concert you attended?"
+    ans = "Coldplay"
+
+    client.post("/auth/register", json={
+        "email": email,
+        "password": "Password123!",
+        "full_name": "Dropdown User",
+        "security_question": q,
+        "security_answer": ans,
+    })
+
+    # Frontend sending security_answer and security_question (dropdown value)
+    res = client.post("/auth/recovery/verify-answer", json={
+        "email": email,
+        "security_answer": "coldplay",
+        "security_question": q,
+    })
+    assert res.status_code == 200
+    assert "recovery_token" in res.json()
+
+
+def test_recovery_verify_with_mismatched_question_rejected(client: TestClient):
+    email = "mismatch.q@gmail.com"
+    client.post("/auth/register", json={
+        "email": email,
+        "password": "Password123!",
+        "full_name": "Mismatch User",
+        "security_question": "What was the name of your first pet?",
+        "security_answer": "Fluffy",
+    })
+
+    # Submitting wrong question from dropdown
+    res = client.post("/auth/recovery/verify-answer", json={
+        "email": email,
+        "security_answer": "Fluffy",
+        "security_question": "What is your favorite movie?",
+    })
+    assert res.status_code == 400
+    assert "does not match" in res.json()["error"]["message"].lower()

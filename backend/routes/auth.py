@@ -349,8 +349,11 @@ def recovery_challenge(
         )
 
     return {
+        "status": "ok",
         "email": user.email,
         "question": user.security_question,
+        "security_question": user.security_question,
+        "masked_email": mask_email_address(user.email),
     }
 
 
@@ -384,7 +387,30 @@ def recovery_verify_answer(
             detail="Maximum recovery attempts exceeded. Please try again later."
         )
 
-    is_valid = verify_security_answer(data.answer, user.security_answer_hash)
+    candidate_answer = (data.answer or data.security_answer or "").strip()
+    if not candidate_answer:
+        raise HTTPException(
+            status_code=422,
+            detail="Security answer is required."
+        )
+
+    # Ensure selected question matches the question saved during registration if supplied
+    candidate_question = (data.security_question or data.question or "").strip()
+    if candidate_question and candidate_question.lower() != (user.security_question or "").strip().lower():
+        user.recovery_attempts = attempts + 1
+        db.commit()
+        remaining = max(0, 5 - user.recovery_attempts)
+        if remaining == 0:
+            raise HTTPException(
+                status_code=429,
+                detail="Maximum recovery attempts exceeded. Please try again later."
+            )
+        raise HTTPException(
+            status_code=400,
+            detail=f"Selected security question does not match account records. {remaining} attempt(s) remaining."
+        )
+
+    is_valid = verify_security_answer(candidate_answer, user.security_answer_hash)
     if not is_valid:
         user.recovery_attempts = attempts + 1
         db.commit()

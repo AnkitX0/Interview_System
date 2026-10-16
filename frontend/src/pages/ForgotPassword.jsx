@@ -4,6 +4,14 @@ import { apiFetch } from "../utils/api";
 
 const SPECIAL_CHAR_REGEX = /[!@#$%^&*(),.?":{}|<>\-_=+[\]~`/\\';]/;
 
+const ALLOWED_SECURITY_QUESTIONS = [
+  "What is your favorite movie?",
+  "What was your childhood nickname?",
+  "What was the name of your first pet?",
+  "What was the first concert you attended?",
+  "What was the name of your childhood best friend?",
+];
+
 export default function ForgotPassword() {
   // Step machine: "EMAIL" | "QUESTION" | "PASSWORD" | "SUCCESS"
   const [step, setStep] = useState("EMAIL");
@@ -11,7 +19,7 @@ export default function ForgotPassword() {
   // Step 1: Email Challenge
   const [email, setEmail] = useState("");
   const [maskedEmail, setMaskedEmail] = useState("");
-  const [securityQuestion, setSecurityQuestion] = useState("");
+  const [securityQuestion, setSecurityQuestion] = useState(ALLOWED_SECURITY_QUESTIONS[0]);
 
   // Step 2: Answer Verification
   const [securityAnswer, setSecurityAnswer] = useState("");
@@ -60,8 +68,11 @@ export default function ForgotPassword() {
         throw new Error(data?.error?.message || data?.detail || "Could not find account recovery information.");
       }
 
-      setSecurityQuestion(data.security_question);
-      setMaskedEmail(data.masked_email || cleanEmail);
+      const returnedQuestion = data?.security_question || data?.question || "";
+      if (returnedQuestion) {
+        setSecurityQuestion(returnedQuestion);
+      }
+      setMaskedEmail(data?.masked_email || cleanEmail);
       setStep("QUESTION");
     } catch (err) {
       setError(err.message || "Could not find account recovery information.");
@@ -90,7 +101,10 @@ export default function ForgotPassword() {
         method: "POST",
         body: JSON.stringify({
           email: email.trim().toLowerCase(),
+          answer: cleanAnswer,
           security_answer: cleanAnswer,
+          security_question: securityQuestion,
+          question: securityQuestion,
         }),
       });
 
@@ -258,14 +272,28 @@ export default function ForgotPassword() {
             </div>
 
             <div style={formGroupStyle}>
-              <label style={{ ...labelStyle, fontSize: "14px", marginBottom: "8px" }}>
-                Security question:
+              <label htmlFor="recovery-security-question-select" style={{ ...labelStyle, fontSize: "14px", marginBottom: "6px" }}>
+                Security question
               </label>
-              <div style={questionHighlightBoxStyle}>
-                <span style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
-                  {securityQuestion}
-                </span>
-              </div>
+              <select
+                id="recovery-security-question-select"
+                value={securityQuestion}
+                onChange={(e) => {
+                  setSecurityQuestion(e.target.value);
+                  if (error) setError(null);
+                }}
+                style={selectStyle}
+                disabled={submitting}
+              >
+                {ALLOWED_SECURITY_QUESTIONS.map((q) => (
+                  <option key={q} value={q}>
+                    {q}
+                  </option>
+                ))}
+              </select>
+              <span style={{ ...hintStyle, color: "var(--primary-600)", fontWeight: "500", marginTop: "6px" }}>
+                ✓ Loaded from your account records. Ensure it matches your registered question.
+              </span>
             </div>
 
             <div style={formGroupStyle}>
@@ -638,6 +666,20 @@ const inputStyle = {
   borderRadius: "8px",
   outline: "none",
   transition: "border-color 150ms ease, box-shadow 150ms ease",
+};
+
+const selectStyle = {
+  width: "100%",
+  boxSizing: "border-box",
+  padding: "10px 14px",
+  fontSize: "14px",
+  fontFamily: "inherit",
+  color: "var(--text-primary)",
+  backgroundColor: "var(--bg-app)",
+  border: "1px solid var(--border-default)",
+  borderRadius: "8px",
+  outline: "none",
+  cursor: "pointer",
 };
 
 const showPasswordBtnStyle = {

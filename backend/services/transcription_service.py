@@ -154,11 +154,14 @@ def _transcribe_via_gemini_sdk(
                 f"Return JSON with key 'transcript': {{\"transcript\": \"...\"}}."
             )
 
-        models_to_try = [
-            GEMINI_TRANSCRIBE_MODEL or "gemini-3.5-transcribe",
-            GEMINI_MODEL or "gemini-2.5-flash",
-            "gemini-2.0-flash"
-        ]
+        models_to_try = []
+        if GEMINI_TRANSCRIBE_MODEL and "3.5" not in GEMINI_TRANSCRIBE_MODEL:
+            models_to_try.append(GEMINI_TRANSCRIBE_MODEL)
+        if GEMINI_MODEL and GEMINI_MODEL not in models_to_try:
+            models_to_try.append(GEMINI_MODEL)
+        for fallback_model in ("gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"):
+            if fallback_model not in models_to_try:
+                models_to_try.append(fallback_model)
 
         part = types.Part.from_bytes(data=audio_bytes, mime_type=clean_mime)
 
