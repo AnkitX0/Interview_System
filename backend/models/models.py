@@ -19,6 +19,7 @@ class User(Base):
     verification_expires_at = Column(DateTime(timezone=True), nullable=True)
     verification_used_at = Column(DateTime(timezone=True), nullable=True)
     verification_sent_at = Column(DateTime(timezone=True), nullable=True)
+    verification_attempts = Column(Integer, default=0, nullable=False)
     password_reset_token_hash = Column(String, nullable=True)
     password_reset_expires_at = Column(DateTime(timezone=True), nullable=True)
     password_reset_used_at = Column(DateTime(timezone=True), nullable=True)

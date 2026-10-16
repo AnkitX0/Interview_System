@@ -476,3 +476,148 @@ def test_existing_verified_account_full_access(client: TestClient, db_session, m
     token = create_access_token(user.id)
     res_profile = client.get("/profile", headers={"Authorization": f"Bearer {token}"})
     assert res_profile.status_code == 200
+
+
+# ==============================================================================
+# 7. Six-Digit OTP Verification Lifecycle, Attempts & Lockout Tests
+# ==============================================================================
+
+def test_otp_verification_success(client: TestClient, db_session, monkeypatch):
+    import backend.routes.auth as auth_route
+    monkeypatch.setattr(auth_route, "REQUIRE_EMAIL_VERIFICATION", True)
+
+    from backend.services.auth_service import hash_verification_otp
+
+    email = "otp.success@gmail.com"
+    otp = "654321"
+    otp_hash = hash_verification_otp(otp)
+    now = datetime.now(timezone.utc)
+
+    user = models.User(
+        email=email,
+        password_hash=hash_password("Pass12345!"),
+        full_name="OTP Candidate",
+        email_verified=False,
+        verification_token_hash=otp_hash,
+        verification_expires_at=now + timedelta(minutes=5),
+        verification_sent_at=now,
+        verification_attempts=0,
+    )
+    db_session.add(user)
+    db_session.commit()
+
+    # Submit valid OTP
+    res = client.post("/auth/verify-email", json={"email": email, "otp": otp})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["verified"] is True
+    assert "ready" in data["message"].lower()
+
+    # Confirm user is verified in DB
+    db_session.refresh(user)
+    assert user.email_verified is True
+    assert user.verification_used_at is not None
+    assert user.verification_attempts == 0
+
+
+def test_otp_verification_invalid_increments_attempts(client: TestClient, db_session, monkeypatch):
+    import backend.routes.auth as auth_route
+    monkeypatch.setattr(auth_route, "REQUIRE_EMAIL_VERIFICATION", True)
+
+    from backend.services.auth_service import hash_verification_otp
+
+    email = "otp.invalid@gmail.com"
+    correct_otp = "123456"
+    otp_hash = hash_verification_otp(correct_otp)
+    now = datetime.now(timezone.utc)
+
+    user = models.User(
+        email=email,
+        password_hash=hash_password("Pass12345!"),
+        full_name="Invalid Attempt User",
+        email_verified=False,
+        verification_token_hash=otp_hash,
+        verification_expires_at=now + timedelta(minutes=5),
+        verification_sent_at=now,
+        verification_attempts=0,
+    )
+    db_session.add(user)
+    db_session.commit()
+
+    # Submit incorrect OTP
+    res = client.post("/auth/verify-email", json={"email": email, "otp": "999999"})
+    assert res.status_code == 400
+    msg = res.json()["error"]["message"]
+    assert "invalid verification code" in msg.lower()
+    assert "4 attempt" in msg.lower()
+
+    db_session.refresh(user)
+    assert user.verification_attempts == 1
+
+
+def test_otp_verification_max_attempts_lockout(client: TestClient, db_session, monkeypatch):
+    import backend.routes.auth as auth_route
+    monkeypatch.setattr(auth_route, "REQUIRE_EMAIL_VERIFICATION", True)
+
+    from backend.services.auth_service import hash_verification_otp
+
+    email = "otp.lockout@gmail.com"
+    correct_otp = "888888"
+    otp_hash = hash_verification_otp(correct_otp)
+    now = datetime.now(timezone.utc)
+
+    user = models.User(
+        email=email,
+        password_hash=hash_password("Pass12345!"),
+        full_name="Lockout User",
+        email_verified=False,
+        verification_token_hash=otp_hash,
+        verification_expires_at=now + timedelta(minutes=5),
+        verification_sent_at=now,
+        verification_attempts=4,  # Next failure hits 5 (max)
+    )
+    db_session.add(user)
+    db_session.commit()
+
+    # 5th failed attempt triggers lockout
+    res = client.post("/auth/verify-email", json={"email": email, "otp": "000000"})
+    assert res.status_code == 400
+    msg = res.json()["error"]["message"]
+    assert "maximum verification attempts exceeded" in msg.lower()
+
+    # Any subsequent attempt is locked out immediately even with correct OTP
+    res_locked = client.post("/auth/verify-email", json={"email": email, "otp": correct_otp})
+    assert res_locked.status_code == 400
+    assert "maximum verification attempts exceeded" in res_locked.json()["error"]["message"].lower()
+
+
+def test_validate_reset_token_endpoint(client: TestClient, db_session):
+    from backend.services.auth_service import generate_password_reset_token, hash_password_reset_token
+
+    email = "reset.validate@gmail.com"
+    raw_token = generate_password_reset_token()
+    token_hash = hash_password_reset_token(raw_token)
+    now = datetime.now(timezone.utc)
+
+    user = models.User(
+        email=email,
+        password_hash=hash_password("Pass12345!"),
+        password_reset_token_hash=token_hash,
+        password_reset_expires_at=now + timedelta(minutes=30),
+    )
+    db_session.add(user)
+    db_session.commit()
+
+    # Valid token pre-flight check
+    res_valid = client.get(f"/auth/validate-reset-token?token={raw_token}")
+    assert res_valid.status_code == 200
+    assert res_valid.json()["valid"] is True
+
+    # Missing token
+    res_missing = client.get("/auth/validate-reset-token")
+    assert res_missing.status_code in (400, 422)
+
+    # Invalid token
+    res_bogus = client.get("/auth/validate-reset-token?token=non_existent_token_123")
+    assert res_bogus.status_code == 400
+    assert "no longer valid" in res_bogus.json()["error"]["message"].lower() or "invalid" in res_bogus.json()["error"]["message"].lower()

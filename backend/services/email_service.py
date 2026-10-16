@@ -82,23 +82,27 @@ def build_verification_email_content(
     full_name: Optional[str] = None
 ) -> Tuple[str, str, str]:
     """
-    Builds the subject, plain-text body, and HTML body for account verification.
+    Builds the subject, plain-text body, and HTML body for account verification with 6-digit OTP.
     """
-    subject = "Verify your Interview Intelligence account"
+    subject = f"Your Interview Intelligence verification code: {token}"
     base_url = (FRONTEND_URL or APP_BASE_URL).rstrip("/")
-    verification_link = f"{base_url}/verify-email?token={token}"
+    verification_link = f"{base_url}/verify-email?email={recipient_email}&otp={token}&token={token}"
     greeting_name = full_name.strip() if full_name and full_name.strip() else "there"
 
     plain_text = f"""Hello {greeting_name},
 
-You created an account for Interview Intelligence.
+Thank you for creating an account for Interview Intelligence.
 
-Verify your email address to activate your account:
+Your 6-digit email verification code is:
+
+    {token}
+
+This verification code expires in {VERIFICATION_TOKEN_EXPIRE_MINUTES} minutes.
+
+Alternatively, you can verify your account directly by visiting:
 {verification_link}
 
-This link expires in {VERIFICATION_TOKEN_EXPIRE_MINUTES} minutes.
-
-If you did not create this account, no further action is required.
+If you did not request this account, please ignore this email.
 
 — The Interview Intelligence Team
 """
@@ -108,66 +112,68 @@ If you did not create this account, no further action is required.
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verify your Interview Intelligence account</title>
+  <title>Your Interview Intelligence verification code</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; padding: 40px 16px;">
+<body style="margin: 0; padding: 0; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f8fafc;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0f172a; padding: 40px 16px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" style="max-width: 520px; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); padding: 40px 32px;">
+        <table role="presentation" width="100%" style="max-width: 520px; background-color: #1e293b; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); padding: 40px 32px;">
           <!-- Header Branding -->
           <tr>
             <td style="text-align: center; padding-bottom: 24px;">
-              <span style="display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #2563eb; background: #eff6ff; padding: 4px 10px; border-radius: 9999px;">
+              <span style="display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 4px 12px; border-radius: 9999px; border: 1px solid rgba(56, 189, 248, 0.2);">
                 Interview Intelligence
               </span>
-              <h1 style="font-size: 22px; font-weight: 700; color: #0f172a; margin: 12px 0 4px 0;">
-                Verify your account
+              <h1 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 16px 0 4px 0;">
+                Verification Code
               </h1>
-              <p style="font-size: 14px; color: #64748b; margin: 0;">
-                Preparation System
+              <p style="font-size: 14px; color: #94a3b8; margin: 0;">
+                Enter this 6-digit code to activate your account
               </p>
             </td>
           </tr>
 
           <!-- Message Body -->
           <tr>
-            <td style="font-size: 15px; line-height: 1.6; color: #334155; padding-bottom: 28px;">
-              <p style="margin: 0 0 16px 0;">Hello <strong>{greeting_name}</strong>,</p>
-              <p style="margin: 0 0 16px 0;">
-                You created an account for Interview Intelligence. Verify your email address to activate your account.
+            <td style="font-size: 15px; line-height: 1.6; color: #cbd5e1; padding-bottom: 12px;">
+              <p style="margin: 0 0 12px 0;">Hello <strong>{greeting_name}</strong>,</p>
+              <p style="margin: 0;">
+                Use the following verification code to complete your registration:
               </p>
             </td>
           </tr>
 
-          <!-- Call To Action Button -->
+          <!-- 6-Digit OTP Box -->
           <tr>
-            <td align="center" style="padding-bottom: 28px;">
-              <a href="{verification_link}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 14px; font-weight: 600; text-decoration: none; padding: 12px 32px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);">
-                Verify Email Address
-              </a>
+            <td align="center" style="padding: 20px 0;">
+              <div style="background-color: #0f172a; border: 1px solid #475569; border-radius: 8px; padding: 16px 24px; display: inline-block;">
+                <span style="font-family: 'SF Mono', Monaco, Consolas, monospace; font-size: 32px; font-weight: 700; letter-spacing: 10px; color: #38bdf8;">
+                  {token}
+                </span>
+              </div>
             </td>
           </tr>
 
           <!-- Expiration Notice -->
           <tr>
-            <td style="font-size: 13px; color: #64748b; line-height: 1.5; padding-bottom: 24px; border-bottom: 1px solid #f1f5f9;">
-              <p style="margin: 0 0 8px 0;">
-                <strong>Note:</strong> This link expires in {VERIFICATION_TOKEN_EXPIRE_MINUTES} minutes.
+            <td style="text-align: center; font-size: 13px; color: #94a3b8; line-height: 1.5; padding-bottom: 24px;">
+              <p style="margin: 0 0 16px 0;">
+                ⏱ This code expires in <strong>{VERIFICATION_TOKEN_EXPIRE_MINUTES} minutes</strong>.
               </p>
-              <p style="margin: 0 0 8px 0;">
-                If the button above does not work, copy and paste this URL into your browser:
+              <p style="margin: 0 0 8px 0; font-size: 13px; color: #64748b;">
+                Or click the button below to verify automatically:
               </p>
-              <p style="margin: 0; word-break: break-all; color: #2563eb; font-family: monospace; font-size: 12px;">
-                {verification_link}
-              </p>
+              <a href="{verification_link}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 14px; font-weight: 600; text-decoration: none; padding: 10px 24px; border-radius: 6px;">
+                Verify Account Directly
+              </a>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td style="padding-top: 20px; font-size: 12px; color: #94a3b8; text-align: center;">
-              If you did not request this account, you can safely ignore this email.<br>
+            <td style="padding-top: 24px; border-top: 1px solid #334155; font-size: 12px; color: #64748b; text-align: center; line-height: 1.5;">
+              If you did not request this registration, you can safely ignore this email.<br>
               © Interview Intelligence Preparation System. All rights reserved.
             </td>
           </tr>
@@ -346,15 +352,18 @@ class DevelopmentEmailProvider(EmailProvider):
 
         token = None
         link = None
-        if "token=" in plain_text:
-            try:
-                for line in plain_text.splitlines():
-                    if "token=" in line:
-                        link = line.strip()
-                        token = line.split("token=")[1].split()[0].strip()
+        for pattern in ("token=", "otp="):
+            if pattern in plain_text:
+                try:
+                    for line in plain_text.splitlines():
+                        if pattern in line:
+                            link = line.strip()
+                            token = line.split(pattern)[1].split("&")[0].split()[0].strip()
+                            break
+                    if token:
                         break
-            except Exception:
-                pass
+                except Exception:
+                    pass
 
         msg_id = f"dev-{secrets.token_hex(8)}"
         with _dev_email_lock:

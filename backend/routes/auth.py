@@ -36,6 +36,8 @@ from backend.services.auth_service import (
     check_rate_limit,
     generate_verification_token,
     hash_verification_token,
+    generate_verification_otp,
+    hash_verification_otp,
     generate_password_reset_token,
     hash_password_reset_token,
     get_current_user,
@@ -52,6 +54,8 @@ from backend.config import (
     ENVIRONMENT,
     PRIVACY_POLICY_VERSION,
     VERIFICATION_TOKEN_EXPIRE_MINUTES,
+    VERIFICATION_OTP_EXPIRE_MINUTES,
+    VERIFICATION_MAX_ATTEMPTS,
     PASSWORD_RESET_TOKEN_EXPIRE_MINUTES,
     REQUIRE_EMAIL_VERIFICATION,
 )
@@ -61,6 +65,19 @@ router = APIRouter(tags=["Authentication"])
 
 EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 GMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@gmail\.com$")
+
+
+def mask_email_address(email: str) -> str:
+    """Masks an email for safe display (e.g. j***e@gmail.com)."""
+    if not email or "@" not in email:
+        return email or ""
+    parts = email.split("@")
+    local, domain = parts[0], parts[1]
+    if len(local) <= 2:
+        return f"{local[0]}***@{domain}"
+    prefix = local[:2]
+    suffix = local[-1]
+    return f"{prefix}{'*' * max(3, len(local) - 3)}{suffix}@{domain}"
 
 
 def validate_full_name(name: Optional[str]) -> Optional[str]:
@@ -190,17 +207,52 @@ def register(
     # 4. Existing account check (prevents duplicate and enumeration)
     existing = db.query(models.User).filter(models.User.email == clean_email).first()
     if existing:
-        raise HTTPException(
-            status_code=400,
-            detail="If an account already exists for this address, please sign in or reset your password."
-        )
+        if existing.email_verified:
+            raise HTTPException(
+                status_code=400,
+                detail="If an account already exists for this address, please sign in or reset your password."
+            )
+
+        # Unverified pending registration: safely resume or issue new OTP challenge
+        now = datetime.now(timezone.utc)
+        if existing.verification_sent_at:
+            sent_at = existing.verification_sent_at
+            if sent_at.tzinfo is None:
+                sent_at = sent_at.replace(tzinfo=timezone.utc)
+            if (now - sent_at).total_seconds() < 60:
+                return {
+                    "message": "A verification code was recently sent. Please check your inbox or wait before requesting another.",
+                    "email": clean_email,
+                    "verification_required": True,
+                    "email_status": "EMAIL_SENT",
+                }
+
+        otp = generate_verification_otp()
+        existing.verification_token_hash = hash_verification_otp(otp)
+        existing.verification_expires_at = now + timedelta(minutes=VERIFICATION_OTP_EXPIRE_MINUTES)
+        existing.verification_sent_at = now
+        existing.verification_attempts = 0
+        existing.verification_used_at = None
+        existing.password_hash = hash_password(data.password)
+        if clean_name:
+            existing.full_name = clean_name
+        db.commit()
+
+        delivery_result = send_verification_email(clean_email, otp, clean_name)
+        status = "EMAIL_SENT" if delivery_result.is_success else ("EMAIL_PROVIDER_UNAVAILABLE" if delivery_result.status == "EMAIL_PROVIDER_UNAVAILABLE" else "EMAIL_FAILED")
+        return {
+            "message": "Account created. Please check your email for the 6-digit verification code.",
+            "email": clean_email,
+            "verification_required": True,
+            "email_status": status,
+        }
 
     clean_name = data.full_name.strip() if data.full_name else None
     hashed = hash_password(data.password)
     now = datetime.now(timezone.utc)
 
     if not REQUIRE_EMAIL_VERIFICATION:
-        # Immediate activation flow (default for demo and production)
+        # Immediate activation flow (when email verification is disabled)
         user = models.User(
             email=clean_email,
             password_hash=hashed,
@@ -209,6 +261,7 @@ def register(
             verification_token_hash=None,
             verification_expires_at=None,
             verification_sent_at=None,
+            verification_attempts=0,
             verification_used_at=now,
         )
         db.add(user)
@@ -237,10 +290,10 @@ def register(
             }
         }
 
-    # Mandatory verification flow (when REQUIRE_EMAIL_VERIFICATION is True)
-    token = generate_verification_token()
-    token_hash = hash_verification_token(token)
-    expires_at = now + timedelta(minutes=VERIFICATION_TOKEN_EXPIRE_MINUTES)
+    # Mandatory 6-digit OTP verification flow (when REQUIRE_EMAIL_VERIFICATION is True)
+    otp = generate_verification_otp()
+    token_hash = hash_verification_otp(otp)
+    expires_at = now + timedelta(minutes=VERIFICATION_OTP_EXPIRE_MINUTES)
 
     user = models.User(
         email=clean_email,
@@ -250,6 +303,7 @@ def register(
         verification_token_hash=token_hash,
         verification_expires_at=expires_at,
         verification_sent_at=now,
+        verification_attempts=0,
     )
     db.add(user)
     db.flush()
@@ -259,7 +313,7 @@ def register(
     db.commit()
     db.refresh(user)
 
-    delivery_result = send_verification_email(clean_email, token, clean_name)
+    delivery_result = send_verification_email(clean_email, otp, clean_name)
 
     logger.info(
         "New registration created for %s (verification pending, delivery_status=%s)",
@@ -269,7 +323,7 @@ def register(
 
     if delivery_result.is_success:
         return {
-            "message": "Account created. Please check your email to verify your account.",
+            "message": "Account created. Please check your email for the 6-digit verification code.",
             "email": clean_email,
             "verification_required": True,
             "email_status": "EMAIL_SENT",
@@ -292,26 +346,41 @@ def verify_email(
     db: Session = Depends(get_db)
 ):
     """
-    Verifies single-use email verification token.
-    Activates the pending user account upon successful verification.
+    Verifies single-use 6-digit OTP or verification token.
+    Enforces maximum 5 attempts, server-side expiry, and atomic account activation.
     """
     client_ip = request.client.host if request.client else "unknown"
     enforce_rate_limit(f"verify:{client_ip}", max_attempts=20, window_seconds=60)
 
-    raw_token = data.token.strip()
-    if not raw_token:
-        raise HTTPException(status_code=400, detail="This verification link is no longer valid.")
+    raw_code = (data.otp or data.token or "").strip()
+    if not raw_code:
+        raise HTTPException(status_code=400, detail="Please enter the 6-digit verification code.")
 
-    token_hash = hash_verification_token(raw_token)
-    user = db.query(models.User).filter(models.User.verification_token_hash == token_hash).first()
+    token_hash = hash_verification_otp(raw_code)
+
+    user = None
+    if data.email and data.email.strip():
+        clean_email = data.email.strip().lower()
+        user = db.query(models.User).filter(models.User.email == clean_email).first()
+    else:
+        user = db.query(models.User).filter(models.User.verification_token_hash == token_hash).first()
 
     if not user:
-        raise HTTPException(status_code=400, detail="This verification link is no longer valid.")
+        raise HTTPException(status_code=400, detail="This verification link or code is no longer valid.")
+
+    if user.email_verified:
+        raise HTTPException(status_code=400, detail="This email address has already been verified.")
 
     if user.verification_used_at is not None:
-        if user.email_verified:
-            raise HTTPException(status_code=400, detail="This email address has already been verified.")
-        raise HTTPException(status_code=400, detail="This verification link is no longer valid.")
+        raise HTTPException(status_code=400, detail="This verification code has already been used.")
+
+    # Check maximum verification attempts per OTP challenge (max 5)
+    attempts = getattr(user, "verification_attempts", 0) or 0
+    if attempts >= VERIFICATION_MAX_ATTEMPTS:
+        raise HTTPException(
+            status_code=400,
+            detail="Maximum verification attempts exceeded. Please request a new verification code."
+        )
 
     now = datetime.now(timezone.utc)
     if user.verification_expires_at:
@@ -319,7 +388,22 @@ def verify_email(
         if expires_at.tzinfo is None:
             expires_at = expires_at.replace(tzinfo=timezone.utc)
         if expires_at < now:
-            raise HTTPException(status_code=400, detail="Verification link expired.")
+            raise HTTPException(status_code=400, detail="Verification code has expired. Please request a new code.")
+
+    # Check OTP hash match
+    if user.verification_token_hash != token_hash:
+        user.verification_attempts = attempts + 1
+        db.commit()
+        remaining = max(0, VERIFICATION_MAX_ATTEMPTS - user.verification_attempts)
+        if remaining == 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Maximum verification attempts exceeded. Please request a new verification code."
+            )
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid verification code. {remaining} attempt(s) remaining."
+        )
 
     # Mark verified and record single-use timestamp atomically
     updated_rows = db.query(models.User).filter(
@@ -334,12 +418,12 @@ def verify_email(
     if updated_rows == 0:
         if user.email_verified:
             raise HTTPException(status_code=400, detail="This email address has already been verified.")
-        raise HTTPException(status_code=400, detail="This verification link is no longer valid.")
+        raise HTTPException(status_code=400, detail="This verification link or code is no longer valid.")
 
     logger.info("Email verification succeeded for user id=%d (%s)", user.id, user.email)
 
     return {
-        "message": "Email verified. Your account is ready.",
+        "message": "Email verified successfully. Your account is ready.",
         "email": user.email,
         "verified": True,
     }
@@ -352,13 +436,21 @@ def resend_verification(
     db: Session = Depends(get_db)
 ):
     """
-    Resends account verification email with strict 60-second rate limiting.
+    Resends 6-digit OTP verification code with strict 60-second rate limiting.
+    Invalidates previous OTP challenge and resets attempt counter.
     Uniform response to prevent user enumeration.
     """
     client_ip = request.client.host if request.client else "unknown"
     enforce_rate_limit(f"resend_ip:{client_ip}", max_attempts=10, window_seconds=60)
 
     clean_email = data.email.strip().lower()
+
+    # Rate limit check per email address (1 resend every 60 seconds)
+    if not check_rate_limit(f"resend_email:{clean_email}", max_attempts=1, window_seconds=60):
+        raise HTTPException(
+            status_code=429,
+            detail="Please wait 60 seconds before requesting another verification email."
+        )
 
     user = db.query(models.User).filter(models.User.email == clean_email).first()
     if user and not user.email_verified:
@@ -373,22 +465,16 @@ def resend_verification(
                     detail="Please wait 60 seconds before requesting another verification email."
                 )
 
-        # Rate limit check per email address (1 resend every 60 seconds)
-        if not check_rate_limit(f"resend_email:{clean_email}", max_attempts=1, window_seconds=60):
-            raise HTTPException(
-                status_code=429,
-                detail="Please wait 60 seconds before requesting another verification email."
-            )
-
-        token = generate_verification_token()
-        user.verification_token_hash = hash_verification_token(token)
-        user.verification_expires_at = now + timedelta(minutes=VERIFICATION_TOKEN_EXPIRE_MINUTES)
+        otp = generate_verification_otp()
+        user.verification_token_hash = hash_verification_otp(otp)
+        user.verification_expires_at = now + timedelta(minutes=VERIFICATION_OTP_EXPIRE_MINUTES)
         user.verification_sent_at = now
+        user.verification_attempts = 0  # Invalidate previous attempts
         user.verification_used_at = None
         db.commit()
 
-        delivery_result = send_verification_email(clean_email, token, user.full_name)
-        logger.info("Resent verification email for %s (status=%s)", clean_email, delivery_result.status)
+        delivery_result = send_verification_email(clean_email, otp, user.full_name)
+        logger.info("Resent verification OTP for %s (status=%s)", clean_email, delivery_result.status)
 
         if not delivery_result.is_success:
             status = "EMAIL_PROVIDER_UNAVAILABLE" if delivery_result.status == "EMAIL_PROVIDER_UNAVAILABLE" else "EMAIL_FAILED"
@@ -413,23 +499,29 @@ def login(
 ):
     """
     Authenticates user credentials and sets httpOnly session cookie.
-    Enforces rate limiting, email verification requirement, and uniform error reporting.
+    Enforces rate limiting, email verification requirement, and specific feedback for unregistered emails.
     """
     client_ip = request.client.host if request.client else "unknown"
-    enforce_rate_limit(f"login:{client_ip}", max_attempts=10, window_seconds=60)
+    enforce_rate_limit(f"login:{client_ip}", max_attempts=15, window_seconds=60)
 
     clean_email = data.email.strip().lower()
     user = db.query(models.User).filter(models.User.email == clean_email).first()
 
-    # Uniform error response for credential mismatch
-    if not user or not verify_password(data.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+    # User explicitly requested directing unregistered users to register first
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="No account found with this email. Please register first."
+        )
+
+    if not verify_password(data.password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
 
     # Reject unverified accounts only if email verification is mandatory
     if REQUIRE_EMAIL_VERIFICATION and user.email_verified is False:
         raise HTTPException(
             status_code=403,
-            detail="Please verify your email address before signing in. Check your inbox for the verification link."
+            detail="Please verify your email address before signing in. Check your inbox for the 6-digit verification code."
         )
 
     token = create_access_token(user.id)
@@ -507,6 +599,46 @@ def forgot_password(
         "message": "If an account exists for this email, we'll send a password reset link.",
         "email": clean_email,
         "sent": True,
+    }
+
+
+@router.get("/auth/validate-reset-token")
+def validate_reset_token(
+    token: str,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """
+    Validates a password reset token before rendering the reset form.
+    Checks existence, single-use state, and expiration.
+    """
+    client_ip = request.client.host if request.client else "unknown"
+    enforce_rate_limit(f"val_reset:{client_ip}", max_attempts=30, window_seconds=60)
+
+    raw_token = token.strip() if token else ""
+    if not raw_token:
+        raise HTTPException(status_code=400, detail="This password reset link is no longer valid.")
+
+    token_hash = hash_password_reset_token(raw_token)
+    user = db.query(models.User).filter(models.User.password_reset_token_hash == token_hash).first()
+
+    if not user:
+        raise HTTPException(status_code=400, detail="This password reset link is no longer valid.")
+
+    if user.password_reset_used_at is not None:
+        raise HTTPException(status_code=400, detail="This password reset link has already been used.")
+
+    now = datetime.now(timezone.utc)
+    if user.password_reset_expires_at:
+        expires_at = user.password_reset_expires_at
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        if expires_at < now:
+            raise HTTPException(status_code=400, detail="This password reset link has expired.")
+
+    return {
+        "valid": True,
+        "email": mask_email_address(user.email),
     }
 
 

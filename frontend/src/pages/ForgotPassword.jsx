@@ -14,7 +14,7 @@ export default function ForgotPassword() {
 
     const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail) {
-      setError("Please enter your Gmail address.");
+      setError("Please enter your email address.");
       return;
     }
 
@@ -46,52 +46,63 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div style={containerStyle}>
+    <div style={pageContainerStyle}>
       <div style={cardStyle}>
-        <div style={{ textAlign: "center", marginBottom: "24px" }}>
-          <div style={badgeStyle}>Interview Intelligence</div>
-          <h2 style={{ fontSize: "22px", fontWeight: "700", color: "#0f172a", margin: "10px 0 6px 0" }}>
-            Reset your password
-          </h2>
-          <p style={{ fontSize: "14px", color: "#64748b", margin: 0, lineHeight: 1.5 }}>
-            Enter the Gmail address associated with your account.
+        {/* Brand Header */}
+        <div style={{ textAlign: "center", marginBottom: "28px" }}>
+          <div style={badgeStyle}>AI Interview Intelligence</div>
+          <h1 style={{ fontSize: "24px", fontWeight: "700", color: "#f8fafc", margin: "14px 0 6px 0", letterSpacing: "-0.01em" }}>
+            Reset Password
+          </h1>
+          <p style={{ fontSize: "14px", color: "#94a3b8", margin: 0, lineHeight: 1.5 }}>
+            Enter your account email to receive reset instructions.
           </p>
         </div>
 
         {error && (
-          <div style={errorBannerStyle}>
-            <span style={{ fontSize: "13px", fontWeight: "500" }}>{error}</span>
+          <div style={errorBannerStyle} role="alert">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: "1px" }}>
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <span>{error}</span>
           </div>
         )}
 
         {submitted ? (
           <div>
-            <div style={successBannerStyle}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: "2px" }}>
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
-                <div style={{ fontSize: "14px", color: "#065f46", lineHeight: 1.5 }}>
-                  If an account exists for this email, a password reset link has been sent.
-                </div>
+            <div style={successBannerStyle} role="status">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+              <div>
+                <p style={{ margin: "0 0 4px 0", fontWeight: "600", color: "#4ade80" }}>
+                  Instructions Dispatched
+                </p>
+                <p style={{ margin: 0, fontSize: "13px", color: "#86efac", lineHeight: 1.4 }}>
+                  If an account matches that email address, we'll send instructions to reset the password.
+                </p>
               </div>
             </div>
 
-            <p style={{ fontSize: "13px", color: "#64748b", lineHeight: 1.6, textAlign: "center", margin: "20px 0" }}>
-              Please check your inbox and spam folder. Reset links expire in 30 minutes.
+            <p style={{ fontSize: "13px", color: "#94a3b8", lineHeight: 1.6, textAlign: "center", margin: "20px 0" }}>
+              Please check your inbox and spam folder. Reset links expire in 30 minutes and are single-use.
             </p>
 
-            <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "18px", borderTop: "1px solid #f1f5f9" }}>
-              <Link to="/login" id="back-to-login-link" style={{ fontSize: "14px", color: "#2563eb", fontWeight: "600", textDecoration: "none" }}>
-                Back to Login
+            <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "18px", borderTop: "1px solid #1e293b" }}>
+              <Link to="/login" id="back-to-login-link" style={primaryButtonStyleLink}>
+                Return to Sign In
               </Link>
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: "20px" }}>
-              <label style={labelStyle}>Gmail Address</label>
+          <form onSubmit={handleSubmit} noValidate>
+            <div style={{ marginBottom: "22px" }}>
+              <label htmlFor="forgot-password-email-input" style={labelStyle}>
+                Gmail Address
+              </label>
               <input
                 id="forgot-password-email-input"
                 type="email"
@@ -109,17 +120,17 @@ export default function ForgotPassword() {
               type="submit"
               disabled={submitting}
               style={{
-                ...buttonStyle,
+                ...primaryButtonStyle,
                 opacity: submitting ? 0.7 : 1,
                 cursor: submitting ? "not-allowed" : "pointer",
               }}
             >
-              {submitting ? "Sending Reset Link..." : "Send Reset Link"}
+              {submitting ? "Sending Reset Link..." : "Send Reset Instructions"}
             </button>
 
-            <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "18px", borderTop: "1px solid #f1f5f9" }}>
-              <Link to="/login" id="back-to-login-link-form" style={{ fontSize: "13px", color: "#64748b", textDecoration: "none", fontWeight: "500" }}>
-                ← Back to Login
+            <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "18px", borderTop: "1px solid #1e293b" }}>
+              <Link to="/login" style={{ fontSize: "13px", color: "#60a5fa", textDecoration: "none", fontWeight: "500" }}>
+                Return to Sign In
               </Link>
             </div>
           </form>
@@ -129,81 +140,113 @@ export default function ForgotPassword() {
   );
 }
 
-const containerStyle = {
+// ============================================================================
+// Styles: Dark Navy SaaS Palette
+// ============================================================================
+const pageContainerStyle = {
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  minHeight: "70vh",
-  padding: "20px",
+  minHeight: "75vh",
+  padding: "32px 16px",
 };
 
 const cardStyle = {
-  backgroundColor: "#ffffff",
-  borderRadius: "12px",
-  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05)",
-  border: "1px solid #e2e8f0",
-  padding: "36px",
+  backgroundColor: "#111827",
+  border: "1px solid #1f2937",
+  borderRadius: "16px",
+  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4)",
+  padding: "36px 32px",
   width: "100%",
-  maxWidth: "420px",
+  maxWidth: "460px",
+  boxSizing: "border-box",
 };
 
 const badgeStyle = {
   display: "inline-block",
   fontSize: "11px",
   fontWeight: "700",
-  letterSpacing: "0.08em",
+  letterSpacing: "0.06em",
   textTransform: "uppercase",
-  color: "#2563eb",
-  backgroundColor: "#eff6ff",
-  padding: "4px 10px",
+  color: "#60a5fa",
+  backgroundColor: "rgba(37, 99, 235, 0.15)",
+  border: "1px solid rgba(59, 130, 246, 0.3)",
+  padding: "4px 12px",
   borderRadius: "9999px",
-  marginBottom: "10px",
 };
 
 const labelStyle = {
   display: "block",
   fontSize: "13px",
   fontWeight: "600",
-  color: "#334155",
+  color: "#cbd5e1",
   marginBottom: "6px",
 };
 
 const inputStyle = {
   width: "100%",
-  boxSizing: "border-box",
-  padding: "10px 14px",
+  padding: "11px 14px",
+  backgroundColor: "#0b0f19",
+  border: "1px solid #334155",
+  borderRadius: "10px",
+  color: "#f8fafc",
   fontSize: "14px",
-  borderRadius: "8px",
-  border: "1px solid #cbd5e1",
   outline: "none",
+  boxSizing: "border-box",
   transition: "border-color 0.15s ease",
 };
 
-const buttonStyle = {
+const primaryButtonStyle = {
   width: "100%",
-  padding: "11px",
+  padding: "12px 20px",
   backgroundColor: "#2563eb",
   color: "#ffffff",
   border: "none",
-  borderRadius: "8px",
+  borderRadius: "10px",
   fontSize: "14px",
   fontWeight: "600",
-  transition: "background-color 0.15s ease",
+  cursor: "pointer",
+  transition: "all 0.15s ease",
+  boxShadow: "0 4px 6px -1px rgba(37, 99, 235, 0.2)",
 };
 
-const errorBannerStyle = {
-  backgroundColor: "#fef2f2",
-  color: "#b91c1c",
-  border: "1px solid #fecaca",
-  borderRadius: "8px",
-  padding: "10px 14px",
-  marginBottom: "18px",
+const primaryButtonStyleLink = {
+  display: "inline-block",
+  width: "100%",
+  padding: "12px 20px",
+  backgroundColor: "#2563eb",
+  color: "#ffffff",
+  borderRadius: "10px",
+  fontSize: "14px",
+  fontWeight: "600",
+  textDecoration: "none",
+  boxSizing: "border-box",
+  boxShadow: "0 4px 6px -1px rgba(37, 99, 235, 0.2)",
 };
 
 const successBannerStyle = {
-  backgroundColor: "#f0fdf4",
-  border: "1px solid #bbf7d0",
-  borderRadius: "8px",
+  display: "flex",
+  alignItems: "flex-start",
+  gap: "12px",
+  backgroundColor: "rgba(34, 197, 94, 0.1)",
+  border: "1px solid rgba(34, 197, 94, 0.3)",
+  color: "#4ade80",
   padding: "14px 16px",
+  borderRadius: "10px",
+  fontSize: "13px",
+  marginBottom: "18px",
+};
+
+const errorBannerStyle = {
+  display: "flex",
+  alignItems: "flex-start",
+  gap: "10px",
+  backgroundColor: "rgba(239, 68, 68, 0.1)",
+  border: "1px solid rgba(239, 68, 68, 0.3)",
+  color: "#f87171",
+  padding: "12px 14px",
+  borderRadius: "10px",
+  fontSize: "13px",
+  lineHeight: "1.4",
   marginBottom: "18px",
 };

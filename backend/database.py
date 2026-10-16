@@ -99,6 +99,7 @@ def init_db():
                     "verification_expires_at": "DATETIME",
                     "verification_used_at": "DATETIME",
                     "verification_sent_at": "DATETIME",
+                    "verification_attempts": "INTEGER DEFAULT 0",
                     "password_reset_token_hash": "VARCHAR",
                     "password_reset_expires_at": "DATETIME",
                     "password_reset_used_at": "DATETIME",

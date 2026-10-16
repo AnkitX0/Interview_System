@@ -143,7 +143,9 @@ class RegisterRequest(BaseModel):
 
 
 class VerifyEmailRequest(BaseModel):
-    token: str = Field(..., min_length=1, description="Single-use email verification token")
+    token: Optional[str] = Field(None, description="Single-use email verification token or OTP")
+    otp: Optional[str] = Field(None, description="Six-digit verification OTP")
+    email: Optional[str] = Field(None, description="User email address")
 
 
 class ResendVerificationRequest(BaseModel):

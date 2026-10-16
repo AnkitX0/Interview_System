@@ -1,175 +1,400 @@
-import { useState, useEffect, useRef } from "react";
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Link, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { apiFetch } from "../utils/api";
+import { maskEmail } from "../utils/maskEmail";
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
-  const token = searchParams.get("token");
+  const location = useLocation();
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(true);
+  // Query and navigation state
+  const paramEmail = searchParams.get("email") || "";
+  const paramOtp = searchParams.get("otp") || "";
+  const paramToken = searchParams.get("token") || "";
+  const stateEmail = location.state?.email || "";
+  const initialEmail = (stateEmail || paramEmail || "").trim().toLowerCase();
+
+  const [email, setEmail] = useState(initialEmail);
+  const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
+  const inputRefs = useRef([]);
+
+  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(null);
-  const verificationAttemptedRef = useRef(false);
+  const [error, setError] = useState(null);
+  const [resendSuccess, setResendSuccess] = useState(null);
+  const [resending, setResending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(location.state?.email ? 60 : 0);
 
+  const autoVerifyAttemptedRef = useRef(false);
+
+  // Focus the first input on initial render
   useEffect(() => {
-    if (!token || !token.trim()) {
-      setLoading(false);
-      setErrorMessage("This verification link is no longer valid.");
-      return;
+    if (!success && inputRefs.current[0] && !paramOtp && !paramToken) {
+      inputRefs.current[0].focus();
     }
+  }, [success, paramOtp, paramToken]);
 
-    if (verificationAttemptedRef.current) return;
-    verificationAttemptedRef.current = true;
+  // Resend cooldown countdown timer
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const interval = setInterval(() => {
+      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [resendCooldown]);
 
-    let isMounted = true;
+  // Submission handler
+  const performVerification = useCallback(
+    async (codeToVerify, tokenToVerify) => {
+      setError(null);
+      setResendSuccess(null);
+      setLoading(true);
 
-    async function performVerification() {
       try {
+        const payload = {};
+        if (codeToVerify) {
+          payload.otp = codeToVerify;
+          payload.email = email.trim().toLowerCase();
+        } else if (tokenToVerify) {
+          payload.token = tokenToVerify;
+          if (email) payload.email = email.trim().toLowerCase();
+        }
+
         const res = await apiFetch("/auth/verify-email", {
           method: "POST",
-          body: JSON.stringify({ token: token.trim() }),
+          body: JSON.stringify(payload),
         });
 
         const data = await res.json();
 
-        if (!isMounted) return;
-
         if (res.ok) {
           setSuccess(true);
         } else {
-          const detail = data?.error?.message || data?.detail || "This verification link is no longer valid.";
-          setErrorMessage(detail);
+          const detail = data?.error?.message || data?.detail || "Verification failed. Please check the code and try again.";
+          setError(detail);
         }
       } catch {
-        if (!isMounted) return;
-        setErrorMessage("Something went wrong while verifying your email. Please try again.");
+        setError("Network error connecting to verification service. Please try again.");
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
+    },
+    [email]
+  );
+
+  // Auto-verify if link contains complete OTP or token
+  useEffect(() => {
+    if (autoVerifyAttemptedRef.current) return;
+
+    if (paramOtp && paramOtp.trim().length === 6 && /^\d+$/.test(paramOtp.trim())) {
+      autoVerifyAttemptedRef.current = true;
+      const digits = paramOtp.trim().split("");
+      setOtpDigits(digits);
+      performVerification(paramOtp.trim(), null);
+    } else if (paramToken && paramToken.trim()) {
+      autoVerifyAttemptedRef.current = true;
+      performVerification(null, paramToken.trim());
+    }
+  }, [paramOtp, paramToken, performVerification]);
+
+  // Handle single digit input
+  const handleDigitChange = (index, value) => {
+    const cleaned = value.replace(/\D/g, "");
+    if (!cleaned) {
+      const next = [...otpDigits];
+      next[index] = "";
+      setOtpDigits(next);
+      return;
     }
 
-    performVerification();
+    const digit = cleaned.slice(-1);
+    const next = [...otpDigits];
+    next[index] = digit;
+    setOtpDigits(next);
 
-    return () => {
-      isMounted = false;
-    };
-  }, [token]);
+    // Auto-advance to next input
+    if (index < 5 && inputRefs.current[index + 1]) {
+      inputRefs.current[index + 1].focus();
+    }
+  };
+
+  // Handle Backspace and arrow navigation
+  const handleKeyDown = (index, e) => {
+    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    } else if (e.key === "ArrowLeft" && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    } else if (e.key === "ArrowRight" && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  // Handle paste for full 6-digit code
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData.getData("text").trim();
+    const digitsOnly = pasteData.replace(/\D/g, "").slice(0, 6);
+    if (!digitsOnly) return;
+
+    const next = ["", "", "", "", "", ""];
+    for (let i = 0; i < digitsOnly.length; i++) {
+      next[i] = digitsOnly[i];
+    }
+    setOtpDigits(next);
+
+    const targetFocus = Math.min(digitsOnly.length, 5);
+    inputRefs.current[targetFocus]?.focus();
+
+    if (digitsOnly.length === 6) {
+      performVerification(digitsOnly, null);
+    }
+  };
+
+  const fullCode = otpDigits.join("");
+  const isCodeComplete = fullCode.length === 6;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!isCodeComplete || loading) return;
+    performVerification(fullCode, null);
+  };
+
+  // Resend OTP
+  const handleResend = async () => {
+    if (!email || resendCooldown > 0 || resending) return;
+
+    setResending(true);
+    setError(null);
+    setResendSuccess(null);
+
+    try {
+      const res = await apiFetch("/auth/resend-verification", {
+        method: "POST",
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setResendSuccess("A new 6-digit verification code has been sent.");
+        setResendCooldown(60);
+        setOtpDigits(["", "", "", "", "", ""]);
+        inputRefs.current[0]?.focus();
+      } else {
+        const detail = data?.error?.message || data?.detail || "Could not resend code. Please try again.";
+        setError(detail);
+      }
+    } catch {
+      setError("Failed to connect to server. Please try again.");
+    } finally {
+      setResending(false);
+    }
+  };
 
   return (
-    <div style={containerStyle}>
+    <div style={pageContainerStyle}>
       <div style={cardStyle}>
-        <div style={{ textAlign: "center", marginBottom: "24px" }}>
-          <div style={badgeStyle}>Interview Intelligence</div>
+        {/* Brand Header */}
+        <div style={{ textAlign: "center", marginBottom: "28px" }}>
+          <div style={badgeStyle}>AI Interview Intelligence</div>
+          <h1 style={{ fontSize: "24px", fontWeight: "700", color: "#f8fafc", margin: "14px 0 6px 0", letterSpacing: "-0.01em" }}>
+            {success ? "Account Verified" : "Verify Your Email"}
+          </h1>
+          <p style={{ fontSize: "14px", color: "#94a3b8", margin: 0, lineHeight: 1.5 }}>
+            {success
+              ? "Your account is activated and ready for interview preparation."
+              : "Enter the 6-digit verification code sent to your inbox."}
+          </p>
         </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div style={{ textAlign: "center", padding: "24px 0" }}>
-            <div style={spinnerStyle} />
-            <h3 style={{ fontSize: "18px", fontWeight: "600", color: "#0f172a", marginTop: "16px", marginBottom: "6px" }}>
-              Verifying your email...
-            </h3>
-            <p style={{ fontSize: "14px", color: "#64748b", margin: 0 }}>
-              Please wait while we activate your account.
-            </p>
-          </div>
+        {/* Destination Email Display or Input */}
+        {!success && (
+          email ? (
+            <div style={emailCardStyle}>
+              <span style={{ fontSize: "12px", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: "600" }}>
+                Sent to
+              </span>
+              <div id="verify-masked-email" style={{ fontSize: "15px", fontWeight: "600", color: "#e2e8f0", fontFamily: "monospace", marginTop: "2px" }}>
+                {maskEmail(email)}
+              </div>
+            </div>
+          ) : (
+            <div style={{ marginBottom: "18px" }}>
+              <label htmlFor="verify-email-input" style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#cbd5e1", marginBottom: "6px" }}>
+                Account Email
+              </label>
+              <input
+                id="verify-email-input"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@gmail.com"
+                style={{
+                  width: "100%",
+                  padding: "11px 14px",
+                  backgroundColor: "#0b0f19",
+                  border: "1px solid #334155",
+                  borderRadius: "10px",
+                  color: "#f8fafc",
+                  fontSize: "14px",
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+              />
+            </div>
+          )
         )}
 
         {/* Success State */}
-        {!loading && success && (
-          <div style={{ textAlign: "center", padding: "10px 0" }}>
-            <div style={successIconCircleStyle}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        {success ? (
+          <div style={{ textAlign: "center", paddingTop: "8px" }}>
+            <div style={successIconContainerStyle}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 6 9 17l-5-5" />
               </svg>
             </div>
-
-            <h2 style={{ fontSize: "22px", fontWeight: "700", color: "#0f172a", margin: "16px 0 6px 0" }}>
-              Email verified
-            </h2>
-            <p style={{ fontSize: "14px", color: "#64748b", margin: "0 0 24px 0" }}>
-              Your account is ready.
+            <p style={{ fontSize: "14px", color: "#cbd5e1", margin: "16px 0 24px 0" }}>
+              Thank you for verifying your email address. You now have full access to your interview intelligence workspace.
             </p>
-
             <button
-              id="continue-to-signin-btn"
+              id="continue-to-login-btn"
               type="button"
-              onClick={() => navigate("/login")}
-              style={buttonStyle}
+              onClick={() => navigate("/login", { state: { verifiedEmail: email } })}
+              style={primaryButtonStyle}
             >
-              Continue to Sign In
+              Sign In to Your Account
             </button>
           </div>
+        ) : (
+          /* Verification Form */
+          <form onSubmit={handleSubmit}>
+            {/* Feedback Banners */}
+            {resendSuccess && (
+              <div style={successBannerStyle} role="status">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <span>{resendSuccess}</span>
+              </div>
+            )}
+
+            {error && (
+              <div style={errorBannerStyle} role="alert">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: "1px" }}>
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* 6-Digit OTP Input Container */}
+            <div style={{ margin: "24px 0 16px 0" }}>
+              <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#cbd5e1", marginBottom: "10px", textAlign: "center" }}>
+                6-Digit Verification Code
+              </label>
+              <div style={otpRowStyle} onPaste={handlePaste}>
+                {otpDigits.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    ref={(el) => (inputRefs.current[idx] = el)}
+                    id={`otp-digit-${idx}`}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={1}
+                    value={digit}
+                    autoComplete="one-time-code"
+                    aria-label={`Digit ${idx + 1} of verification code`}
+                    onChange={(e) => handleDigitChange(idx, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(idx, e)}
+                    style={{
+                      ...otpInputStyle,
+                      borderColor: digit ? "#3b82f6" : "#334155",
+                      backgroundColor: digit ? "#0f172a" : "#0b0f19",
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Expiry Notice & Attempts Info */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px", color: "#64748b", marginBottom: "24px", padding: "0 4px" }}>
+              <span>Expires in 5 minutes</span>
+              <span>Max 5 attempts</span>
+            </div>
+
+            {/* Action Button */}
+            <button
+              id="verify-otp-submit-btn"
+              type="submit"
+              disabled={!isCodeComplete || loading}
+              style={{
+                ...primaryButtonStyle,
+                opacity: !isCodeComplete || loading ? 0.6 : 1,
+                cursor: !isCodeComplete || loading ? "not-allowed" : "pointer",
+              }}
+            >
+              {loading ? "Verifying Code..." : "Verify & Activate Account"}
+            </button>
+
+            {/* Resend OTP Section */}
+            <div style={{ textAlign: "center", marginTop: "20px", paddingTop: "16px", borderTop: "1px solid #1e293b" }}>
+              <p style={{ fontSize: "13px", color: "#64748b", margin: "0 0 10px 0" }}>
+                Didn't receive the email?
+              </p>
+              <button
+                id="verify-resend-btn"
+                type="button"
+                onClick={handleResend}
+                disabled={resendCooldown > 0 || resending || !email}
+                style={{
+                  ...secondaryButtonStyle,
+                  opacity: resendCooldown > 0 || resending || !email ? 0.5 : 1,
+                  cursor: resendCooldown > 0 || resending || !email ? "not-allowed" : "pointer",
+                }}
+              >
+                {resending ? "Sending..." : resendCooldown > 0 ? `Resend Code (${resendCooldown}s)` : "Resend Code"}
+              </button>
+            </div>
+          </form>
         )}
 
-        {/* Error / Failure State */}
-        {!loading && !success && (
-          <div style={{ textAlign: "center", padding: "10px 0" }}>
-            <div style={errorIconCircleStyle}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
-            </div>
-
-            <h2 style={{ fontSize: "20px", fontWeight: "700", color: "#0f172a", margin: "16px 0 8px 0" }}>
-              Verification Failed
-            </h2>
-
-            <div style={errorBannerStyle}>
-              <span>{errorMessage}</span>
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "20px" }}>
-              <button
-                type="button"
-                onClick={() => navigate("/login")}
-                style={buttonStyle}
-              >
-                Go to Sign In
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate("/register")}
-                style={secondaryButtonStyle}
-              >
-                Create an Account
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Footer */}
-        <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "18px", borderTop: "1px solid #f1f5f9" }}>
-          <p style={{ fontSize: "12px", color: "#94a3b8", margin: 0 }}>
-            Interview Intelligence Preparation System
-          </p>
+        {/* Footer Navigation */}
+        <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "16px", borderTop: "1px solid #1e293b", display: "flex", justifyContent: "center", gap: "20px" }}>
+          <Link to="/login" style={{ fontSize: "13px", color: "#60a5fa", textDecoration: "none", fontWeight: "500" }}>
+            Return to Sign In
+          </Link>
+          <span style={{ color: "#334155" }}>•</span>
+          <Link to="/register" style={{ fontSize: "13px", color: "#94a3b8", textDecoration: "none" }}>
+            Create New Account
+          </Link>
         </div>
       </div>
     </div>
   );
 }
 
-const containerStyle = {
+// ============================================================================
+// Styles: Polished SaaS Dark Navy Palette
+// ============================================================================
+const pageContainerStyle = {
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  minHeight: "75vh",
-  padding: "24px 16px",
+  minHeight: "80vh",
+  padding: "32px 16px",
 };
 
 const cardStyle = {
-  backgroundColor: "#ffffff",
-  borderRadius: "12px",
-  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05)",
-  border: "1px solid #e2e8f0",
-  padding: "36px",
+  backgroundColor: "#111827",
+  border: "1px solid #1f2937",
+  borderRadius: "16px",
+  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4)",
+  padding: "36px 32px",
   width: "100%",
-  maxWidth: "420px",
+  maxWidth: "460px",
   boxSizing: "border-box",
 };
 
@@ -179,79 +404,103 @@ const badgeStyle = {
   fontWeight: "700",
   letterSpacing: "0.06em",
   textTransform: "uppercase",
-  color: "#2563eb",
-  backgroundColor: "#eff6ff",
-  padding: "3px 10px",
-  borderRadius: "100px",
+  color: "#60a5fa",
+  backgroundColor: "rgba(37, 99, 235, 0.15)",
+  border: "1px solid rgba(59, 130, 246, 0.3)",
+  padding: "4px 12px",
+  borderRadius: "9999px",
 };
 
-const successIconCircleStyle = {
-  width: "56px",
-  height: "56px",
-  borderRadius: "28px",
-  backgroundColor: "#f0fdf4",
+const emailCardStyle = {
+  backgroundColor: "#0b0f19",
+  borderRadius: "10px",
+  border: "1px solid #1e293b",
+  padding: "12px 16px",
+  marginBottom: "20px",
+  textAlign: "center",
+};
+
+const otpRowStyle = {
   display: "flex",
-  alignItems: "center",
   justifyContent: "center",
-  margin: "0 auto",
-  border: "1px solid #bbf7d0",
+  gap: "10px",
 };
 
-const errorIconCircleStyle = {
-  width: "56px",
+const otpInputStyle = {
+  width: "48px",
   height: "56px",
-  borderRadius: "28px",
-  backgroundColor: "#fef2f2",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  margin: "0 auto",
-  border: "1px solid #fecaca",
+  borderRadius: "10px",
+  border: "1px solid #334155",
+  textAlign: "center",
+  fontSize: "24px",
+  fontWeight: "700",
+  color: "#f8fafc",
+  fontFamily: "ui-monospace, monospace",
+  outline: "none",
+  transition: "all 0.15s ease",
 };
 
-const spinnerStyle = {
-  width: "36px",
-  height: "36px",
-  borderRadius: "50%",
-  border: "3px solid #e2e8f0",
-  borderTopColor: "#2563eb",
-  margin: "0 auto",
-  animation: "spin 0.8s linear infinite",
-};
-
-const buttonStyle = {
+const primaryButtonStyle = {
   width: "100%",
-  padding: "11px",
+  padding: "12px 20px",
   backgroundColor: "#2563eb",
   color: "#ffffff",
   border: "none",
-  borderRadius: "8px",
+  borderRadius: "10px",
   fontSize: "14px",
   fontWeight: "600",
   cursor: "pointer",
-  transition: "background-color 0.15s ease",
+  transition: "all 0.15s ease",
+  boxShadow: "0 4px 6px -1px rgba(37, 99, 235, 0.2)",
 };
 
 const secondaryButtonStyle = {
-  width: "100%",
-  padding: "10px",
-  backgroundColor: "#ffffff",
-  color: "#334155",
-  border: "1px solid #cbd5e1",
+  padding: "8px 18px",
+  backgroundColor: "#1e293b",
+  color: "#cbd5e1",
+  border: "1px solid #334155",
   borderRadius: "8px",
   fontSize: "13px",
-  fontWeight: "600",
+  fontWeight: "500",
   cursor: "pointer",
   transition: "all 0.15s ease",
 };
 
+const successBannerStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  backgroundColor: "rgba(34, 197, 94, 0.1)",
+  border: "1px solid rgba(34, 197, 94, 0.3)",
+  color: "#4ade80",
+  padding: "12px 14px",
+  borderRadius: "10px",
+  fontSize: "13px",
+  marginBottom: "18px",
+};
+
 const errorBannerStyle = {
-  backgroundColor: "#fef2f2",
-  color: "#b91c1c",
-  padding: "10px 14px",
-  borderRadius: "8px",
-  marginTop: "12px",
-  border: "1px solid #fecaca",
+  display: "flex",
+  alignItems: "flex-start",
+  gap: "10px",
+  backgroundColor: "rgba(239, 68, 68, 0.1)",
+  border: "1px solid rgba(239, 68, 68, 0.3)",
+  color: "#f87171",
+  padding: "12px 14px",
+  borderRadius: "10px",
   fontSize: "13px",
   lineHeight: "1.4",
+  marginBottom: "18px",
+};
+
+const successIconContainerStyle = {
+  width: "64px",
+  height: "64px",
+  borderRadius: "50%",
+  backgroundColor: "rgba(34, 197, 94, 0.15)",
+  border: "1px solid rgba(34, 197, 94, 0.3)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  margin: "0 auto",
 };

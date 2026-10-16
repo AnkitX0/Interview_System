@@ -67,13 +67,13 @@ def test_registration_and_immediate_login(client: TestClient):
     assert res_bad.status_code == 401
     assert "invalid email or password" in res_bad.json()["error"]["message"].lower()
 
-    # Non-existent email also returns generic 401 (no user enumeration)
+    # Non-existent email returns clear message directing user to register (per requirement)
     res_nonexistent = client.post("/auth/login", json={
         "email": "nonexistent.user@gmail.com",
         "password": "AnyPassword123!",
     })
     assert res_nonexistent.status_code == 401
-    assert "invalid email or password" in res_nonexistent.json()["error"]["message"].lower()
+    assert "no account found" in res_nonexistent.json()["error"]["message"].lower() or "please register" in res_nonexistent.json()["error"]["message"].lower()
 
     # 6. Log back in with valid credentials
     res_login = client.post("/auth/login", json={

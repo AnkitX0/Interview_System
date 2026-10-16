@@ -107,14 +107,24 @@ def hash_password(password: str) -> str:
 # ---------------------------------------------------------------------------
 # Cryptographic Token Helpers
 # ---------------------------------------------------------------------------
+def generate_verification_otp() -> str:
+    """Generates a cryptographically secure 6-digit numeric OTP."""
+    return f"{secrets.randbelow(1_000_000):06d}"
+
+
+def hash_verification_otp(otp: str) -> str:
+    """Hashes a verification OTP using SHA-256 for secure database storage."""
+    return hashlib.sha256(otp.strip().encode("utf-8")).hexdigest()
+
+
 def generate_verification_token() -> str:
-    """Generates a cryptographically random, single-use URL-safe verification token."""
-    return secrets.token_urlsafe(32)
+    """Generates a cryptographically random, single-use URL-safe verification token (or OTP)."""
+    return generate_verification_otp()
 
 
 def hash_verification_token(token: str) -> str:
-    """Hashes a verification token using SHA-256 for secure database storage."""
-    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+    """Hashes a verification token or OTP using SHA-256 for secure database storage."""
+    return hash_verification_otp(token)
 
 
 def generate_password_reset_token() -> str:

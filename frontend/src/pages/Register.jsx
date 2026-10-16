@@ -1,9 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { apiFetch } from "../utils/api";
-
-import { maskEmail } from "../utils/maskEmail";
 
 const SPECIAL_CHAR_REGEX = /[!@#$%^&*(),.?":{}|<>\-_=+[\]~`/\\';]/;
 
@@ -20,14 +17,6 @@ export default function Register() {
   const [fieldErrors, setFieldErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
-  // Verification Pending State
-  const [verificationPending, setVerificationPending] = useState(false);
-  const [registeredEmail, setRegisteredEmail] = useState("");
-  const [emailDeliveryStatus, setEmailDeliveryStatus] = useState("EMAIL_SENT");
-  const [resending, setResending] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [resendMessage, setResendMessage] = useState(null);
-
   const { user, loading: authLoading, register } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -40,15 +29,6 @@ export default function Register() {
       navigate(from, { replace: true });
     }
   }, [user, authLoading, navigate, from]);
-
-  // Resend cooldown timer countdown
-  useEffect(() => {
-    if (resendCooldown <= 0) return;
-    const timer = setInterval(() => {
-      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [resendCooldown]);
 
   // Live Password Requirements
   const reqLength = password.length >= 8;
@@ -125,13 +105,21 @@ export default function Register() {
     try {
       const normalizedEmail = email.trim().toLowerCase();
       const res = await register(normalizedEmail, password, fullName.trim());
+
       if (res?.verification_required) {
-        setRegisteredEmail(normalizedEmail);
-        setEmailDeliveryStatus(res?.email_status || "EMAIL_SENT");
-        setVerificationPending(true);
-        setResendCooldown(60); // 60s initial cooldown
+        if (res?.email_status === "FAILED") {
+          setError("We created your pending registration, but could not deliver the verification email right now. Please try resending from the verification page or try again in a moment.");
+          return;
+        }
+        // Direct transition to the 6-digit OTP verification screen
+        navigate("/verify-email", {
+          state: {
+            email: normalizedEmail,
+            emailStatus: res?.email_status || "EMAIL_SENT",
+          },
+        });
       } else {
-        // Direct transition to dashboard or previous route on successful registration
+        // Direct transition to dashboard if verification disabled
         navigate(from, { replace: true });
       }
     } catch (err) {
@@ -142,278 +130,148 @@ export default function Register() {
     }
   };
 
-  const handleResend = async () => {
-    if (resendCooldown > 0 || resending) return;
-    setResending(true);
-    setResendMessage(null);
-    setError(null);
-
-    try {
-      const res = await apiFetch("/auth/resend-verification", {
-        method: "POST",
-        body: JSON.stringify({ email: registeredEmail }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data?.error?.message || data?.detail || "We couldn't resend the email. Please try again.");
-      }
-      setEmailDeliveryStatus("EMAIL_SENT");
-      setResendMessage("Verification email sent. Please check your inbox.");
-      setResendCooldown(60);
-    } catch (err) {
-      setError(err.message || "We couldn't resend the email. Please try again.");
-    } finally {
-      setResending(false);
-    }
-  };
-
-  // Render Verification Pending Screen
-  if (verificationPending) {
-    const isEmailSent = emailDeliveryStatus === "EMAIL_SENT";
-
-    return (
-      <div style={containerStyle}>
-        <div style={cardStyle}>
-          {/* Header */}
-          <div style={{ textAlign: "center", marginBottom: "24px" }}>
-            <div style={badgeStyle}>Interview Intelligence</div>
-            <div style={isEmailSent ? iconCircleStyle : warningCircleStyle}>
-              {isEmailSent ? (
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect width="20" height="16" x="2" y="4" rx="2" />
-                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                </svg>
-              ) : (
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-              )}
-            </div>
-            <h2 style={{ fontSize: "22px", fontWeight: "700", color: "#0f172a", margin: "14px 0 6px 0" }}>
-              {isEmailSent ? "Verification email sent." : "We couldn't send the verification email."}
-            </h2>
-            <p style={{ fontSize: "14px", color: isEmailSent ? "#64748b" : "#b45309", margin: 0 }}>
-              {isEmailSent
-                ? "Verify your email address to activate your account."
-                : "Your account is created, but the verification email could not be sent."}
-            </p>
-          </div>
-
-          {resendMessage && (
-            <div style={successBannerStyle}>
-              <span>{resendMessage}</span>
-            </div>
-          )}
-
-          {error && (
-            <div style={errorBannerStyle}>
-              <span>{error}</span>
-            </div>
-          )}
-
-          {!isEmailSent && !error && (
-            <div style={warningBannerStyle}>
-              <span>We couldn't send the verification email.</span>
-            </div>
-          )}
-
-          <div style={{ backgroundColor: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0", padding: "14px 16px", marginBottom: "20px", textAlign: "center" }}>
-            <div style={{ fontSize: "12px", color: "#64748b", marginBottom: "4px" }}>
-              {isEmailSent ? "We sent a verification link to:" : "Registered email address:"}
-            </div>
-            <div id="pending-masked-email" style={{ fontSize: "15px", fontWeight: "600", color: "#0f172a", wordBreak: "break-all", fontFamily: "monospace" }}>
-              {maskEmail(registeredEmail)}
-            </div>
-          </div>
-
-          <div style={{ fontSize: "13px", color: "#475569", lineHeight: "1.5", marginBottom: "24px", textAlign: "center" }}>
-            {isEmailSent ? (
-              <>
-                Click the link in the email to activate your account.<br />
-                <span style={{ color: "#64748b", fontSize: "12px" }}>This link expires in 30 minutes.</span>
-              </>
-            ) : (
-              <span style={{ color: "#64748b" }}>
-                Please check your email provider configuration and try again.
-              </span>
-            )}
-          </div>
-
-          <div style={{ textAlign: "center", paddingTop: "18px", borderTop: "1px solid #f1f5f9" }}>
-            <p style={{ fontSize: "13px", color: "#64748b", margin: "0 0 10px 0" }}>
-              {isEmailSent ? "Didn't receive the email?" : "Ready to retry delivery?"}
-            </p>
-            <button
-              id="resend-verification-btn"
-              type="button"
-              onClick={handleResend}
-              disabled={resendCooldown > 0 || resending}
-              style={{
-                ...secondaryButtonStyle,
-                opacity: resendCooldown > 0 || resending ? 0.6 : 1,
-                cursor: resendCooldown > 0 || resending ? "not-allowed" : "pointer",
-              }}
-            >
-              {resending ? "Sending..." : resendCooldown > 0 ? `Try Again in ${resendCooldown}s` : isEmailSent ? "Resend verification email" : "Try Again"}
-            </button>
-          </div>
-
-          <div style={{ textAlign: "center", marginTop: "20px" }}>
-            <Link to="/login" style={{ fontSize: "13px", color: "#2563eb", fontWeight: "600", textDecoration: "none" }}>
-              Return to Sign In
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Render Registration Form
   return (
-    <div style={containerStyle}>
+    <div style={pageContainerStyle}>
       <div style={cardStyle}>
-        <div style={{ textAlign: "center", marginBottom: "24px" }}>
-          <div style={badgeStyle}>Interview Intelligence</div>
-          <h2 style={{ fontSize: "22px", fontWeight: "700", color: "#0f172a", margin: "10px 0 6px 0" }}>
-            Create your account
-          </h2>
-          <p style={{ fontSize: "14px", color: "#64748b", margin: 0 }}>
-            Prepare smarter. Interview with confidence.
+        {/* Brand Header */}
+        <div style={{ textAlign: "center", marginBottom: "26px" }}>
+          <div style={badgeStyle}>AI Interview Intelligence</div>
+          <h1 style={{ fontSize: "24px", fontWeight: "700", color: "#f8fafc", margin: "14px 0 6px 0", letterSpacing: "-0.01em" }}>
+            Create Your Account
+          </h1>
+          <p style={{ fontSize: "14px", color: "#94a3b8", margin: 0, lineHeight: 1.5 }}>
+            Master technical interviews with evidence-based intelligence.
           </p>
         </div>
 
+        {/* Global Error Banner */}
         {error && (
-          <div style={errorBannerStyle}>
-            <span style={{ fontSize: "13px", fontWeight: "500" }}>{error}</span>
+          <div style={errorBannerStyle} role="alert">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: "1px" }}>
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <div>
+              <span>{error}</span>
+              {error.toLowerCase().includes("already exists") && (
+                <div style={{ marginTop: "6px" }}>
+                  <Link to="/login" style={{ color: "#93c5fd", textDecoration: "underline", fontWeight: "600" }}>
+                    Sign in here
+                  </Link>
+                  {" or "}
+                  <Link to="/forgot-password" style={{ color: "#93c5fd", textDecoration: "underline", fontWeight: "600" }}>
+                    reset your password
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
+        {/* Form */}
         <form onSubmit={handleSubmit} noValidate>
           {/* Full Name */}
-          <div style={{ marginBottom: "16px" }}>
-            <label htmlFor="register-fullname" style={labelStyle}>
+          <div style={{ marginBottom: "18px" }}>
+            <label htmlFor="register-fullname-input" style={labelStyle}>
               Full Name
             </label>
             <input
-              id="register-fullname"
-              name="fullName"
+              id="register-fullname-input"
               type="text"
-              autoComplete="name"
               required
-              autoFocus
               value={fullName}
               onChange={(e) => {
                 setFullName(e.target.value);
-                if (fieldErrors.fullName) {
-                  setFieldErrors((prev) => ({ ...prev, fullName: null }));
-                }
+                if (fieldErrors.fullName) setFieldErrors((prev) => ({ ...prev, fullName: null }));
               }}
-              placeholder="Alex Morgan"
+              placeholder="e.g. Alex Chen"
               style={{
                 ...inputStyle,
-                borderColor: fieldErrors.fullName ? "#ef4444" : "#cbd5e1",
+                borderColor: fieldErrors.fullName ? "#ef4444" : "#334155",
               }}
             />
-            {fieldErrors.fullName && (
-              <span style={fieldErrorStyle}>{fieldErrors.fullName}</span>
-            )}
+            {fieldErrors.fullName && <p style={fieldErrorStyle}>{fieldErrors.fullName}</p>}
           </div>
 
-          {/* Gmail Address */}
-          <div style={{ marginBottom: "16px" }}>
-            <label htmlFor="register-email" style={labelStyle}>
+          {/* Email Address */}
+          <div style={{ marginBottom: "18px" }}>
+            <label htmlFor="register-email-input" style={labelStyle}>
               Gmail Address
             </label>
             <input
-              id="register-email"
-              name="email"
+              id="register-email-input"
               type="email"
-              autoComplete="email"
               required
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
-                if (fieldErrors.email) {
-                  setFieldErrors((prev) => ({ ...prev, email: null }));
-                }
+                if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: null }));
               }}
-              placeholder="you@gmail.com"
+              placeholder="name@gmail.com"
               style={{
                 ...inputStyle,
-                borderColor: fieldErrors.email ? "#ef4444" : "#cbd5e1",
+                borderColor: fieldErrors.email ? "#ef4444" : "#334155",
               }}
             />
-            <span style={{ display: "block", fontSize: "12px", color: "#64748b", marginTop: "4px" }}>
-              Gmail addresses only.
-            </span>
-            {fieldErrors.email && (
-              <span style={fieldErrorStyle}>{fieldErrors.email}</span>
-            )}
+            {fieldErrors.email && <p style={fieldErrorStyle}>{fieldErrors.email}</p>}
           </div>
 
           {/* Password */}
-          <div style={{ marginBottom: "16px" }}>
-            <label htmlFor="register-password" style={labelStyle}>
+          <div style={{ marginBottom: "18px" }}>
+            <label htmlFor="register-password-input" style={labelStyle}>
               Password
             </label>
             <div style={{ position: "relative" }}>
               <input
-                id="register-password"
-                name="password"
+                id="register-password-input"
                 type={showPassword ? "text" : "password"}
-                autoComplete="new-password"
                 required
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
-                  if (fieldErrors.password) {
-                    setFieldErrors((prev) => ({ ...prev, password: null }));
-                  }
+                  if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: null }));
                 }}
                 placeholder="••••••••••••"
                 style={{
                   ...inputStyle,
                   paddingRight: "42px",
-                  borderColor: fieldErrors.password ? "#ef4444" : "#cbd5e1",
+                  borderColor: fieldErrors.password ? "#ef4444" : "#334155",
                 }}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
-                style={eyeButtonStyle}
+                style={visibilityToggleStyle}
               >
                 {showPassword ? (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="m15 18-.722-3.25" />
-                    <path d="M2 8a10.645 10.645 0 0 0 20 0" />
-                    <path d="m20 15-1.726-2.05" />
-                    <path d="m4 15 1.726-2.05" />
-                    <path d="m9 18 .722-3.25" />
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
                   </svg>
                 ) : (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                     <circle cx="12" cy="12" r="3" />
                   </svg>
                 )}
               </button>
             </div>
+            {fieldErrors.password && <p style={fieldErrorStyle}>{fieldErrors.password}</p>}
 
-            {/* Password Strength Indicator */}
+            {/* Password Strength Meter */}
             {password.length > 0 && (
               <div style={{ marginTop: "8px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                  <span style={{ fontSize: "11px", color: "#64748b", fontWeight: "500" }}>Password strength</span>
+                  <span style={{ fontSize: "11px", color: "#64748b" }}>Strength</span>
                   <span style={{ fontSize: "11px", fontWeight: "600", color: strengthColor }}>{passwordStrength}</span>
                 </div>
-                <div style={{ height: "4px", width: "100%", backgroundColor: "#e2e8f0", borderRadius: "2px", overflow: "hidden" }}>
+                <div style={{ height: "4px", backgroundColor: "#1e293b", borderRadius: "2px", overflow: "hidden" }}>
                   <div
                     style={{
-                      height: "100%",
                       width: `${strengthPercent}%`,
+                      height: "100%",
                       backgroundColor: strengthColor,
                       transition: "all 0.2s ease",
                     }}
@@ -422,79 +280,69 @@ export default function Register() {
               </div>
             )}
 
-            {/* Live Requirements Checklist */}
-            <div style={{ marginTop: "10px", padding: "10px 12px", backgroundColor: "#f8fafc", borderRadius: "6px", border: "1px solid #f1f5f9" }}>
-              <div style={{ fontSize: "11px", fontWeight: "600", color: "#475569", marginBottom: "6px" }}>
-                Password requirements
+            {/* Password Requirements Checklist */}
+            <div style={{ marginTop: "10px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+              <div style={reqItemStyle(reqLength)}>
+                <span>{reqLength ? "✓" : "○"}</span> 8+ characters
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px" }}>
-                <RequirementItem satisfied={reqLength} text="8+ characters" />
-                <RequirementItem satisfied={reqUpper} text="Uppercase" />
-                <RequirementItem satisfied={reqLower} text="Lowercase" />
-                <RequirementItem satisfied={reqNumber} text="Number" />
-                <RequirementItem satisfied={reqSpecial} text="Special character" />
+              <div style={reqItemStyle(reqUpper)}>
+                <span>{reqUpper ? "✓" : "○"}</span> Uppercase letter
+              </div>
+              <div style={reqItemStyle(reqLower)}>
+                <span>{reqLower ? "✓" : "○"}</span> Lowercase letter
+              </div>
+              <div style={reqItemStyle(reqNumber)}>
+                <span>{reqNumber ? "✓" : "○"}</span> Number
+              </div>
+              <div style={{ ...reqItemStyle(reqSpecial), gridColumn: "span 2" }}>
+                <span>{reqSpecial ? "✓" : "○"}</span> Special character (!@#$%^&*...)
               </div>
             </div>
-
-            {fieldErrors.password && (
-              <span style={fieldErrorStyle}>{fieldErrors.password}</span>
-            )}
           </div>
 
           {/* Confirm Password */}
           <div style={{ marginBottom: "22px" }}>
-            <label htmlFor="register-confirm-password" style={labelStyle}>
+            <label htmlFor="register-confirm-password-input" style={labelStyle}>
               Confirm Password
             </label>
             <div style={{ position: "relative" }}>
               <input
-                id="register-confirm-password"
-                name="confirmPassword"
+                id="register-confirm-password-input"
                 type={showConfirmPassword ? "text" : "password"}
-                autoComplete="new-password"
                 required
                 value={confirmPassword}
                 onChange={(e) => {
                   setConfirmPassword(e.target.value);
-                  if (fieldErrors.confirmPassword) {
-                    setFieldErrors((prev) => ({ ...prev, confirmPassword: null }));
-                  }
+                  if (fieldErrors.confirmPassword) setFieldErrors((prev) => ({ ...prev, confirmPassword: null }));
                 }}
                 placeholder="••••••••••••"
                 style={{
                   ...inputStyle,
                   paddingRight: "42px",
-                  borderColor: passwordsMismatch || fieldErrors.confirmPassword ? "#ef4444" : passwordsMatch ? "#10b981" : "#cbd5e1",
+                  borderColor: passwordsMismatch ? "#ef4444" : passwordsMatch ? "#10b981" : "#334155",
                 }}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                style={eyeButtonStyle}
+                aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                style={visibilityToggleStyle}
               >
                 {showConfirmPassword ? (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="m15 18-.722-3.25" />
-                    <path d="M2 8a10.645 10.645 0 0 0 20 0" />
-                    <path d="m20 15-1.726-2.05" />
-                    <path d="m4 15 1.726-2.05" />
-                    <path d="m9 18 .722-3.25" />
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
                   </svg>
                 ) : (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                     <circle cx="12" cy="12" r="3" />
                   </svg>
                 )}
               </button>
             </div>
-            {passwordsMismatch && (
-              <span style={fieldErrorStyle}>Passwords do not match.</span>
-            )}
-            {fieldErrors.confirmPassword && !passwordsMismatch && (
-              <span style={fieldErrorStyle}>{fieldErrors.confirmPassword}</span>
-            )}
+            {fieldErrors.confirmPassword && <p style={fieldErrorStyle}>{fieldErrors.confirmPassword}</p>}
+            {passwordsMatch && <p style={{ fontSize: "12px", color: "#10b981", marginTop: "4px" }}>✓ Passwords match</p>}
           </div>
 
           {/* Submit Button */}
@@ -503,28 +351,21 @@ export default function Register() {
             type="submit"
             disabled={submitting}
             style={{
-              ...buttonStyle,
+              ...primaryButtonStyle,
               opacity: submitting ? 0.7 : 1,
               cursor: submitting ? "not-allowed" : "pointer",
             }}
           >
-            {submitting ? "Creating account..." : "Create Account"}
+            {submitting ? "Creating Account..." : "Create Account & Verify"}
           </button>
         </form>
 
-        {/* Trust Information */}
-        <div style={{ textAlign: "center", marginTop: "16px" }}>
-          <p style={{ fontSize: "12px", color: "#94a3b8", margin: 0 }}>
-            Your account credentials are securely protected.
-          </p>
-        </div>
-
-        {/* Sign In Link */}
-        <div style={{ textAlign: "center", marginTop: "22px", paddingTop: "18px", borderTop: "1px solid #f1f5f9" }}>
-          <p style={{ fontSize: "13px", color: "#64748b", margin: 0 }}>
+        {/* Existing User Login Link */}
+        <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "18px", borderTop: "1px solid #1e293b" }}>
+          <p style={{ fontSize: "13px", color: "#94a3b8", margin: 0 }}>
             Already have an account?{" "}
-            <Link to="/login" style={{ color: "#2563eb", fontWeight: "600", textDecoration: "none" }}>
-              Sign in
+            <Link to="/login" id="register-login-link" style={{ color: "#60a5fa", fontWeight: "600", textDecoration: "none" }}>
+              Sign In
             </Link>
           </p>
         </div>
@@ -533,32 +374,25 @@ export default function Register() {
   );
 }
 
-function RequirementItem({ satisfied, text }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", color: satisfied ? "#166534" : "#94a3b8" }}>
-      <span style={{ fontWeight: "bold" }}>{satisfied ? "✓" : "○"}</span>
-      <span>{text}</span>
-    </div>
-  );
-}
-
-// Visual styles consistent with Login.jsx
-const containerStyle = {
+// ============================================================================
+// Styles: Dark Navy SaaS Design
+// ============================================================================
+const pageContainerStyle = {
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  minHeight: "75vh",
-  padding: "24px 16px",
+  minHeight: "85vh",
+  padding: "32px 16px",
 };
 
 const cardStyle = {
-  backgroundColor: "#ffffff",
-  borderRadius: "12px",
-  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05)",
-  border: "1px solid #e2e8f0",
-  padding: "36px",
+  backgroundColor: "#111827",
+  border: "1px solid #1f2937",
+  borderRadius: "16px",
+  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4)",
+  padding: "36px 32px",
   width: "100%",
-  maxWidth: "420px",
+  maxWidth: "480px",
   boxSizing: "border-box",
 };
 
@@ -568,45 +402,37 @@ const badgeStyle = {
   fontWeight: "700",
   letterSpacing: "0.06em",
   textTransform: "uppercase",
-  color: "#2563eb",
-  backgroundColor: "#eff6ff",
-  padding: "3px 10px",
-  borderRadius: "100px",
-};
-
-const iconCircleStyle = {
-  width: "56px",
-  height: "56px",
-  borderRadius: "28px",
-  backgroundColor: "#eff6ff",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  margin: "16px auto 0 auto",
+  color: "#60a5fa",
+  backgroundColor: "rgba(37, 99, 235, 0.15)",
+  border: "1px solid rgba(59, 130, 246, 0.3)",
+  padding: "4px 12px",
+  borderRadius: "9999px",
 };
 
 const labelStyle = {
   display: "block",
   fontSize: "13px",
   fontWeight: "600",
-  color: "#334155",
+  color: "#cbd5e1",
   marginBottom: "6px",
 };
 
 const inputStyle = {
   width: "100%",
-  boxSizing: "border-box",
-  padding: "10px 14px",
+  padding: "11px 14px",
+  backgroundColor: "#0b0f19",
+  border: "1px solid #334155",
+  borderRadius: "10px",
+  color: "#f8fafc",
   fontSize: "14px",
-  borderRadius: "8px",
-  border: "1px solid #cbd5e1",
   outline: "none",
+  boxSizing: "border-box",
   transition: "border-color 0.15s ease",
 };
 
-const eyeButtonStyle = {
+const visibilityToggleStyle = {
   position: "absolute",
-  right: "10px",
+  right: "12px",
   top: "50%",
   transform: "translateY(-50%)",
   background: "none",
@@ -618,80 +444,47 @@ const eyeButtonStyle = {
   justifyContent: "center",
 };
 
-const buttonStyle = {
+const fieldErrorStyle = {
+  fontSize: "12px",
+  color: "#f87171",
+  marginTop: "4px",
+  marginBottom: 0,
+};
+
+const primaryButtonStyle = {
   width: "100%",
-  padding: "11px",
+  padding: "12px 20px",
   backgroundColor: "#2563eb",
   color: "#ffffff",
   border: "none",
-  borderRadius: "8px",
+  borderRadius: "10px",
   fontSize: "14px",
   fontWeight: "600",
   cursor: "pointer",
-  transition: "background-color 0.15s ease",
-};
-
-const secondaryButtonStyle = {
-  padding: "9px 18px",
-  backgroundColor: "#ffffff",
-  color: "#334155",
-  border: "1px solid #cbd5e1",
-  borderRadius: "8px",
-  fontSize: "13px",
-  fontWeight: "600",
-  cursor: "pointer",
   transition: "all 0.15s ease",
+  boxShadow: "0 4px 6px -1px rgba(37, 99, 235, 0.2)",
 };
 
 const errorBannerStyle = {
-  backgroundColor: "#fef2f2",
-  color: "#b91c1c",
-  padding: "10px 14px",
-  borderRadius: "8px",
-  marginBottom: "18px",
-  border: "1px solid #fecaca",
-  fontSize: "13px",
-};
-
-const successBannerStyle = {
-  backgroundColor: "#f0fdf4",
-  color: "#166534",
-  padding: "10px 14px",
-  borderRadius: "8px",
-  marginBottom: "18px",
-  border: "1px solid #bbf7d0",
-  fontSize: "13px",
-  textAlign: "center",
-};
-
-const fieldErrorStyle = {
-  display: "block",
-  fontSize: "12px",
-  color: "#ef4444",
-  marginTop: "4px",
-  fontWeight: "500",
-};
-
-const warningBannerStyle = {
-  backgroundColor: "#fffbeb",
-  color: "#b45309",
+  display: "flex",
+  alignItems: "flex-start",
+  gap: "10px",
+  backgroundColor: "rgba(239, 68, 68, 0.1)",
+  border: "1px solid rgba(239, 68, 68, 0.3)",
+  color: "#f87171",
   padding: "12px 14px",
-  borderRadius: "8px",
-  marginBottom: "18px",
-  border: "1px solid #fde68a",
+  borderRadius: "10px",
   fontSize: "13px",
-  textAlign: "center",
-  fontWeight: "500",
+  lineHeight: "1.4",
+  marginBottom: "20px",
 };
 
-const warningCircleStyle = {
-  width: "56px",
-  height: "56px",
-  borderRadius: "50%",
-  backgroundColor: "#fef3c7",
+const reqItemStyle = (met) => ({
+  fontSize: "11px",
+  color: met ? "#10b981" : "#64748b",
   display: "flex",
   alignItems: "center",
-  justifyContent: "center",
-  margin: "0 auto 12px auto",
-};
-
+  gap: "4px",
+  fontWeight: met ? "500" : "400",
+  transition: "color 0.15s ease",
+});
