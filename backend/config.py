@@ -146,19 +146,36 @@ if AUTH_COOKIE_SAMESITE == "none":
 # ---------------------------
 # Email & Verification Configuration
 # ---------------------------
-# When REQUIRE_EMAIL_VERIFICATION is False (default for demo/production), users can register
-# and log in immediately without mandatory email OTP or link verification.
 REQUIRE_EMAIL_VERIFICATION = os.getenv("REQUIRE_EMAIL_VERIFICATION", "false").lower().strip() in ("true", "1", "yes")
-EMAIL_PROVIDER = os.getenv("EMAIL_PROVIDER", "development").lower().strip()
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
 SMTP_HOST = os.getenv("SMTP_HOST", "").strip()
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USERNAME = os.getenv("SMTP_USERNAME", "").strip()
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "").strip()
-EMAIL_FROM = os.getenv("EMAIL_FROM") or os.getenv("SMTP_FROM_EMAIL", "noreply@interviewintelligence.com")
-SMTP_FROM_EMAIL = EMAIL_FROM  # Backward-compatibility alias
 SMTP_USE_TLS = os.getenv("SMTP_USE_TLS", "true").lower().strip() in ("true", "1", "yes")
 SMTP_USE_SSL = os.getenv("SMTP_USE_SSL", "false").lower().strip() in ("true", "1", "yes")
-RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
+
+# Smart email provider selection
+_configured_provider = (os.getenv("EMAIL_PROVIDER") or "").lower().strip()
+if _configured_provider:
+    EMAIL_PROVIDER = _configured_provider
+elif RESEND_API_KEY:
+    EMAIL_PROVIDER = "resend"
+elif SMTP_HOST:
+    EMAIL_PROVIDER = "smtp"
+else:
+    EMAIL_PROVIDER = "development"
+
+# Sender identity
+_env_email_from = (os.getenv("EMAIL_FROM") or os.getenv("SMTP_FROM_EMAIL") or "").strip()
+if _env_email_from:
+    EMAIL_FROM = _env_email_from
+elif RESEND_API_KEY:
+    EMAIL_FROM = "Interview Intelligence <onboarding@resend.dev>"
+else:
+    EMAIL_FROM = "noreply@interviewintelligence.com"
+
+SMTP_FROM_EMAIL = EMAIL_FROM  # Backward-compatibility alias
 
 APP_BASE_URL = os.getenv("APP_BASE_URL", "http://localhost:5173").rstrip("/")
 FRONTEND_URL = os.getenv(

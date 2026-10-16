@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../utils/api";
+import { maskEmail } from "../utils/maskEmail";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -123,8 +124,11 @@ export default function Login() {
 
         {unverifiedEmail && (
           <div style={{ marginBottom: "18px", padding: "14px 16px", backgroundColor: "#fffbeb", border: "1px solid #fde68a", borderRadius: "8px", textAlign: "center" }}>
-            <p style={{ fontSize: "13px", color: "#92400e", margin: "0 0 10px 0", fontWeight: "500" }}>
+            <p style={{ fontSize: "13px", color: "#92400e", margin: "0 0 4px 0", fontWeight: "600" }}>
               Please verify your email address before signing in.
+            </p>
+            <p style={{ fontSize: "12px", color: "#b45309", margin: "0 0 10px 0", fontFamily: "monospace" }}>
+              {maskEmail(unverifiedEmail)}
             </p>
             <button
               id="login-resend-verification-btn"

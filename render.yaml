@@ -20,9 +20,15 @@ services:
       - key: GEMINI_MODEL
         value: gemini-2.5-flash
       - key: REQUIRE_EMAIL_VERIFICATION
-        value: "false"
-      - key: FRONTEND_URL
+        value: "true"
+      - key: EMAIL_PROVIDER
+        value: "resend"
+      - key: RESEND_API_KEY
         sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: FRONTEND_URL
+        value: "https://interview-system-orpin.vercel.app"
       - key: CORS_ORIGINS
         sync: false
       - key: AUTH_COOKIE_SAMESITE

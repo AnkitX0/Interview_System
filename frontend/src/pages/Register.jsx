@@ -3,6 +3,8 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../utils/api";
 
+import { maskEmail } from "../utils/maskEmail";
+
 const SPECIAL_CHAR_REGEX = /[!@#$%^&*(),.?":{}|<>\-_=+[\]~`/\\';]/;
 
 export default function Register() {
@@ -221,8 +223,8 @@ export default function Register() {
             <div style={{ fontSize: "12px", color: "#64748b", marginBottom: "4px" }}>
               {isEmailSent ? "We sent a verification link to:" : "Registered email address:"}
             </div>
-            <div style={{ fontSize: "14px", fontWeight: "600", color: "#0f172a", wordBreak: "break-all" }}>
-              {registeredEmail}
+            <div id="pending-masked-email" style={{ fontSize: "15px", fontWeight: "600", color: "#0f172a", wordBreak: "break-all", fontFamily: "monospace" }}>
+              {maskEmail(registeredEmail)}
             </div>
           </div>
 
@@ -234,7 +236,7 @@ export default function Register() {
               </>
             ) : (
               <span style={{ color: "#64748b" }}>
-                Please check your SMTP provider configuration and try again.
+                Please check your email provider configuration and try again.
               </span>
             )}
           </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { apiFetch } from "../utils/api";
 
@@ -10,6 +10,7 @@ export default function VerifyEmail() {
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
+  const verificationAttemptedRef = useRef(false);
 
   useEffect(() => {
     if (!token || !token.trim()) {
@@ -17,6 +18,9 @@ export default function VerifyEmail() {
       setErrorMessage("This verification link is no longer valid.");
       return;
     }
+
+    if (verificationAttemptedRef.current) return;
+    verificationAttemptedRef.current = true;
 
     let isMounted = true;
 
@@ -37,7 +41,7 @@ export default function VerifyEmail() {
           const detail = data?.error?.message || data?.detail || "This verification link is no longer valid.";
           setErrorMessage(detail);
         }
-      } catch (err) {
+      } catch {
         if (!isMounted) return;
         setErrorMessage("Something went wrong while verifying your email. Please try again.");
       } finally {

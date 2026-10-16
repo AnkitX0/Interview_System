@@ -65,6 +65,7 @@ class EmailDeliveryResult:
     provider: str
     message_id: Optional[str] = None
     error: Optional[str] = None
+    accepted: bool = False  # True when provider API acknowledged receipt of email request
 
     @property
     def is_success(self) -> bool:
@@ -489,7 +490,7 @@ class SMTPProvider(EmailProvider):
 
 class ResendProvider(EmailProvider):
     """
-    Modern transactional email provider via Resend API.
+    Modern transactional email provider via Resend API (https://api.resend.com/emails).
     """
 
     def is_configured(self) -> bool:
@@ -499,6 +500,8 @@ class ResendProvider(EmailProvider):
         return {
             "provider": "resend",
             "configured": bool(RESEND_API_KEY),
+            "endpoint": "https://api.resend.com/emails",
+            "sender": EMAIL_FROM if bool(RESEND_API_KEY) else None,
         }
 
     def send(
@@ -526,6 +529,7 @@ class ResendProvider(EmailProvider):
                 status="EMAIL_PROVIDER_UNAVAILABLE",
                 provider="resend",
                 error="RESEND_API_KEY is not configured.",
+                accepted=False,
             )
 
         try:
@@ -540,14 +544,16 @@ class ResendProvider(EmailProvider):
                 "Authorization": f"Bearer {RESEND_API_KEY}",
                 "Content-Type": "application/json",
             }
+
             with httpx.Client(timeout=15.0) as client:
                 res = client.post("https://api.resend.com/emails", json=payload, headers=headers)
 
             if res.status_code in (200, 201):
                 data = res.json()
                 msg_id = data.get("id", f"resend-{secrets.token_hex(8)}")
+                # Provider acceptance indicates Resend successfully accepted the message into its delivery pipeline.
                 logger.info(
-                    "EMAIL_SEND_SUCCESS provider=resend email_type=%s message_id=%s",
+                    "EMAIL_DISPATCH_ACCEPTED provider=resend email_type=%s message_id=%s (accepted by Resend API)",
                     email_type,
                     msg_id,
                 )
@@ -555,9 +561,18 @@ class ResendProvider(EmailProvider):
                     status="EMAIL_SENT",
                     provider="resend",
                     message_id=msg_id,
+                    accepted=True,
                 )
             else:
-                safe_err = f"Resend API error HTTP {res.status_code}"
+                # Parse Resend error payload safely without leaking secrets or tokens
+                err_detail = None
+                try:
+                    res_json = res.json()
+                    err_detail = res_json.get("message") or res_json.get("name")
+                except Exception:
+                    pass
+
+                safe_err = f"Resend API error HTTP {res.status_code}" + (f": {err_detail}" if err_detail else "")
                 logger.error(
                     "EMAIL_SEND_FAILURE provider=resend email_type=%s error=%s",
                     email_type,
@@ -567,7 +582,34 @@ class ResendProvider(EmailProvider):
                     status="EMAIL_FAILED",
                     provider="resend",
                     error=safe_err,
+                    accepted=False,
                 )
+        except httpx.TimeoutException:
+            logger.error(
+                "EMAIL_SEND_TIMEOUT provider=resend email_type=%s recipient_hash=%s",
+                email_type,
+                recipient_hash,
+            )
+            return EmailDeliveryResult(
+                status="EMAIL_FAILED",
+                provider="resend",
+                error="Resend API request timed out after 15 seconds.",
+                accepted=False,
+            )
+        except (httpx.ConnectError, httpx.NetworkError) as net_err:
+            safe_net_err = type(net_err).__name__
+            logger.error(
+                "EMAIL_SEND_CONNECT_ERROR provider=resend email_type=%s recipient_hash=%s error=%s",
+                email_type,
+                recipient_hash,
+                safe_net_err,
+            )
+            return EmailDeliveryResult(
+                status="EMAIL_PROVIDER_UNAVAILABLE",
+                provider="resend",
+                error=f"Resend service unreachable: {safe_net_err}",
+                accepted=False,
+            )
         except Exception as resend_err:
             safe_err = f"{type(resend_err).__name__}: {str(resend_err)}"
             logger.error(
@@ -579,6 +621,7 @@ class ResendProvider(EmailProvider):
                 status="EMAIL_FAILED",
                 provider="resend",
                 error=f"Resend dispatch error: {safe_err}",
+                accepted=False,
             )
 
 
@@ -593,7 +636,7 @@ class EmailService:
 
     @classmethod
     def get_provider(cls) -> EmailProvider:
-        prov = EMAIL_PROVIDER
+        prov = (EMAIL_PROVIDER or "").lower().strip()
         if prov == "resend":
             return ResendProvider()
         elif prov == "smtp":
@@ -601,11 +644,11 @@ class EmailService:
         elif prov in ("development", "dev", "test", "local"):
             return DevelopmentEmailProvider()
 
-        # Fallback heuristic: If SMTP_HOST provided, use SMTP; if RESEND_API_KEY, use Resend; else Development
-        if SMTP_HOST:
-            return SMTPProvider()
+        # Heuristic fallback
         if RESEND_API_KEY:
             return ResendProvider()
+        if SMTP_HOST:
+            return SMTPProvider()
 
         return DevelopmentEmailProvider()
 

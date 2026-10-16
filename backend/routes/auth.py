@@ -321,10 +321,20 @@ def verify_email(
         if expires_at < now:
             raise HTTPException(status_code=400, detail="Verification link expired.")
 
-    # Mark verified and record single-use timestamp
-    user.email_verified = True
-    user.verification_used_at = now
+    # Mark verified and record single-use timestamp atomically
+    updated_rows = db.query(models.User).filter(
+        models.User.id == user.id,
+        models.User.verification_used_at.is_(None)
+    ).update({
+        models.User.email_verified: True,
+        models.User.verification_used_at: now
+    }, synchronize_session="fetch")
     db.commit()
+
+    if updated_rows == 0:
+        if user.email_verified:
+            raise HTTPException(status_code=400, detail="This email address has already been verified.")
+        raise HTTPException(status_code=400, detail="This verification link is no longer valid.")
 
     logger.info("Email verification succeeded for user id=%d (%s)", user.id, user.email)
 
@@ -540,11 +550,19 @@ def reset_password(
         if expires_at < now:
             raise HTTPException(status_code=400, detail="This password reset link is no longer valid.")
 
-    # Apply new password hash
-    user.password_hash = hash_password(data.new_password)
-    user.password_reset_used_at = now
-    user.password_reset_token_hash = None  # Single-use: immediately clear
+    # Apply new password hash and atomically mark token used
+    updated_rows = db.query(models.User).filter(
+        models.User.id == user.id,
+        models.User.password_reset_used_at.is_(None)
+    ).update({
+        models.User.password_hash: hash_password(data.new_password),
+        models.User.password_reset_used_at: now,
+        models.User.password_reset_token_hash: None
+    }, synchronize_session="fetch")
     db.commit()
+
+    if updated_rows == 0:
+        raise HTTPException(status_code=400, detail="This password reset link is no longer valid.")
 
     # Clear any active auth cookie to force re-authentication with new password
     _clear_auth_cookie(response)
