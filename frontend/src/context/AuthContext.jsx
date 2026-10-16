@@ -46,10 +46,10 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener("auth:unauthorized", handleUnauthorized);
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (email, password, rememberMe = false) => {
     const res = await apiFetch("/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, remember_me: rememberMe }),
     });
 
     const data = await res.json();
@@ -73,10 +73,16 @@ export function AuthProvider({ children }) {
     return data.user;
   };
 
-  const register = async (email, password, fullName = "") => {
+  const register = async (email, password, fullName = "", securityQuestion = "", securityAnswer = "") => {
     const res = await apiFetch("/auth/register", {
       method: "POST",
-      body: JSON.stringify({ email, password, full_name: fullName }),
+      body: JSON.stringify({
+        email,
+        password,
+        full_name: fullName,
+        security_question: securityQuestion,
+        security_answer: securityAnswer,
+      }),
     });
 
     const data = await res.json();
@@ -85,8 +91,8 @@ export function AuthProvider({ children }) {
       throw new Error(errorMsg);
     }
 
-    // Set authenticated user immediately if verification is not required
-    if (data?.user && !data?.verification_required) {
+    // Account is active immediately; set authenticated user
+    if (data?.user) {
       setUser(data.user);
     }
 

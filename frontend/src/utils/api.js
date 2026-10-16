@@ -53,11 +53,7 @@ export async function apiFetch(url, options = {}) {
     response.status === 401 &&
     !fullUrl.includes("/auth/login") &&
     !fullUrl.includes("/auth/register") &&
-    !fullUrl.includes("/auth/verify-email") &&
-    !fullUrl.includes("/auth/resend-verification") &&
-    !fullUrl.includes("/auth/forgot-password") &&
-    !fullUrl.includes("/auth/reset-password") &&
-    !fullUrl.includes("/auth/validate-reset-token")
+    !fullUrl.includes("/auth/recovery")
   ) {
     window.dispatchEvent(new CustomEvent("auth:unauthorized"));
   }

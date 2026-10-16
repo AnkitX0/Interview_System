@@ -24,6 +24,9 @@ class User(Base):
     password_reset_expires_at = Column(DateTime(timezone=True), nullable=True)
     password_reset_used_at = Column(DateTime(timezone=True), nullable=True)
     password_reset_sent_at = Column(DateTime(timezone=True), nullable=True)
+    security_question = Column(String, nullable=True)
+    security_answer_hash = Column(String, nullable=True)
+    recovery_attempts = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 

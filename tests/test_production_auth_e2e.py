@@ -38,9 +38,8 @@ def test_registration_and_immediate_login(client: TestClient):
     assert res_reg.status_code == 200
     data_reg = res_reg.json()
 
-    # Confirms optional email verification is honored
+    # Confirms email verification is not required
     assert data_reg["verification_required"] is False
-    assert data_reg["email_status"] == "VERIFICATION_DISABLED"
     assert data_reg["user"]["email"] == email
 
     # Immediate session cookie is set

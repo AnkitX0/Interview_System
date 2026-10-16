@@ -2,6 +2,14 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+const SECURITY_QUESTIONS = [
+  "What is your favorite movie?",
+  "What was your childhood nickname?",
+  "What was the name of your first pet?",
+  "What was the first concert you attended?",
+  "What was the name of your childhood best friend?",
+];
+
 const SPECIAL_CHAR_REGEX = /[!@#$%^&*(),.?":{}|<>\-_=+[\]~`/\\';]/;
 
 export default function Register() {
@@ -9,6 +17,9 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [securityQuestion, setSecurityQuestion] = useState(SECURITY_QUESTIONS[0]);
+  const [securityAnswer, setSecurityAnswer] = useState("");
+  const [savedAnswerAck, setSavedAnswerAck] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -30,62 +41,41 @@ export default function Register() {
     }
   }, [user, authLoading, navigate, from]);
 
-  // Live Password Requirements
+  // Live password requirements
   const reqLength = password.length >= 8;
   const reqUpper = /[A-Z]/.test(password);
   const reqLower = /[a-z]/.test(password);
   const reqNumber = /[0-9]/.test(password);
   const reqSpecial = SPECIAL_CHAR_REGEX.test(password);
 
-  const passedRequirementsCount = [reqLength, reqUpper, reqLower, reqNumber, reqSpecial].filter(Boolean).length;
-
-  let passwordStrength = "Weak";
-  let strengthColor = "#ef4444";
-  let strengthPercent = 20;
-
-  if (passedRequirementsCount >= 5) {
-    passwordStrength = "Strong";
-    strengthColor = "#10b981";
-    strengthPercent = 100;
-  } else if (passedRequirementsCount >= 3) {
-    passwordStrength = "Fair";
-    strengthColor = "#f59e0b";
-    strengthPercent = 60;
-  } else if (password.length > 0) {
-    passwordStrength = "Weak";
-    strengthColor = "#ef4444";
-    strengthPercent = 30;
-  }
-
-  // Live confirm password check
-  const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
-  const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
-
-  // Client-side validation
   const validateForm = () => {
     const errors = {};
     const trimmedName = fullName.trim();
-    if (!trimmedName || trimmedName.length < 2 || !/[a-zA-Z]/.test(trimmedName)) {
-      errors.fullName = "Please enter your name.";
+    if (!trimmedName || trimmedName.length < 2) {
+      errors.fullName = "Please enter your full name.";
     }
 
     const trimmedEmail = email.trim().toLowerCase();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!trimmedEmail || !emailRegex.test(trimmedEmail)) {
-      errors.email = "Please use a Gmail address.";
-    } else {
-      const parts = trimmedEmail.split("@");
-      if (parts.length !== 2 || parts[1] !== "gmail.com") {
-        errors.email = "Please use a Gmail address.";
-      }
+      errors.email = "Please enter a valid email address.";
     }
 
     if (!reqLength || !reqUpper || !reqLower || !reqNumber || !reqSpecial) {
-      errors.password = "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.";
+      errors.password = "Password must meet all 5 security criteria.";
     }
 
     if (password !== confirmPassword) {
       errors.confirmPassword = "Passwords do not match.";
+    }
+
+    if (!SECURITY_QUESTIONS.includes(securityQuestion)) {
+      errors.securityQuestion = "Please choose a valid security question from the list.";
+    }
+
+    const trimmedAnswer = securityAnswer.trim();
+    if (!trimmedAnswer || trimmedAnswer.length < 2) {
+      errors.securityAnswer = "Security answer must be at least 2 characters.";
     }
 
     setFieldErrors(errors);
@@ -103,238 +93,199 @@ export default function Register() {
     setSubmitting(true);
 
     try {
-      const normalizedEmail = email.trim().toLowerCase();
-      const res = await register(normalizedEmail, password, fullName.trim());
-
-      if (res?.verification_required) {
-        if (res?.email_status === "FAILED") {
-          setError("We created your pending registration, but could not deliver the verification email right now. Please try resending from the verification page or try again in a moment.");
-          return;
-        }
-        // Direct transition to the 6-digit OTP verification screen
-        navigate("/verify-email", {
-          state: {
-            email: normalizedEmail,
-            emailStatus: res?.email_status || "EMAIL_SENT",
-          },
-        });
-      } else {
-        // Direct transition to dashboard if verification disabled
-        navigate(from, { replace: true });
-      }
+      await register(
+        email.trim(),
+        password,
+        fullName.trim(),
+        securityQuestion,
+        securityAnswer.trim()
+      );
+      // Immediately authenticated without OTP/email verification
+      navigate(from, { replace: true });
     } catch (err) {
-      const msg = err.message || "Something went wrong while creating your account. Please try again.";
-      setError(msg);
+      setError(err.message || "Registration failed. Please check your details and try again.");
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div style={pageContainerStyle}>
+    <div style={containerStyle}>
       <div style={cardStyle}>
-        {/* Brand Header */}
-        <div style={{ textAlign: "center", marginBottom: "26px" }}>
-          <div style={badgeStyle}>AI Interview Intelligence</div>
-          <h1 style={{ fontSize: "24px", fontWeight: "700", color: "#f8fafc", margin: "14px 0 6px 0", letterSpacing: "-0.01em" }}>
-            Create Your Account
-          </h1>
-          <p style={{ fontSize: "14px", color: "#94a3b8", margin: 0, lineHeight: 1.5 }}>
-            Master technical interviews with evidence-based intelligence.
-          </p>
+        {/* Header */}
+        <div style={{ marginBottom: "26px", textAlign: "left" }}>
+          <span style={badgeStyle}>AI Interview Intelligence</span>
+          <h1 style={titleStyle}>Create your account</h1>
+          <p style={subtitleStyle}>Start practicing realistic, AI-evaluated interviews today.</p>
         </div>
 
         {/* Global Error Banner */}
         {error && (
-          <div style={errorBannerStyle} role="alert">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: "1px" }}>
+          <div style={errorBannerStyle} role="alert" id="register-error-alert">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ flexShrink: 0, marginTop: "2px" }}
+            >
               <circle cx="12" cy="12" r="10" />
               <line x1="12" y1="8" x2="12" y2="12" />
               <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
-            <div>
-              <span>{error}</span>
-              {error.toLowerCase().includes("already exists") && (
-                <div style={{ marginTop: "6px" }}>
-                  <Link to="/login" style={{ color: "#93c5fd", textDecoration: "underline", fontWeight: "600" }}>
-                    Sign in here
-                  </Link>
-                  {" or "}
-                  <Link to="/forgot-password" style={{ color: "#93c5fd", textDecoration: "underline", fontWeight: "600" }}>
-                    reset your password
-                  </Link>
-                </div>
-              )}
-            </div>
+            <span style={{ fontSize: "14px", lineHeight: 1.4 }}>{error}</span>
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} noValidate>
           {/* Full Name */}
-          <div style={{ marginBottom: "18px" }}>
-            <label htmlFor="register-fullname-input" style={labelStyle}>
-              Full Name
+          <div style={formGroupStyle}>
+            <label htmlFor="register-full-name" style={labelStyle}>
+              Full name
             </label>
             <input
-              id="register-fullname-input"
+              id="register-full-name"
               type="text"
+              autoComplete="name"
               required
               value={fullName}
               onChange={(e) => {
                 setFullName(e.target.value);
                 if (fieldErrors.fullName) setFieldErrors((prev) => ({ ...prev, fullName: null }));
               }}
-              placeholder="e.g. Alex Chen"
-              style={{
-                ...inputStyle,
-                borderColor: fieldErrors.fullName ? "#ef4444" : "#334155",
-              }}
+              placeholder="e.g. Alex Morgan"
+              style={fieldErrors.fullName ? { ...inputStyle, borderColor: "var(--danger-border)" } : inputStyle}
+              disabled={submitting}
             />
             {fieldErrors.fullName && <p style={fieldErrorStyle}>{fieldErrors.fullName}</p>}
           </div>
 
           {/* Email Address */}
-          <div style={{ marginBottom: "18px" }}>
-            <label htmlFor="register-email-input" style={labelStyle}>
-              Gmail Address
+          <div style={formGroupStyle}>
+            <label htmlFor="register-email" style={labelStyle}>
+              Email address
             </label>
             <input
-              id="register-email-input"
+              id="register-email"
               type="email"
+              autoComplete="email"
               required
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
                 if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: null }));
               }}
-              placeholder="name@gmail.com"
-              style={{
-                ...inputStyle,
-                borderColor: fieldErrors.email ? "#ef4444" : "#334155",
-              }}
+              placeholder="name@example.com"
+              style={fieldErrors.email ? { ...inputStyle, borderColor: "var(--danger-border)" } : inputStyle}
+              disabled={submitting}
             />
             {fieldErrors.email && <p style={fieldErrorStyle}>{fieldErrors.email}</p>}
           </div>
 
           {/* Password */}
-          <div style={{ marginBottom: "18px" }}>
-            <label htmlFor="register-password-input" style={labelStyle}>
+          <div style={formGroupStyle}>
+            <label htmlFor="register-password" style={labelStyle}>
               Password
             </label>
             <div style={{ position: "relative" }}>
               <input
-                id="register-password-input"
+                id="register-password"
                 type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
                 required
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
                   if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: null }));
                 }}
-                placeholder="••••••••••••"
+                placeholder="••••••••"
                 style={{
                   ...inputStyle,
-                  paddingRight: "42px",
-                  borderColor: fieldErrors.password ? "#ef4444" : "#334155",
+                  paddingRight: "44px",
+                  borderColor: fieldErrors.password ? "var(--danger-border)" : "var(--border-default)",
                 }}
+                disabled={submitting}
               />
               <button
                 type="button"
+                id="register-show-password-btn"
                 onClick={() => setShowPassword(!showPassword)}
+                style={showPasswordBtnStyle}
                 aria-label={showPassword ? "Hide password" : "Show password"}
-                style={visibilityToggleStyle}
+                tabIndex="-1"
               >
                 {showPassword ? (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
                     <line x1="1" y1="1" x2="23" y2="23" />
                   </svg>
                 ) : (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                     <circle cx="12" cy="12" r="3" />
                   </svg>
                 )}
               </button>
             </div>
-            {fieldErrors.password && <p style={fieldErrorStyle}>{fieldErrors.password}</p>}
 
-            {/* Password Strength Meter */}
+            {/* Password Criteria Checklist */}
             {password.length > 0 && (
-              <div style={{ marginTop: "8px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                  <span style={{ fontSize: "11px", color: "#64748b" }}>Strength</span>
-                  <span style={{ fontSize: "11px", fontWeight: "600", color: strengthColor }}>{passwordStrength}</span>
-                </div>
-                <div style={{ height: "4px", backgroundColor: "#1e293b", borderRadius: "2px", overflow: "hidden" }}>
-                  <div
-                    style={{
-                      width: `${strengthPercent}%`,
-                      height: "100%",
-                      backgroundColor: strengthColor,
-                      transition: "all 0.2s ease",
-                    }}
-                  />
+              <div style={criteriaBoxStyle}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 12px" }}>
+                  <CriterionMet met={reqLength} text="At least 8 characters" />
+                  <CriterionMet met={reqUpper} text="Uppercase letter (A-Z)" />
+                  <CriterionMet met={reqLower} text="Lowercase letter (a-z)" />
+                  <CriterionMet met={reqNumber} text="Number (0-9)" />
+                  <CriterionMet met={reqSpecial} text="Special character (!@#...)" />
                 </div>
               </div>
             )}
-
-            {/* Password Requirements Checklist */}
-            <div style={{ marginTop: "10px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
-              <div style={reqItemStyle(reqLength)}>
-                <span>{reqLength ? "✓" : "○"}</span> 8+ characters
-              </div>
-              <div style={reqItemStyle(reqUpper)}>
-                <span>{reqUpper ? "✓" : "○"}</span> Uppercase letter
-              </div>
-              <div style={reqItemStyle(reqLower)}>
-                <span>{reqLower ? "✓" : "○"}</span> Lowercase letter
-              </div>
-              <div style={reqItemStyle(reqNumber)}>
-                <span>{reqNumber ? "✓" : "○"}</span> Number
-              </div>
-              <div style={{ ...reqItemStyle(reqSpecial), gridColumn: "span 2" }}>
-                <span>{reqSpecial ? "✓" : "○"}</span> Special character (!@#$%^&*...)
-              </div>
-            </div>
+            {fieldErrors.password && <p style={fieldErrorStyle}>{fieldErrors.password}</p>}
           </div>
 
           {/* Confirm Password */}
-          <div style={{ marginBottom: "22px" }}>
-            <label htmlFor="register-confirm-password-input" style={labelStyle}>
-              Confirm Password
+          <div style={formGroupStyle}>
+            <label htmlFor="register-confirm-password" style={labelStyle}>
+              Confirm password
             </label>
             <div style={{ position: "relative" }}>
               <input
-                id="register-confirm-password-input"
+                id="register-confirm-password"
                 type={showConfirmPassword ? "text" : "password"}
+                autoComplete="new-password"
                 required
                 value={confirmPassword}
                 onChange={(e) => {
                   setConfirmPassword(e.target.value);
                   if (fieldErrors.confirmPassword) setFieldErrors((prev) => ({ ...prev, confirmPassword: null }));
                 }}
-                placeholder="••••••••••••"
+                placeholder="••••••••"
                 style={{
                   ...inputStyle,
-                  paddingRight: "42px",
-                  borderColor: passwordsMismatch ? "#ef4444" : passwordsMatch ? "#10b981" : "#334155",
+                  paddingRight: "44px",
+                  borderColor: fieldErrors.confirmPassword ? "var(--danger-border)" : "var(--border-default)",
                 }}
+                disabled={submitting}
               />
               <button
                 type="button"
+                id="register-show-confirm-password-btn"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                style={showPasswordBtnStyle}
                 aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
-                style={visibilityToggleStyle}
+                tabIndex="-1"
               >
                 {showConfirmPassword ? (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
                     <line x1="1" y1="1" x2="23" y2="23" />
                   </svg>
                 ) : (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                     <circle cx="12" cy="12" r="3" />
                   </svg>
@@ -342,149 +293,333 @@ export default function Register() {
               </button>
             </div>
             {fieldErrors.confirmPassword && <p style={fieldErrorStyle}>{fieldErrors.confirmPassword}</p>}
-            {passwordsMatch && <p style={{ fontSize: "12px", color: "#10b981", marginTop: "4px" }}>✓ Passwords match</p>}
+          </div>
+
+          {/* Section Divider: Security Recovery */}
+          <div style={sectionDividerStyle}>
+            <span style={sectionLabelStyle}>Account Recovery Setup</span>
+            <p style={sectionHintStyle}>
+              Choose a security question to recover your account if you forget your password. We store your answer as a secure hash.
+            </p>
+          </div>
+
+          {/* Security Question Selection */}
+          <div style={formGroupStyle}>
+            <label htmlFor="register-security-question" style={labelStyle}>
+              Security question
+            </label>
+            <select
+              id="register-security-question"
+              value={securityQuestion}
+              onChange={(e) => {
+                setSecurityQuestion(e.target.value);
+                if (fieldErrors.securityQuestion) setFieldErrors((prev) => ({ ...prev, securityQuestion: null }));
+              }}
+              style={selectStyle}
+              disabled={submitting}
+            >
+              {SECURITY_QUESTIONS.map((q) => (
+                <option key={q} value={q}>
+                  {q}
+                </option>
+              ))}
+            </select>
+            {fieldErrors.securityQuestion && <p style={fieldErrorStyle}>{fieldErrors.securityQuestion}</p>}
+          </div>
+
+          {/* Security Answer */}
+          <div style={formGroupStyle}>
+            <label htmlFor="register-security-answer" style={labelStyle}>
+              Security answer
+            </label>
+            <input
+              id="register-security-answer"
+              type="text"
+              autoComplete="off"
+              required
+              value={securityAnswer}
+              onChange={(e) => {
+                setSecurityAnswer(e.target.value);
+                if (fieldErrors.securityAnswer) setFieldErrors((prev) => ({ ...prev, securityAnswer: null }));
+              }}
+              placeholder="Enter your answer and remember it for account recovery"
+              style={fieldErrors.securityAnswer ? { ...inputStyle, borderColor: "var(--danger-border)" } : inputStyle}
+              disabled={submitting}
+            />
+            {fieldErrors.securityAnswer && <p style={fieldErrorStyle}>{fieldErrors.securityAnswer}</p>}
+          </div>
+
+          {/* Saved Answer Acknowledgement Checkbox */}
+          <div style={{ display: "flex", alignItems: "flex-start", marginBottom: "22px" }}>
+            <input
+              id="register-saved-answer-ack"
+              type="checkbox"
+              checked={savedAnswerAck}
+              onChange={(e) => setSavedAnswerAck(e.target.checked)}
+              style={{ ...checkboxStyle, marginTop: "2px" }}
+              disabled={submitting}
+            />
+            <label htmlFor="register-saved-answer-ack" style={checkboxLabelStyle}>
+              I've saved my security answer somewhere safe
+            </label>
           </div>
 
           {/* Submit Button */}
           <button
-            id="register-submit-btn"
             type="submit"
+            id="register-submit-btn"
             disabled={submitting}
             style={{
-              ...primaryButtonStyle,
-              opacity: submitting ? 0.7 : 1,
+              ...primaryBtnStyle,
+              opacity: submitting ? 0.75 : 1,
               cursor: submitting ? "not-allowed" : "pointer",
             }}
           >
-            {submitting ? "Creating Account..." : "Create Account & Verify"}
+            {submitting ? (
+              <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                <span style={spinnerStyle} />
+                Creating account...
+              </span>
+            ) : (
+              "Create account"
+            )}
           </button>
         </form>
 
-        {/* Existing User Login Link */}
-        <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "18px", borderTop: "1px solid #1e293b" }}>
-          <p style={{ fontSize: "13px", color: "#94a3b8", margin: 0 }}>
+        {/* Sign In Footer */}
+        <div style={footerStyle}>
+          <span style={{ color: "var(--text-muted)", fontSize: "14px" }}>
             Already have an account?{" "}
-            <Link to="/login" id="register-login-link" style={{ color: "#60a5fa", fontWeight: "600", textDecoration: "none" }}>
-              Sign In
-            </Link>
-          </p>
+          </span>
+          <Link
+            to="/login"
+            id="register-login-link"
+            style={loginLinkStyle}
+          >
+            Sign in
+          </Link>
         </div>
       </div>
     </div>
   );
 }
 
-// ============================================================================
-// Styles: Dark Navy SaaS Design
-// ============================================================================
-const pageContainerStyle = {
+function CriterionMet({ met, text }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px" }}>
+      {met ? (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success-text)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      ) : (
+        <span style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "var(--text-disabled)", display: "inline-block", margin: "4px" }} />
+      )}
+      <span style={{ color: met ? "var(--success-text)" : "var(--text-muted)" }}>{text}</span>
+    </div>
+  );
+}
+
+// ==============================================================================
+// Styles
+// ==============================================================================
+const containerStyle = {
+  minHeight: "calc(100vh - 80px)",
   display: "flex",
-  justifyContent: "center",
   alignItems: "center",
-  minHeight: "85vh",
+  justifyContent: "center",
   padding: "32px 16px",
+  backgroundColor: "var(--bg-app)",
 };
 
 const cardStyle = {
-  backgroundColor: "#111827",
-  border: "1px solid #1f2937",
-  borderRadius: "16px",
-  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4)",
-  padding: "36px 32px",
   width: "100%",
   maxWidth: "480px",
+  backgroundColor: "var(--bg-surface)",
+  border: "1px solid var(--border-default)",
+  borderRadius: "12px",
+  padding: "36px 32px",
+  boxShadow: "var(--shadow-sm)",
   boxSizing: "border-box",
 };
 
 const badgeStyle = {
   display: "inline-block",
-  fontSize: "11px",
-  fontWeight: "700",
-  letterSpacing: "0.06em",
-  textTransform: "uppercase",
-  color: "#60a5fa",
-  backgroundColor: "rgba(37, 99, 235, 0.15)",
-  border: "1px solid rgba(59, 130, 246, 0.3)",
-  padding: "4px 12px",
-  borderRadius: "9999px",
-};
-
-const labelStyle = {
-  display: "block",
-  fontSize: "13px",
-  fontWeight: "600",
-  color: "#cbd5e1",
-  marginBottom: "6px",
-};
-
-const inputStyle = {
-  width: "100%",
-  padding: "11px 14px",
-  backgroundColor: "#0b0f19",
-  border: "1px solid #334155",
-  borderRadius: "10px",
-  color: "#f8fafc",
-  fontSize: "14px",
-  outline: "none",
-  boxSizing: "border-box",
-  transition: "border-color 0.15s ease",
-};
-
-const visibilityToggleStyle = {
-  position: "absolute",
-  right: "12px",
-  top: "50%",
-  transform: "translateY(-50%)",
-  background: "none",
-  border: "none",
-  cursor: "pointer",
-  padding: "4px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-};
-
-const fieldErrorStyle = {
   fontSize: "12px",
-  color: "#f87171",
-  marginTop: "4px",
-  marginBottom: 0,
+  fontWeight: "600",
+  letterSpacing: "0.04em",
+  textTransform: "uppercase",
+  color: "var(--primary-600)",
+  marginBottom: "8px",
 };
 
-const primaryButtonStyle = {
-  width: "100%",
-  padding: "12px 20px",
-  backgroundColor: "#2563eb",
-  color: "#ffffff",
-  border: "none",
-  borderRadius: "10px",
+const titleStyle = {
+  fontSize: "26px",
+  fontWeight: "700",
+  letterSpacing: "-0.02em",
+  color: "var(--text-primary)",
+  margin: "0 0 6px 0",
+};
+
+const subtitleStyle = {
   fontSize: "14px",
-  fontWeight: "600",
-  cursor: "pointer",
-  transition: "all 0.15s ease",
-  boxShadow: "0 4px 6px -1px rgba(37, 99, 235, 0.2)",
+  color: "var(--text-secondary)",
+  margin: 0,
+  lineHeight: 1.5,
 };
 
 const errorBannerStyle = {
   display: "flex",
   alignItems: "flex-start",
   gap: "10px",
-  backgroundColor: "rgba(239, 68, 68, 0.1)",
-  border: "1px solid rgba(239, 68, 68, 0.3)",
-  color: "#f87171",
+  backgroundColor: "var(--danger-bg)",
+  color: "var(--danger-text)",
+  border: "1px solid var(--danger-border)",
+  borderRadius: "8px",
   padding: "12px 14px",
-  borderRadius: "10px",
-  fontSize: "13px",
-  lineHeight: "1.4",
   marginBottom: "20px",
 };
 
-const reqItemStyle = (met) => ({
-  fontSize: "11px",
-  color: met ? "#10b981" : "#64748b",
+const formGroupStyle = {
+  marginBottom: "16px",
+};
+
+const labelStyle = {
+  display: "block",
+  fontSize: "13px",
+  fontWeight: "600",
+  color: "var(--text-primary)",
+  marginBottom: "6px",
+};
+
+const inputStyle = {
+  width: "100%",
+  boxSizing: "border-box",
+  padding: "10px 14px",
+  fontSize: "14px",
+  fontFamily: "inherit",
+  color: "var(--text-primary)",
+  backgroundColor: "var(--bg-app)",
+  border: "1px solid var(--border-default)",
+  borderRadius: "8px",
+  outline: "none",
+  transition: "border-color 150ms ease, box-shadow 150ms ease",
+};
+
+const selectStyle = {
+  width: "100%",
+  boxSizing: "border-box",
+  padding: "10px 14px",
+  fontSize: "14px",
+  fontFamily: "inherit",
+  color: "var(--text-primary)",
+  backgroundColor: "var(--bg-app)",
+  border: "1px solid var(--border-default)",
+  borderRadius: "8px",
+  outline: "none",
+  cursor: "pointer",
+};
+
+const fieldErrorStyle = {
+  fontSize: "12px",
+  color: "var(--danger-text)",
+  margin: "4px 0 0 0",
+};
+
+const showPasswordBtnStyle = {
+  position: "absolute",
+  right: "10px",
+  top: "50%",
+  transform: "translateY(-50%)",
+  background: "none",
+  border: "none",
+  padding: "4px",
+  color: "var(--text-muted)",
+  cursor: "pointer",
   display: "flex",
   alignItems: "center",
-  gap: "4px",
-  fontWeight: met ? "500" : "400",
-  transition: "color 0.15s ease",
-});
+  justifyContent: "center",
+};
+
+const criteriaBoxStyle = {
+  marginTop: "10px",
+  padding: "10px 12px",
+  backgroundColor: "var(--bg-app)",
+  border: "1px solid var(--border-subtle)",
+  borderRadius: "6px",
+};
+
+const sectionDividerStyle = {
+  margin: "24px 0 16px 0",
+  paddingTop: "16px",
+  borderTop: "1px solid var(--border-subtle)",
+};
+
+const sectionLabelStyle = {
+  display: "block",
+  fontSize: "13px",
+  fontWeight: "600",
+  letterSpacing: "0.02em",
+  color: "var(--text-primary)",
+  marginBottom: "4px",
+};
+
+const sectionHintStyle = {
+  fontSize: "12px",
+  color: "var(--text-muted)",
+  margin: 0,
+  lineHeight: 1.45,
+};
+
+const checkboxStyle = {
+  width: "16px",
+  height: "16px",
+  accentColor: "var(--primary-600)",
+  cursor: "pointer",
+  margin: "0 8px 0 0",
+};
+
+const checkboxLabelStyle = {
+  fontSize: "13px",
+  color: "var(--text-secondary)",
+  cursor: "pointer",
+  userSelect: "none",
+  lineHeight: 1.4,
+};
+
+const primaryBtnStyle = {
+  width: "100%",
+  padding: "11px 16px",
+  fontSize: "14px",
+  fontWeight: "600",
+  fontFamily: "inherit",
+  color: "#FFFFFF",
+  backgroundColor: "var(--primary-600)",
+  border: "none",
+  borderRadius: "8px",
+  cursor: "pointer",
+  transition: "background-color 150ms ease",
+};
+
+const footerStyle = {
+  marginTop: "24px",
+  paddingTop: "20px",
+  borderTop: "1px solid var(--border-subtle)",
+  textAlign: "center",
+};
+
+const loginLinkStyle = {
+  fontSize: "14px",
+  fontWeight: "600",
+  color: "var(--primary-600)",
+  textDecoration: "none",
+};
+
+const spinnerStyle = {
+  width: "14px",
+  height: "14px",
+  border: "2px solid #FFFFFF",
+  borderTopColor: "transparent",
+  borderRadius: "50%",
+  display: "inline-block",
+  animation: "spin 0.7s linear infinite",
+};

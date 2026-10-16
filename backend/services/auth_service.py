@@ -174,6 +174,47 @@ def decode_access_token(token: str) -> Optional[int]:
 
 
 # ---------------------------------------------------------------------------
+# Security Questions for Password Recovery
+# ---------------------------------------------------------------------------
+ALLOWED_SECURITY_QUESTIONS = [
+    "What is your favorite movie?",
+    "What was your childhood nickname?",
+    "What was the name of your first pet?",
+    "What was the first concert you attended?",
+    "What was the name of your childhood best friend?",
+]
+
+
+def normalize_security_answer(answer: Optional[str]) -> str:
+    """
+    Normalizes a security answer consistently:
+    - Strips leading and trailing whitespace
+    - Condenses internal multiple whitespaces
+    - Lowercases for consistent case-insensitive comparison
+    """
+    if not answer:
+        return ""
+    return " ".join(answer.strip().lower().split())
+
+
+def hash_security_answer(answer: str) -> str:
+    """Hashes a normalized security answer with Argon2. Never stores or logs plaintext."""
+    normalized = normalize_security_answer(answer)
+    return ph.hash(normalized)
+
+
+def verify_security_answer(plain_answer: str, hashed_answer: str) -> bool:
+    """Verifies a candidate security answer against the stored Argon2 hash in constant time."""
+    if not plain_answer or not hashed_answer:
+        return False
+    normalized = normalize_security_answer(plain_answer)
+    try:
+        return ph.verify(hashed_answer, normalized)
+    except (VerifyMismatchError, VerificationError, InvalidHashError):
+        return False
+
+
+# ---------------------------------------------------------------------------
 # FastAPI Auth Dependencies
 # ---------------------------------------------------------------------------
 def extract_token_from_request(request: Request) -> Optional[str]:
@@ -193,7 +234,6 @@ def get_current_user(
     """
     FastAPI dependency requiring authentication.
     Raises 401 if unauthenticated or token is expired/invalid.
-    Raises 403 if account email is not verified when email verification is required.
     """
     token = extract_token_from_request(request)
     if not token:
@@ -207,13 +247,6 @@ def get_current_user(
     if not user:
         raise HTTPException(status_code=401, detail="User account not found")
 
-    from backend.config import REQUIRE_EMAIL_VERIFICATION
-    if REQUIRE_EMAIL_VERIFICATION and not user.email_verified:
-        raise HTTPException(
-            status_code=403,
-            detail="Please verify your email address to access this resource."
-        )
-
     return user
 
 
@@ -221,7 +254,7 @@ def get_current_user_optional(
     request: Request,
     db: Session = Depends(get_db)
 ) -> Optional[models.User]:
-    """FastAPI dependency that returns user if authenticated and verified, or None if not."""
+    """FastAPI dependency that returns user if authenticated, or None if not."""
     token = extract_token_from_request(request)
     if not token:
         return None
@@ -230,12 +263,4 @@ def get_current_user_optional(
     if not user_id:
         return None
 
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    if not user:
-        return None
-
-    from backend.config import REQUIRE_EMAIL_VERIFICATION
-    if REQUIRE_EMAIL_VERIFICATION and not user.email_verified:
-        return None
-
-    return user
+    return db.query(models.User).filter(models.User.id == user_id).first()

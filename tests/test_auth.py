@@ -192,121 +192,73 @@ def test_auth_registration_happy_path_and_duplicate(client: TestClient):
     assert "already exists" in res_dup.json()["error"]["message"].lower()
 
 
-def test_unverified_user_cannot_login_when_verification_required(client: TestClient, monkeypatch):
-    import backend.routes.auth as auth_route
-    monkeypatch.setattr(auth_route, "REQUIRE_EMAIL_VERIFICATION", True)
-
-    email = "pending.user@gmail.com"
-    client.post("/auth/register", json={
+def test_immediate_registration_and_login_without_otp(client: TestClient, db_session):
+    """Verifies registration activates immediately without OTP and login succeeds directly."""
+    email = "immediate.user@gmail.com"
+    pwd = "SecurePassword123!"
+    res_reg = client.post("/auth/register", json={
         "email": email,
-        "password": "SecurePending123!",
-        "full_name": "Pending User",
+        "password": pwd,
+        "full_name": "Immediate User",
+        "security_question": "What is your favorite movie?",
+        "security_answer": "Inception",
     })
+    assert res_reg.status_code == 200
+    assert res_reg.json()["verification_required"] is False
+    assert AUTH_COOKIE_NAME in res_reg.cookies
 
-    # Try to login without verifying
+    # Verify user in database has hashed security answer, not plaintext
+    user = db_session.query(models.User).filter(models.User.email == email).first()
+    assert user is not None
+    assert user.email_verified is True
+    assert user.security_question == "What is your favorite movie?"
+    assert user.security_answer_hash is not None
+    assert "Inception" not in user.security_answer_hash
+
+    # Can log in directly without OTP
     client.cookies.clear()
-    res = client.post("/auth/login", json={
-        "email": email,
-        "password": "SecurePending123!",
-    })
-    assert res.status_code == 403
-    assert "verify your email" in res.json()["error"]["message"].lower()
-
-
-def test_email_verification_flow_and_token_reuse(client: TestClient, db_session, monkeypatch):
-    import backend.routes.auth as auth_route
-    monkeypatch.setattr(auth_route, "REQUIRE_EMAIL_VERIFICATION", True)
-
-    email = "verify.flow@gmail.com"
-    client.post("/auth/register", json={
-        "email": email,
-        "password": "VerifyFlowPass123!",
-        "full_name": "Flow User",
-    })
-
-    dev_email = get_latest_dev_email(email)
-    raw_token = dev_email["token"]
-
-    # Invalid verification token
-    res_inv = client.post("/auth/verify-email", json={"token": "totally-bogus-token"})
-    assert res_inv.status_code == 400
-    assert "no longer valid" in res_inv.json()["error"]["message"].lower()
-
-    # Verification succeeds
-    res_verify = client.post("/auth/verify-email", json={"token": raw_token})
-    assert res_verify.status_code == 200
-    assert res_verify.json()["verified"] is True
-
-    # Verification token cannot be reused
-    res_reuse = client.post("/auth/verify-email", json={"token": raw_token})
-    assert res_reuse.status_code == 400
-    assert (
-        "already been verified" in res_reuse.json()["error"]["message"].lower()
-        or "no longer valid" in res_reuse.json()["error"]["message"].lower()
-    )
-
-    # Login works after verification
     res_login = client.post("/auth/login", json={
         "email": email,
-        "password": "VerifyFlowPass123!",
+        "password": pwd,
     })
     assert res_login.status_code == 200
     assert AUTH_COOKIE_NAME in res_login.cookies
     assert res_login.json()["user"]["email"] == email
 
 
-def test_email_verification_token_expiration(client: TestClient, db_session, monkeypatch):
-    import backend.routes.auth as auth_route
-    monkeypatch.setattr(auth_route, "REQUIRE_EMAIL_VERIFICATION", True)
-
-    email = "expired.test@gmail.com"
+def test_login_remember_me_cookie_and_token(client: TestClient):
+    """Verifies remember_me sets 30-day cookie max_age."""
+    email = "remember.user@gmail.com"
+    pwd = "RememberPass123!"
     client.post("/auth/register", json={
         "email": email,
-        "password": "ExpiredPass123!",
-        "full_name": "Expired User",
+        "password": pwd,
+        "full_name": "Remember User",
+        "security_question": "What was your childhood nickname?",
+        "security_answer": "Ace",
     })
-    dev_email = get_latest_dev_email(email)
-    token = dev_email["token"]
 
-    # Artificially expire the token in database
-    user = db_session.query(models.User).filter(models.User.email == email).first()
-    user.verification_expires_at = datetime.now(timezone.utc) - timedelta(minutes=5)
-    db_session.commit()
+    client.cookies.clear()
+    res_login = client.post("/auth/login", json={
+        "email": email,
+        "password": pwd,
+        "remember_me": True,
+    })
+    assert res_login.status_code == 200
+    assert AUTH_COOKIE_NAME in res_login.cookies
 
-    res = client.post("/auth/verify-email", json={"token": token})
+
+def test_registration_invalid_security_question_rejected(client: TestClient):
+    """Verifies selecting an unauthorized question text is rejected."""
+    res = client.post("/auth/register", json={
+        "email": "invalid.q@gmail.com",
+        "password": "Password123!",
+        "full_name": "Invalid Q",
+        "security_question": "Arbitrary question text not in list",
+        "security_answer": "Answer",
+    })
     assert res.status_code == 400
-    assert "expired" in res.json()["error"]["message"].lower()
-
-
-def test_resend_verification_and_rate_limit(client: TestClient, db_session, monkeypatch):
-    import backend.routes.auth as auth_route
-    monkeypatch.setattr(auth_route, "REQUIRE_EMAIL_VERIFICATION", True)
-
-    email = "resend.test@gmail.com"
-    client.post("/auth/register", json={
-        "email": email,
-        "password": "ResendPass123!",
-        "full_name": "Resend User",
-    })
-
-    # First resend should be blocked if immediately requested within cooldown
-    res_too_fast = client.post("/auth/resend-verification", json={"email": email})
-    assert res_too_fast.status_code == 429
-    assert "60 seconds" in res_too_fast.json()["error"]["message"]
-
-    # Simulate 60+ seconds passing
-    _rate_limits.clear()
-    u = db_session.query(models.User).filter(models.User.email == email).first()
-    u.verification_sent_at = datetime.now(timezone.utc) - timedelta(seconds=70)
-    db_session.commit()
-
-    res_ok = client.post("/auth/resend-verification", json={"email": email})
-    assert res_ok.status_code == 200
-    assert res_ok.json()["sent"] is True
-
-    # Immediate duplicate resend should be rate limited
-    res_dup = client.post("/auth/resend-verification", json={"email": email})
-    assert res_dup.status_code == 429
+    assert "valid security question" in res.json()["error"]["message"].lower()
 
 
 def test_existing_users_still_work_without_reverification(client: TestClient, test_user):

@@ -140,8 +140,32 @@ class RegisterRequest(BaseModel):
     email: str = Field(..., min_length=5, description="User Gmail address")
     password: str = Field(..., min_length=8, description="Password (at least 8 characters)")
     full_name: Optional[str] = Field(None, description="User full name")
+    security_question: Optional[str] = Field(None, description="Selected security question")
+    security_answer: Optional[str] = Field(None, description="Security question answer")
 
 
+class LoginRequest(BaseModel):
+    email: str = Field(..., description="User email address")
+    password: str = Field(..., description="User password")
+    remember_me: Optional[bool] = Field(False, description="Persist session for 30 days")
+
+
+class RecoveryChallengeRequest(BaseModel):
+    email: str = Field(..., min_length=5, description="Registered Gmail address")
+
+
+class RecoveryVerifyAnswerRequest(BaseModel):
+    email: str = Field(..., min_length=5, description="Registered Gmail address")
+    answer: str = Field(..., min_length=1, description="Candidate security answer")
+
+
+class RecoveryResetPasswordRequest(BaseModel):
+    email: str = Field(..., min_length=5, description="Registered Gmail address")
+    recovery_token: str = Field(..., min_length=1, description="Single-use recovery token")
+    new_password: str = Field(..., min_length=8, description="New account password")
+
+
+# Legacy schemas kept for backward-compatibility if referenced
 class VerifyEmailRequest(BaseModel):
     token: Optional[str] = Field(None, description="Single-use email verification token or OTP")
     otp: Optional[str] = Field(None, description="Six-digit verification OTP")
@@ -150,11 +174,6 @@ class VerifyEmailRequest(BaseModel):
 
 class ResendVerificationRequest(BaseModel):
     email: str = Field(..., min_length=5, description="User Gmail address")
-
-
-class LoginRequest(BaseModel):
-    email: str = Field(..., description="User email address")
-    password: str = Field(..., description="User password")
 
 
 class ForgotPasswordRequest(BaseModel):

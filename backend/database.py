@@ -104,6 +104,9 @@ def init_db():
                     "password_reset_expires_at": "DATETIME",
                     "password_reset_used_at": "DATETIME",
                     "password_reset_sent_at": "DATETIME",
+                    "security_question": "VARCHAR",
+                    "security_answer_hash": "VARCHAR",
+                    "recovery_attempts": "INTEGER DEFAULT 0",
                 }
                 for col, col_def in u_cols.items():
                     if col not in existing_u:
